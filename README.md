@@ -40,11 +40,15 @@ Resuelve tres problemas que hoy hacen fracasar la alfabetización temprana en au
 - [x] Mecánica central y guion de las 3 pantallas
 - [x] Métrica de éxito e instrumento de investigación
 - [ ] Mockups reales (Figma o papel) de las 3 pantallas
-- [ ] Definir comprador del pitch (ministerio de educación / dirección de colegio / otro)
+- [x] Comprador del pitch (tentativo): dirección de colegio — arranca por escuelas que ya adoptan este enfoque pedagógico como primera adopción; puede revisarse
 - [ ] Diseño visual de la mascota (especie, nombre, gestos)
 - [ ] Nombre de la app (probablemente atado a la mascota/avatar; es lo último a decidir, no bloquea nada)
 - [ ] Informe final en Word ensamblado y recortado a 3-5 carillas
 - [ ] Slides del pitch (opcionales, máx. 6)
+
+## Comprador del pitch
+
+Dirección de colegio (tentativo, sujeto a revisión). Como primera versión de estrategia de entrada, apuntamos a escuelas que ya adoptan este enfoque pedagógico —fónico-sintético, con conciencia fonológica explícita— en vez de partir por el universo completo de escuelas de gestión estatal: son las que van a ver valor inmediato en la app sin necesitar primero convencerlas del enfoque.
 
 ## Punto débil a mencionar en el pitch
 
