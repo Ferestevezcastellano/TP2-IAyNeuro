@@ -1,6 +1,8 @@
-# TP2-IAyNeuro
+# App de conciencia fonológica
 
 App de práctica diaria de conciencia fonológica para primer grado, pensada como complemento del aula (no reemplazo del docente) y sincronizada con el avance curricular semanal.
+
+> **Nombre**: todavía sin decidir. Probablemente quede atado a la mascota/avatar que elige el chico en el onboarding — se define después de resolver ese diseño, no bloquea el resto del contenido.
 
 TP2 de la materia **IA y Neurociencias** — UTDT, 2do semestre 2026.
 
@@ -9,9 +11,9 @@ TP2 de la materia **IA y Neurociencias** — UTDT, 2do semestre 2026.
 - **Consigna**: diseñar una app que enseñe, ancaldada en los 4 pilares del aprendizaje (Dehaene, vía cátedra Rieznik).
 - **Entregables**: informe en Word (3-5 carillas, 60% de la nota) + pitch en clase (5 min + 3 de preguntas, 40% de la nota).
 - **Fechas**: informe jueves 24/9 23:59 hs · pitch viernes 25/9.
-- **Grupo**: 2-3 integrantes (completar nombres).
+- **Grupo**: 3-5 integrantes (completar nombres).
 
-## Qué es
+## Qué es la app
 
 Práctica diaria de 10-15 min para chicos de primer grado (6-7 años) de escuelas argentinas, con estructura tipo Duolingo: tarjeta con imagen + sonido de una palabra, botones por letra/sonido para armarla en orden, y verificación final por audio con feedback de una mascota. Avanza en dificultad (sonidos prolongables → no prolongables → rimas) solo cuando detecta dominio real.
 
@@ -26,7 +28,7 @@ Resuelve tres problemas que hoy hacen fracasar la alfabetización temprana en au
 |---|---|
 | `00_tp_brief.md` | Checklist de la consigna (no va en el informe final) |
 | `01_estado_del_arte.md` | Diagnóstico PISA, evidencia sobre conciencia fonológica, intervenciones previas en Argentina, estado del arte de apps de referencia |
-| `02_cuatro_pilares.md` | Los 4 pilares del aprendizaje aplicados a Fonito (qué dice el pilar / feature concreta / cómo se mide) |
+| `02_cuatro_pilares.md` | Los 4 pilares del aprendizaje aplicados a la app (qué dice el pilar / feature concreta / cómo se mide) |
 | `03_propuesta_app.md` | Propuesta completa: la apuesta, decisiones de memoria (costo de entrada, pico y final), mecánica central, métrica de éxito, la app como instrumento de investigación, referencias |
 | `04_plan_de_escritura.md` | Mapeo de estos archivos al informe Word final + lista de decisiones pendientes de equipo |
 
@@ -40,6 +42,7 @@ Resuelve tres problemas que hoy hacen fracasar la alfabetización temprana en au
 - [ ] Mockups reales (Figma o papel) de las 3 pantallas
 - [ ] Definir comprador del pitch (ministerio de educación / dirección de colegio / otro)
 - [ ] Diseño visual de la mascota (especie, nombre, gestos)
+- [ ] Nombre de la app (probablemente atado a la mascota/avatar; es lo último a decidir, no bloquea nada)
 - [ ] Informe final en Word ensamblado y recortado a 3-5 carillas
 - [ ] Slides del pitch (opcionales, máx. 6)
 
