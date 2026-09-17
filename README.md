@@ -11,7 +11,7 @@ TP2 de la materia **IA y Neurociencias** — UTDT, 2do semestre 2026.
 - **Fechas**: informe jueves 24/9 23:59 hs · pitch viernes 25/9.
 - **Grupo**: 2-3 integrantes (completar nombres).
 
-## Qué e
+## Qué es
 
 Práctica diaria de 10-15 min para chicos de primer grado (6-7 años) de escuelas argentinas, con estructura tipo Duolingo: tarjeta con imagen + sonido de una palabra, botones por letra/sonido para armarla en orden, y verificación final por audio con feedback de una mascota. Avanza en dificultad (sonidos prolongables → no prolongables → rimas) solo cuando detecta dominio real.
 
