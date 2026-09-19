@@ -1,12 +1,10 @@
 # AMI
 
-> **Mockups**: https://claude.ai/artifact/Mptuub3XAioTH5LUb4bjqP
-
 App de práctica diaria de conciencia fonológica para primer grado, pensada como complemento del aula (no reemplazo del docente) y sincronizada con el avance curricular semanal.
 
 > **Nombre**: AMI (contracción de "amigo"). Está pensado como el nombre del compañero/mascota que el chico elige y personaliza, no como marca separada de la app.
 
-https://claude.ai/artifact/Mptuub3XAioTH5LUb4bjqP
+Mockups: https://claude.ai/artifact/Mptuub3XAioTH5LUb4bjqP
 
 TP2 de la materia **IA y Neurociencias** — UTDT, 2do semestre 2026.
 
