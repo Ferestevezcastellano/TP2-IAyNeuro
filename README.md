@@ -1,8 +1,12 @@
-# App de conciencia fonológica
+# AMI
+
+> **Mockups**: https://claude.ai/artifact/Mptuub3XAioTH5LUb4bjqP
 
 App de práctica diaria de conciencia fonológica para primer grado, pensada como complemento del aula (no reemplazo del docente) y sincronizada con el avance curricular semanal.
 
-> **Nombre**: todavía sin decidir. Probablemente quede atado a la mascota/avatar que elige el chico en el onboarding — se define después de resolver ese diseño, no bloquea el resto del contenido.
+> **Nombre**: AMI (contracción de "amigo"). Está pensado como el nombre del compañero/mascota que el chico elige y personaliza, no como marca separada de la app.
+
+https://claude.ai/artifact/Mptuub3XAioTH5LUb4bjqP
 
 TP2 de la materia **IA y Neurociencias** — UTDT, 2do semestre 2026.
 
@@ -15,7 +19,9 @@ TP2 de la materia **IA y Neurociencias** — UTDT, 2do semestre 2026.
 
 ## Qué es la app
 
-Práctica diaria de 10-15 min para chicos de primer grado (6-7 años) de escuelas argentinas, con estructura tipo Duolingo: tarjeta con imagen + sonido de una palabra, botones por letra/sonido para armarla en orden, y verificación final por audio con feedback de una mascota. Avanza en dificultad (sonidos prolongables → no prolongables → rimas) solo cuando detecta dominio real.
+Práctica diaria de 10-15 min para chicos de primer grado (6-7 años) de escuelas argentinas, con estructura tipo Duolingo: dos secciones principales —**Sesiones** (niveles con progresión de dificultad) y **Repaso** (sonidos ya vistos)— más una zona de **personalización de la mascota**. Cada sesión es una tarjeta con imagen + sonido de una palabra, botones por letra/sonido para armarla en orden, y verificación final por audio con feedback de la mascota. La progresión de niveles sigue el orden vocales → M, P, S (combinando con vocales para armar sílabas y palabras como "mapa") → resto de las letras, de forma creciente, y avanza solo cuando detecta dominio real, no por tiempo transcurrido.
+
+Al completar una sesión el chico gana 3 estrellas y un accesorio para vestir a su mascota (perro, gato, león u oso, elegido en el onboarding); niveles nuevos los habilita la maestra a medida que avanza con la clase.
 
 Resuelve tres problemas que hoy hacen fracasar la alfabetización temprana en aulas argentinas:
 1. El docente no puede dar feedback fonológico individualizado a 25-30 chicos a la vez.
@@ -39,10 +45,10 @@ Resuelve tres problemas que hoy hacen fracasar la alfabetización temprana en au
 - [x] Decisiones de memoria (onboarding, pico/final)
 - [x] Mecánica central y guion de las 3 pantallas
 - [x] Métrica de éxito e instrumento de investigación
-- [ ] Mockups reales (Figma o papel) de las 3 pantallas
+- [x] Mockups interactivos de 7 pantallas (carga, onboarding, inicio, sesión x2 variantes, personalización, repaso) — [ver en Claude](https://claude.ai/artifact/Mptuub3XAioTH5LUb4bjqP)
 - [x] Comprador del pitch (tentativo): dirección de colegio — arranca por escuelas que ya adoptan este enfoque pedagógico como primera adopción; puede revisarse
-- [ ] Diseño visual de la mascota (especie, nombre, gestos)
-- [ ] Nombre de la app (probablemente atado a la mascota/avatar; es lo último a decidir, no bloquea nada)
+- [x] Nombre de la app: AMI (mascota/compañero personalizable — perro, gato, león u oso)
+- [ ] Diseño visual definitivo de la mascota (por ahora hay 4 referencias de estilo, falta cerrar arte final y gestos de feedback)
 - [ ] Informe final en Word ensamblado y recortado a 3-5 carillas
 - [ ] Slides del pitch (opcionales, máx. 6)
 
