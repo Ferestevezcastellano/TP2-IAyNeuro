@@ -2,7 +2,7 @@
 
 ## Logística
 - Formato: Word (.docx), 3 a 5 carillas (sin contar mockups ni carátula)
-- Grupo: 2-3 personas
+- Grupo: 3-5 personas
 - Nombre archivo: Apellidos separados por guión bajo
 - Entrega informe: jueves 24/9 23:59 hs
 - Pitch: viernes 25/9 en clase (5 min presentación + 3 min preguntas, slides opcionales máx 6)
@@ -10,31 +10,32 @@
 
 ## Checklist de contenido del informe (60% de la nota)
 
-- [ ] **1. La apuesta**
-  - [ ] Público objetivo específico (edad, contexto, nivel previo)
-  - [ ] Por qué hoy fracasa esa persona (hipótesis de abandono/fracaso)
-  - [ ] Nombre de la app + qué hace
-- [ ] **2. Los cuatro pilares** (una subsección por pilar)
-  - [ ] Qué dice el pilar
-  - [ ] Feature concreta que lo implementa
-  - [ ] Cómo sabríamos que está funcionando (observable en usuario real)
-- [ ] **3. Las decisiones de memoria**
-  - [ ] 3.1 Costo de entrada: lista numerada de todo lo que el usuario aporta antes de la primera cosa útil + qué se puede eliminar/diferir/agrupar (justificado con memoria de trabajo y condiciones reales de uso)
-  - [ ] 3.2 Pico y final: frase "el pico es ___" / "el final típico es ___" + justificación + dónde ponen la fricción inevitable y por qué
+- [x] **1. La apuesta**
+  - [x] Público objetivo específico (edad, contexto, nivel previo)
+  - [x] Por qué hoy fracasa esa persona (hipótesis de abandono/fracaso)
+  - [x] Nombre de la app + qué hace
+- [x] **2. Los cuatro pilares** (una subsección por pilar)
+  - [x] Qué dice el pilar
+  - [x] Feature concreta que lo implementa
+  - [x] Cómo sabríamos que está funcionando (observable en usuario real)
+- [x] **3. Las decisiones de memoria**
+  - [x] 3.1 Costo de entrada: lista numerada + qué se elimina/difiere/agrupa
+  - [x] 3.2 Pico y final: "el pico es ___" / "el final típico es ___" + fricción inevitable
 - [ ] **4. Cómo se ve**
-  - [ ] Mockup de 3 pantallas: onboarding, aprendizaje, cierre de sesión
-  - [ ] Media carilla explicando el recorrido (coherencia con secciones 2 y 3)
-- [ ] **5. Cómo sabrían si funciona**
-  - [ ] Una sola métrica que mida aprendizaje real, no solo uso
+  - [ ] Mockup de 3 pantallas: onboarding, aprendizaje, **cierre de sesión** ← falta esta pantalla (ver nota en `04_plan_de_escritura.md`)
+  - [x] Media carilla explicando el recorrido (redactada en `03_propuesta_app.md` §4; falta pegarla al Word)
+- [x] **5. Cómo sabrían si funciona**
+  - [x] Una sola métrica que mida aprendizaje real, no solo uso
 - [ ] **6. La app como instrumento de investigación** (estilo MORA)
-  - [ ] Pregunta concreta de investigación (no genérica)
-  - [ ] Qué habría que agregar (ej. grupo con variante distinta)
-  - [ ] Qué queda registrado del uso normal (sin interrumpir la experiencia)
-- [ ] **7. Qué le copiaron a quién**
-  - [ ] 1-2 apps/juegos de referencia + qué copiaron + qué hicieron distinto
+  - [x] Pregunta concreta de investigación (no genérica)
+  - [x] Qué habría que agregar (grupo con variante distinta)
+  - [x] Qué queda registrado del uso normal
+  - [ ] Falta pegarla al Word
+- [x] **7. Qué le copiaron a quién**
+  - [x] 1-2 apps/juegos de referencia + qué copiaron + qué hicieron distinto
 
 ## Pitch (40% de la nota)
-- Primera frase: quién es el comprador elegido (fondo de inversión / ministerio de educación / RR.HH. de empresa / dirección de colegio / otro)
+- Primera frase: comprador elegido → **dirección de colegio** (escuelas privadas, ver `03_propuesta_app.md` §1)
 - Estructura: problema → app en acción (recorrido completo, no lista de features) → por qué funciona (2-3 decisiones + principio neurocientífico) → punto débil → cierre (por qué es única)
 - Todos los integrantes presentan
 
