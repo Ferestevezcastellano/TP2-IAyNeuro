@@ -12,8 +12,9 @@ npm install
 npm run start:dev
 ```
 
-- API: `http://localhost:3000`
+- **Consola de prueba: `http://localhost:3000`** — el flujo completo con botones
 - Documentación interactiva: `http://localhost:3000/docs`
+- API: `http://localhost:3000`
 
 No hace falta base de datos ni ninguna otra cosa instalada. **El estado vive en memoria y se pierde al reiniciar**: los alumnos, las sesiones y el progreso desaparecen, y el contenido (niveles, tarjetas, cursos, accesorios) se vuelve a cargar solo en cada arranque.
 
@@ -23,7 +24,13 @@ npm test             # tests unitarios de la lógica de negocio
 npm run demo         # recorrido completo por HTTP, con el servidor ya levantado
 ```
 
-`npm run demo` necesita `jq` y un servidor corriendo en otra terminal. Recorre el flujo entero: onboarding, tres sesiones hasta dominar el nivel 1, estrellas y accesorio, nivel bloqueado por la docente, desbloqueo desde el panel, repaso y tabla del curso.
+`npm run demo` necesita `jq` y un servidor corriendo en otra terminal, y no corre en PowerShell. Recorre el flujo entero: onboarding, tres sesiones hasta dominar el nivel 1, estrellas y accesorio, nivel bloqueado por la docente, desbloqueo desde el panel, repaso y tabla del curso.
+
+## Consola de prueba
+
+En `http://localhost:3000` hay una página que consume esta misma API con botones: elegir mascota, tocar las letras para armar la palabra, ver el feedback de AMI, ganar las estrellas y, desde la solapa Docente, habilitar niveles para el curso. Existe porque probar el recorrido desde Swagger obliga a copiar a mano el `sessionId`, el `cardId` y el id del botón correcto entre un endpoint y el siguiente, tres sesiones seguidas por nivel.
+
+No es el frontend de la app —ese se desarrolla aparte y tiene su propio diseño— y la página lo aclara arriba de todo. Las ilustraciones son emojis porque el banco de imágenes todavía no existe, los audios los genera `speechSynthesis` y la verificación por voz usa el `SpeechRecognition` del navegador, las dos sin costo y sin instalar nada. Donde el navegador no las trae, quedan botones para simular la voz. El código está en `public/`, sin build ni dependencias.
 
 ## Datos semilla
 
@@ -158,6 +165,7 @@ src/
   modules/         una carpeta por sección de la app, con su controller y sus DTOs
   seed/            contenido curricular y carga inicial
   common/          guards, decoradores y DTOs compartidos
+public/            consola de prueba (HTML y JS sueltos, sin build)
 ```
 
 La regla que sostiene todo: los controllers hablan con servicios, y los servicios solo conocen las clases abstractas de `core/ports`. **Migrar a una base real es escribir `persistence/typeorm/` con esas mismas nueve clases y cambiar los `useClass` en `persistence.module.ts`.** Ningún servicio de negocio se entera, y los tests de `core/services/` siguen corriendo sin levantar nada.

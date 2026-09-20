@@ -22,11 +22,16 @@
 - **Audio en base64 dentro del JSON** — límite de 10 MB por request. Para volumen real conviene
   `multipart/form-data`.
 - **Tests de integración HTTP** — hoy los tests cubren la lógica de negocio y la integridad del
-  contenido; el recorrido por HTTP se verifica con `scripts/demo.sh`, que no corre en CI.
+  contenido; el recorrido por HTTP se verifica con `scripts/demo.sh` y con un guion de Playwright
+  que quedó fuera del repo, ninguno de los dos en CI.
+- **La consola de prueba no tiene tests** — se verificó a mano con Playwright, pero nada impide
+  que un cambio en un DTO la rompa en silencio. El bug de `sesion.id` contra `sessionId` apareció
+  justamente así.
 
 ### Completadas
 
 - 2026-09-20 — Backend MVP en NestJS
+- 2026-09-20 — Consola de prueba servida por el propio backend
 
 ## Bitácora de decisiones
 
@@ -92,3 +97,26 @@ base); mandar el `studentId` crudo (cualquiera enumera alumnos de la clase).
 **Revisión post-implementación:** salió tal cual. Los dos guards quedaron sobre un único puerto
 `AccessTokenRepository` que distingue alumno de docente por `subjectType`, en lugar de dos
 mecanismos separados.
+
+### 2026-09-20 — Consola de prueba servida por el propio backend
+
+**Contexto:** probar el flujo desde Swagger obliga a copiar a mano el sessionId, el cardId y el
+id del botón correcto entre un endpoint y el siguiente, varias veces por sesión y tres sesiones
+por nivel. Es tan tedioso que en la práctica nadie verifica el recorrido completo, que es
+justamente lo único que muestra la regla de dominio funcionando.
+**Decisión:** un `public/index.html` sin build ni dependencias, servido por el mismo NestJS con
+`useStaticAssets`, que consume la API igual que lo haría el frontend. Los audios los genera
+`speechSynthesis` y la verificación por voz usa `SpeechRecognition`, las dos del navegador, sin
+costo y sin instalar nada; cuando el navegador no las tiene, quedan botones para simular la voz.
+Las ilustraciones que el backend nombra con `imageKey` se representan con emojis, porque el banco
+de imágenes todavía no existe.
+**Alternativas descartadas:** script de PowerShell (resuelve el tedio pero deja todo en texto y
+no sirve para mostrar en el pitch); abrir el HTML con `file://` (el origen `null` complica CORS
+y obligaría a configurar algo aparte); adelantar el frontend real (se desarrolla por separado y
+tiene su propio diseño; esto es una herramienta de verificación y la página lo dice).
+**Revisión post-implementación:** salió como estaba planeado. Recorrerla con Playwright antes de
+darla por buena encontró tres cosas que leyendo el código no se veían: la página llamaba a
+`sesion.id` cuando el DTO expone `sessionId`, así que los tres endpoints de sesión salían con
+`undefined`; la regla `.botonera button` pisaba el fondo del botón de acción pero no su color de
+texto, y quedaba blanco sobre blanco; y las tarjetas de reconocimiento de sonido se dibujaban con
+el emoji de palabra, que para ellas no existe.
