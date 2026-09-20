@@ -12,8 +12,11 @@ export class TeacherLoginDto {
 
 export class TeacherSessionDto {
   @ApiProperty({
-    description: 'Token opaco. Va en el header x-ami-teacher-token.',
-    example: 'tea_2b7f1c0a-4c7d-4f2b-9d6a-1f0b2c3d4e5f',
+    description:
+      'Token opaco. Va en el header x-ami-teacher-token. ' +
+      'El valor real sale de la respuesta de este mismo endpoint: hay que ejecutarlo y copiarlo de ahi. ' +
+      'El ejemplo que se ve abajo es solo ilustrativo y no sirve para autorizarse.',
+    example: 'tea_PEGA-ACA-EL-TOKEN-QUE-DEVUELVE-ESTA-RESPUESTA',
   })
   teacherToken!: string;
 
