@@ -35,6 +35,9 @@ Resuelve tres problemas que hoy hacen fracasar la alfabetización temprana en au
 | `02_cuatro_pilares.md` | Los 4 pilares del aprendizaje aplicados a la app (qué dice el pilar / feature concreta / cómo se mide) |
 | `03_propuesta_app.md` | Propuesta completa: la apuesta, decisiones de memoria (costo de entrada, pico y final), mecánica central, métrica de éxito, la app como instrumento de investigación, referencias |
 | `04_plan_de_escritura.md` | Mapeo de estos archivos al informe Word final + lista de decisiones pendientes de equipo |
+| `05_niveles.md` | Secuencia completa de los 21 niveles, con el criterio curricular detrás |
+| `backend/` | Backend MVP en NestJS: API del flujo completo, con su propio README |
+| `PLAN.md` | Decisiones de implementación del código |
 
 ## Estado actual
 
@@ -46,6 +49,7 @@ Resuelve tres problemas que hoy hacen fracasar la alfabetización temprana en au
 - [x] Mockups interactivos de 7 pantallas (carga, onboarding, inicio, sesión x2 variantes, personalización, repaso) — [ver en Claude](https://claude.ai/artifact/Mptuub3XAioTH5LUb4bjqP)
 - [x] Comprador del pitch (tentativo): dirección de colegio — arranca por escuelas que ya adoptan este enfoque pedagógico como primera adopción; puede revisarse
 - [x] Nombre de la app: AMI (mascota/compañero personalizable — perro, gato, león u oso)
+- [x] Backend MVP funcional con la API del flujo completo — ver [`backend/`](backend/)
 - [ ] Diseño visual definitivo de la mascota (por ahora hay 4 referencias de estilo, falta cerrar arte final y gestos de feedback)
 - [ ] Informe final en Word ensamblado y recortado a 3-5 carillas
 - [ ] Slides del pitch (opcionales, máx. 6)
