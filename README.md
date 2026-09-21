@@ -4,7 +4,7 @@ App de práctica diaria de conciencia fonológica para primer grado, pensada com
 
 > **Nombre**: AMI (contracción de "amigo"). Está pensado como el nombre del compañero/mascota que el chico elige y personaliza, no como marca separada de la app.
 
-Mockups: https://claude.ai/artifact/Mptuub3XAioTH5LUb4bjqP
+Mockups: [https://claude.ai/artifact/Mptuub3XAioTH5LUb4bjqP](https://www.figma.com/design/dHf5AHIJGYiJugKL5HfhAu/AMI-%E2%80%94-Mockups?node-id=0-1&t=pbtHTYetMBs0jjkq-1)
 
 TP2 de la materia **IA y Neurociencias** — UTDT, 2do semestre 2026.
 
