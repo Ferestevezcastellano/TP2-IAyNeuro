@@ -1,49 +1,88 @@
 import { API_URL } from './api';
 
 let current: HTMLAudioElement | null = null;
+/** Resuelve la promesa del audio que esta sonando, aunque lo corte otro. */
+let cerrarActual: (() => void) | null = null;
 
-function speak(text: string): void {
-  if (!('speechSynthesis' in window) || !text) return;
+/** Corta lo que este sonando y da por terminada su promesa, para no dejarla colgada. */
+function cortar(): void {
+  if (current) {
+    current.pause();
+    current = null;
+  }
+  if (cerrarActual) {
+    const cerrar = cerrarActual;
+    cerrarActual = null;
+    cerrar();
+  }
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+}
+
+/** Voz del navegador. La promesa termina cuando termina de hablar. */
+function speak(text: string): Promise<void> {
+  if (!('speechSynthesis' in window) || !text) return Promise.resolve();
   speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = 'es-AR';
   utterance.rate = 0.8;
-  speechSynthesis.speak(utterance);
+  return new Promise<void>((resolve) => {
+    utterance.onend = () => resolve();
+    utterance.onerror = () => resolve();
+    speechSynthesis.speak(utterance);
+  });
 }
 
 /**
  * Hace sonar una tarjeta o un botón: la grabación del fonema si la hay, si no
  * la voz del navegador leyendo `spokenAs` (que ya viene como sonido, "mmm",
  * y nunca como nombre de letra).
+ *
+ * La promesa termina cuando termina el sonido, para poder encadenar dos (la
+ * letra que se acaba de poner y despues la palabra entera). Si otro `play()`
+ * lo interrumpe, termina igual: nadie se queda esperando.
  */
-export function play(target: { audioKey?: string; spokenAs?: string; label?: string } | null | undefined): void {
-  if (!target) return;
+export function play(target: { audioKey?: string; spokenAs?: string; label?: string } | null | undefined): Promise<void> {
+  if (!target) return Promise.resolve();
   const spoken = target.spokenAs || target.label || '';
   const key = target.audioKey || '';
 
-  if (current) {
-    current.pause();
-    current = null;
-  }
-  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  cortar();
 
-  if (!key.startsWith('audio/fonema/')) {
-    speak(spoken);
-    return;
-  }
+  if (!key.startsWith('audio/fonema/')) return speak(spoken);
 
   const audio = new Audio(`${API_URL}/${key}.ogg`);
   current = audio;
 
-  // El respaldo con voz sintética es solo para cuando el archivo no existe. Si
-  // este audio fue interrumpido por otro (play() rechaza con AbortError), o ya
-  // no es el vigente, no hay que hablar encima del sonido nuevo.
-  const fallback = () => {
-    if (current === audio) speak(spoken);
-  };
-  audio.onerror = fallback;
-  audio.play().catch((error: unknown) => {
-    if ((error as { name?: string })?.name !== 'AbortError') fallback();
+  return new Promise<void>((resolve) => {
+    cerrarActual = resolve;
+
+    const listo = () => {
+      if (current === audio) {
+        current = null;
+        cerrarActual = null;
+      }
+      resolve();
+    };
+
+    // El respaldo con voz sintética es solo para cuando el archivo no existe. Si
+    // este audio fue interrumpido por otro (play() rechaza con AbortError), o ya
+    // no es el vigente, no hay que hablar encima del sonido nuevo.
+    const fallback = () => {
+      if (current !== audio) {
+        resolve();
+        return;
+      }
+      current = null;
+      cerrarActual = null;
+      void speak(spoken).then(resolve);
+    };
+
+    audio.onended = listo;
+    audio.onerror = fallback;
+    audio.play().catch((error: unknown) => {
+      if ((error as { name?: string })?.name !== 'AbortError') fallback();
+      else resolve();
+    });
   });
 }
 

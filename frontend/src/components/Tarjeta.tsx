@@ -73,7 +73,7 @@ export function Tarjeta({ card, species, onArmado, onVoz, onLista, repaso }: Pro
     temporizador.current = window.setTimeout(onLista, pausa);
   };
 
-  const enviar = async (sequence: string[]) => {
+  const enviar = async (sequence: string[], sonandoUltima?: Promise<void>) => {
     setOcupado(true);
     try {
       const resultado = await onArmado(sequence);
@@ -84,12 +84,16 @@ export function Tarjeta({ card, species, onArmado, onVoz, onLista, repaso }: Pro
         // Recien armada, la palabra suena entera: el chico escucha lo que acaba
         // de construir y confirma que esta bien antes de repetirla al microfono.
         const suenaSola = card.kind === 'WORD_BUILDING' || card.kind === 'SENTENCE_BUILDING';
-        if (suenaSola) play(card);
-        if (resultado.voiceCheckRequired && onVoz) {
-          setEsperandoVoz(true);
-        } else {
-          terminar(suenaSola ? PAUSA_CON_SONIDO : PAUSA_TRAS_ACIERTO);
+        const pideVoz = resultado.voiceCheckRequired && Boolean(onVoz);
+        if (pideVoz) setEsperandoVoz(true);
+        if (suenaSola) {
+          // Primero termina de sonar la letra que acaba de poner y recien
+          // despues suena la palabra entera. Las dos cosas son parte del
+          // mismo gesto: el sonido que agrego y lo que ese sonido completo.
+          if (sonandoUltima) await sonandoUltima;
+          void play(card);
         }
+        if (!pideVoz) terminar(suenaSola ? PAUSA_CON_SONIDO : PAUSA_TRAS_ACIERTO);
       } else {
         // Se conserva el prefijo que ya estaba bien: marcar el casillero exacto
         // en lugar de borrar todo es la diferencia entre corregir y castigar.
@@ -104,12 +108,12 @@ export function Tarjeta({ card, species, onArmado, onVoz, onLista, repaso }: Pro
 
   const tocar = (tile: Tile) => {
     if (ocupado || acierto) return;
-    play(tile);
+    const sonando = play(tile);
     setMarcaError(null);
     setEquivocado(null);
     const siguiente = [...armado, tile.id];
     setArmado(siguiente);
-    if (siguiente.length === card.expectedLength) void enviar(siguiente);
+    if (siguiente.length === card.expectedLength) void enviar(siguiente, sonando);
   };
 
   /** Saca una letra puesta (y las que siguen, para que el orden no se desarme). */
