@@ -10,6 +10,7 @@ const EMOJI: Record<string, string> = {
   OSO: '🐻', OJO: '👁️', OVEJA: '🐑', OREJA: '👂',
   UVA: '🍇', UÑA: '💅', UNICORNIO: '🦄', UNO: '1️⃣',
   MASA: '🥟', SUMA: '➕', MUSA: '🧚', ASA: '🏺', SAPO: '🐸', SILLA: '💺',
+  MIMO: '🤡', MOMIA: '🧟', MIAU: '🐱',
   LUNA: '🌙', SOL: '☀️', MANO: '✋', MONO: '🐒', SALA: '🛋️', LIMA: '🍋', MIEL: '🍯', MISA: '⛪',
   LANA: '🧶', NENA: '👧', NUBE: '☁️',
   CASA: '🏠', CAMA: '🛏️', TELA: '🧵', MOTO: '🏍️', TOMATE: '🍅', TUCÁN: '🦜',

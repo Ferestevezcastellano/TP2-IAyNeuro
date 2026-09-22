@@ -18,17 +18,31 @@ function assetKey(prefix: string, value: string): string {
  * orden, asi el contrato es estable para el frontend y la demo es reproducible.
  * La variedad entre sesiones viene de sortear tarjetas distintas del banco, no
  * de reordenar los botones de una misma tarjeta.
+ *
+ * El generador es splitmix32 y no un LCG simple: en un LCG modulo 2^31 los bits
+ * bajos casi no varian (el ultimo alterna en cada paso), y como el barajado usa
+ * `% (i + 1)`, justamente esos bits decidian la posicion. Con tres opciones eso
+ * dejaba la respuesta correcta siempre en el medio o a la derecha, nunca
+ * primera, y un chico puede aprender ese patron en vez de escuchar el sonido.
  */
 function stableShuffle<T>(items: T[], seed: string): T[] {
-  let hash = 0;
+  // FNV-1a sobre el texto de la semilla.
+  let estado = 0x811c9dc5;
   for (const char of seed) {
-    hash = (hash * 31 + char.charCodeAt(0)) % 100000;
+    estado = Math.imul(estado ^ char.charCodeAt(0), 0x01000193) >>> 0;
   }
+
+  const siguiente = (): number => {
+    estado = (estado + 0x9e3779b9) >>> 0;
+    let z = estado;
+    z = Math.imul(z ^ (z >>> 16), 0x21f0aaad) >>> 0;
+    z = Math.imul(z ^ (z >>> 15), 0x735a2d97) >>> 0;
+    return (z ^ (z >>> 15)) >>> 0;
+  };
 
   const result = [...items];
   for (let i = result.length - 1; i > 0; i -= 1) {
-    hash = (hash * 1103515245 + 12345) % 2147483648;
-    const j = hash % (i + 1);
+    const j = siguiente() % (i + 1);
     [result[i], result[j]] = [result[j], result[i]];
   }
   return result;

@@ -67,6 +67,34 @@ describe('Contenido semilla', () => {
     });
   });
 
+  /**
+   * La regla de acumulacion tambien corre puertas adentro del nivel: si la M se
+   * ensena antes que la S, una palabra de la parte de la M no puede pedir una
+   * ficha S, porque el chico todavia no la vio. Vale para la palabra y para los
+   * botones de mas, que tambien son fichas que tiene delante.
+   */
+  it('dentro del nivel, ninguna tarjeta usa una letra que todavia no se presento', () => {
+    SEEDED_LEVELS.forEach(({ level, cards }) => {
+      const nuevas = new Set(level.newLetters);
+      // Lo que el chico trae de los niveles anteriores ya esta disponible.
+      const disponibles = new Set(level.cumulativeLetters.filter((letter) => !nuevas.has(letter)));
+
+      cards.forEach((card) => {
+        // Las silabas tambien son LETTER_INTRO, con targetPhoneme de dos letras.
+        if (card.kind === CardKind.LETTER_INTRO) {
+          (card.targetPhoneme ?? '').split('').forEach((letter) => disponibles.add(letter));
+          return;
+        }
+        if (card.kind !== CardKind.WORD_BUILDING) return;
+
+        const letras = card.tiles.flatMap((tile) => tile.label.normalize('NFD').replace(/[^A-ZÑ]/gi, '').toUpperCase().split(''));
+        const fuera = [...new Set(letras)].filter((letter) => !disponibles.has(letter));
+
+        expect({ tarjeta: card.id, sinPresentar: fuera }).toEqual({ tarjeta: card.id, sinPresentar: [] });
+      });
+    });
+  });
+
   it('las tarjetas de cada nivel estan numeradas desde 1 y sin repetir', () => {
     SEEDED_LEVELS.forEach(({ cards }) => {
       expect(cards.map((card) => card.position)).toEqual(cards.map((_, index) => index + 1));
@@ -159,6 +187,54 @@ describe('Contenido semilla', () => {
 
       const recipe = new Set(level.sessionDraw.map((draw) => draw.group));
       cards.forEach((card) => expect({ tarjeta: card.id, enReceta: recipe.has(card.group) }).toEqual({ tarjeta: card.id, enReceta: true }));
+    });
+  });
+
+  /**
+   * Si la respuesta correcta cayera siempre en el mismo casillero, un chico de
+   * primer grado aprende la posicion y deja de escuchar el sonido, que es
+   * exactamente lo que la tarjeta quiere medir. Esto se rompio una vez: el
+   * barajado usaba un LCG cuyos bits bajos casi no varian y la correcta nunca
+   * caia primera.
+   */
+  it('la respuesta correcta se reparte entre los casilleros, sin quedar fija en uno', () => {
+    const conteo = new Map<number, number>();
+    let total = 0;
+
+    SEEDED_LEVELS.forEach(({ level, cards }) => {
+      const reconocimiento = cards.filter((card) => card.kind === CardKind.SOUND_RECOGNITION);
+      if (reconocimiento.length === 0) return;
+
+      const casilleros = reconocimiento.map((card) => card.tiles.findIndex((tile) => tile.id === card.solution[0]));
+      casilleros.forEach((casillero) => {
+        conteo.set(casillero, (conteo.get(casillero) ?? 0) + 1);
+        total += 1;
+      });
+
+      // Dentro de un nivel, ningun casillero se lleva mas de la mitad.
+      const porCasillero = new Map<number, number>();
+      casilleros.forEach((casillero) => porCasillero.set(casillero, (porCasillero.get(casillero) ?? 0) + 1));
+      const masUsado = Math.max(...porCasillero.values());
+      expect({ nivel: level.order, masUsado: masUsado <= Math.ceil(casilleros.length / 2) }).toEqual({
+        nivel: level.order,
+        masUsado: true,
+      });
+
+      // Y nunca tres tarjetas seguidas en el mismo casillero.
+      casilleros.slice(2).forEach((casillero, index) => {
+        const racha = casillero === casilleros[index] && casillero === casilleros[index + 1];
+        expect({ nivel: level.order, tarjeta: reconocimiento[index + 2].id, racha }).toEqual({
+          nivel: level.order,
+          tarjeta: reconocimiento[index + 2].id,
+          racha: false,
+        });
+      });
+    });
+
+    // Los tres casilleros de una tarjeta de tres opciones se usan todos.
+    expect([...conteo.keys()].sort()).toEqual(expect.arrayContaining([0, 1, 2]));
+    conteo.forEach((veces, casillero) => {
+      expect({ casillero, dominante: veces / total > 0.45 }).toEqual({ casillero, dominante: false });
     });
   });
 

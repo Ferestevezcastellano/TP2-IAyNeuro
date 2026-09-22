@@ -1,4 +1,4 @@
-import { Card, Level, LevelKind } from '../core/domain';
+import { Card, CardKind, CardTile, Level, LevelKind } from '../core/domain';
 import { buildLetterIntroCard, buildSentenceCard, buildSoundCard, buildSyllableIntroCard, buildWordCard } from './card-builder';
 
 /**
@@ -38,9 +38,40 @@ const L4 = 'level-04-l-n';
 const L5 = 'level-05-consolidacion';
 const L6 = 'level-06-c-t';
 
-/** Numera las tarjetas en el orden en que se declaran, que es el orden pedagogico. */
+/**
+ * Numera las tarjetas en el orden en que se declaran, que es el orden
+ * pedagogico, y reparte el casillero de la respuesta correcta en las tarjetas
+ * de reconocimiento.
+ *
+ * Lo segundo es una regla de contenido, no un detalle tecnico: si la correcta
+ * cae siempre en el mismo casillero, un chico de primer grado aprende la
+ * posicion y deja de escuchar el sonido, que es justo lo que la tarjeta mide.
+ * Barajar no alcanza, porque el azar admite rachas largas en el mismo lugar;
+ * por eso la respuesta va rotando de casillero a lo largo del nivel. La sesion
+ * despues sortea un subconjunto de estas tarjetas, asi que el chico tampoco ve
+ * la rotacion como una ronda previsible.
+ */
 function numbered(cards: Card[]): Card[] {
-  return cards.map((card, index) => ({ ...card, position: index + 1 }));
+  let reconocimiento = 0;
+
+  return cards.map((card, index) => {
+    const numerada = { ...card, position: index + 1 };
+    if (card.kind !== CardKind.SOUND_RECOGNITION) return numerada;
+
+    const slot = reconocimiento % card.tiles.length;
+    reconocimiento += 1;
+    return { ...numerada, tiles: moveAnswerToSlot(card.tiles, card.solution[0], slot) };
+  });
+}
+
+/** Deja la ficha correcta en el casillero pedido, sin tocar el orden del resto. */
+function moveAnswerToSlot(tiles: CardTile[], answerId: string, slot: number): CardTile[] {
+  const resto = tiles.filter((tile) => tile.id !== answerId);
+  const answer = tiles.find((tile) => tile.id === answerId);
+  if (!answer) return tiles;
+
+  resto.splice(slot, 0, answer);
+  return resto;
 }
 
 /**
@@ -156,25 +187,33 @@ export const SEEDED_LEVELS: SeededLevel[] = [
       kind: LevelKind.WORD_BUILDING,
       voiceCheckEnabled: true,
       accessoryId: 'acc-bufanda',
-      // Primero todo lo de la M (letra y sus cinco silabas), despues todo lo de la S, y al final palabras.
+      // Todo lo de la M (letra, silabas y palabras de M con vocales), y recien
+      // despues todo lo de la S, igual que el nivel 4 con L y N. Las palabras
+      // de la M no pueden llevar S: todavia no esta ensenada.
       sessionDraw: [
         { group: GROUP.LETTER, count: 2 },
         { group: GROUP.SYLLABLE, count: 10 },
-        { group: GROUP.WORD, count: 3 },
+        { group: 'PALABRA-M', count: 2 },
+        { group: 'PALABRA-S', count: 2 },
       ],
     },
     cards: numbered([
       buildLetterIntroCard({ levelId: L3, position: 0, group: GROUP.LETTER, letter: 'M', example: 'MESA', voiceCheck: true }),
       ...syllableCards(L3, 'M'),
+      // Palabras de M con vocales. Ni la palabra ni sus botones de mas pueden
+      // traer S: en este punto del nivel el chico todavia no la vio.
+      buildWordCard({ levelId: L3, position: 0, group: 'PALABRA-M', word: 'MIMO', distractors: ['A', 'E'], voiceCheck: true }),
+      buildWordCard({ levelId: L3, position: 0, group: 'PALABRA-M', word: 'MOMIA', distractors: ['E', 'U'], voiceCheck: false }),
+      buildWordCard({ levelId: L3, position: 0, group: 'PALABRA-M', word: 'MIAU', distractors: ['E', 'O'], voiceCheck: true }),
       buildLetterIntroCard({ levelId: L3, position: 0, group: GROUP.LETTER, letter: 'S', example: 'SOL', voiceCheck: true }),
       ...syllableCards(L3, 'S'),
-      buildWordCard({ levelId: L3, position: 0, group: GROUP.WORD, word: 'MESA', distractors: ['I', 'O'], voiceCheck: true }),
-      buildWordCard({ levelId: L3, position: 0, group: GROUP.WORD, word: 'MASA', distractors: ['U'], voiceCheck: false }),
-      buildWordCard({ levelId: L3, position: 0, group: GROUP.WORD, word: 'MISA', distractors: ['E', 'U'], voiceCheck: true }),
-      buildWordCard({ levelId: L3, position: 0, group: GROUP.WORD, word: 'SUMA', distractors: ['I'], voiceCheck: false }),
-      buildWordCard({ levelId: L3, position: 0, group: GROUP.WORD, word: 'OSO', distractors: ['M', 'E'], voiceCheck: true }),
-      buildWordCard({ levelId: L3, position: 0, group: GROUP.WORD, word: 'MUSA', distractors: ['E', 'O'], voiceCheck: true }),
-      buildWordCard({ levelId: L3, position: 0, group: GROUP.WORD, word: 'ASA', distractors: ['M', 'U'], voiceCheck: false }),
+      buildWordCard({ levelId: L3, position: 0, group: 'PALABRA-S', word: 'MESA', distractors: ['I', 'O'], voiceCheck: true }),
+      buildWordCard({ levelId: L3, position: 0, group: 'PALABRA-S', word: 'MASA', distractors: ['U'], voiceCheck: false }),
+      buildWordCard({ levelId: L3, position: 0, group: 'PALABRA-S', word: 'MISA', distractors: ['E', 'U'], voiceCheck: true }),
+      buildWordCard({ levelId: L3, position: 0, group: 'PALABRA-S', word: 'SUMA', distractors: ['I'], voiceCheck: false }),
+      buildWordCard({ levelId: L3, position: 0, group: 'PALABRA-S', word: 'OSO', distractors: ['M', 'E'], voiceCheck: true }),
+      buildWordCard({ levelId: L3, position: 0, group: 'PALABRA-S', word: 'MUSA', distractors: ['E', 'O'], voiceCheck: true }),
+      buildWordCard({ levelId: L3, position: 0, group: 'PALABRA-S', word: 'ASA', distractors: ['M', 'U'], voiceCheck: false }),
     ]),
   },
   {
