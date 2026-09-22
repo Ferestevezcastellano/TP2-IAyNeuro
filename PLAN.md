@@ -22,9 +22,11 @@
   para siempre.
 - **Sin límite de intentos en los endpoints sin token** — `/onboarding/students` deja crear
   alumnos sin tope.
-- **Los audios de fonemas no tienen licencia para publicar** — son recortes de un video de
-  YouTube (ColorKids Play) y alcanzan para la demo, pero una app publicada necesita grabar los
-  fonemas o pedir permiso al canal. CH y LL no están en el video y caen a la voz sintética.
+- **Los audios de fonemas y sílabas no tienen licencia para publicar** — son recortes de dos
+  videos de YouTube (ColorKids Play para las letras, FIESTIKIDS para las sílabas) y alcanzan para
+  la demo, pero una app publicada necesita grabarlos o pedir permiso a los canales. CH y LL no
+  están en el video de letras y caen a la voz sintética; `ca` y `cu` del nivel 6 no están en el
+  de sílabas y caen a la voz sintética también.
 - **Audio en base64 dentro del JSON** — límite de 10 MB por request. Para volumen real conviene
   `multipart/form-data`.
 - **Tests de integración HTTP** — hoy los tests cubren la lógica de negocio y la integridad del
@@ -45,8 +47,38 @@
 - 2026-09-21 — Banco de tarjetas con sorteo por sesión, presentación de la letra nueva y sonido de fonema en vez de nombre de letra
 - 2026-09-21 — Frontend en `frontend/` replicando los mockups de Figma (niveles 1 a 3)
 - 2026-09-21 — Niveles 3 a 5 reordenados: letra → sus cinco sílabas → palabras, consonante por consonante; nivel 5 solo palabras y oraciones
+- 2026-09-22 — Sílabas con voz humana recortadas de un segundo video, en vez de fundir consonante + vocal
+- 2026-09-22 — El sonido sale al tocar el botón y nunca solo; la palabra recién armada suena entera antes del micrófono
+- 2026-09-22 — Layout responsive de 280 px al escritorio, con el alto real de la ventana y el área segura del notch
 
 ## Bitácora de decisiones
+
+### 2026-09-22 — Sílabas con voz humana, recortadas del estribillo de un video
+**Contexto:** las sílabas se venían armando fundiendo la grabación de la consonante con la de la
+vocal. Suena "mmm → aaa", que muestra la unión pero no es una sílaba dicha por una persona, y el
+truco solo funciona con consonantes que se pueden estirar: con T, P, D, B no hay nada que fundir.
+**Decisión:** recortarlas de "SÍLABAS PARA NIÑOS CON MÚSICA" (FIESTIKIDS,
+[youtu.be/j1RIUuftxKo](https://youtu.be/j1RIUuftxKo)), que tiene las 45 combinaciones de M, P, S,
+L, N, D, F y B (más T) con las cinco vocales. El video presenta cada sílaba con la palabra de
+ejemplo pegada atrás ("MA de mamá") y recién al cerrar cada bloque repite las cinco sílabas
+solas: ese estribillo final es la única parte donde la sílaba suena aislada, y es de donde salen
+los clips. La música de fondo se saca con Demucs, igual que en las letras; después de separar, lo
+que queda de música está 40 dB por debajo de la sílaba. Todo el proceso quedó en
+`backend/scripts/silabas.py`, que era uno de los pendientes anotados.
+**Cómo se verificó que cada clip es la sílaba que dice ser:** dos comprobaciones independientes.
+Una por imagen: el video escribe la sílaba en pantalla, así que con una grilla de fotogramas se
+lee qué bloque es cuál. Otra por sonido: el ataque de cada clip separa las familias de
+consonantes (las fricativas S y F arrancan cerca de 9 kHz, la T entre 3 y 8 kHz, las nasales M y
+N por debajo de 1,4 kHz) y el brillo de la vocal ordena I > E > A > O > U en los nueve bloques,
+que es lo que se espera de las vocales del español.
+**Alternativas descartadas:** usar la primera aparición de cada sílaba en vez del estribillo
+(viene con "de mamá" pegado atrás y hay que separar a mano cuántos fragmentos trae cada bloque);
+grabar las 45 sílabas con voz propia (sigue siendo lo correcto para publicar, pero no para la
+demo); partir por detección de silencios y nada más (el ataque de la F y de la S queda al mismo
+nivel que la cola de reverberación de la sílaba anterior, así que el corte se comía el comienzo
+de una o el final de la otra).
+**Lo que falta:** `ca` y `cu`, que el nivel 6 usa y el video no tiene; siguen cayendo a la voz
+sintética.
 
 ### 2026-09-21 — Frontend aparte, en Vite + React, replicando el Figma
 **Contexto:** había que pasar de la consola de prueba a la app real, con los mockups de Figma como
@@ -93,20 +125,19 @@ visible: el validador comparaba ids de botón, así que en MASA o ASA tocar "la 
 error. Ahora compara por etiqueta. También hubo que meter la bolsa en el id de las tarjetas de
 reconocimiento, porque ISLA aparecía en la bolsa I y en la de las cinco vocales con el mismo id.
 
-### 2026-09-21 — Sílabas presentadas una por una, con audio fundido
+### 2026-09-21 — Sílabas presentadas una por una
 **Contexto:** el equipo pidió que el nivel 3 presente M, ma, me, mi, mo, mu, S, sa, se, si, so, su
 en ese orden (todo lo de una consonante antes de pasar a la otra), el 4 igual con L y N integrando
 M y S en las palabras, y el 5 solo palabras y oraciones.
 **Decisión:** las sílabas se presentan con la misma tarjeta que la letra nueva (`LETTER_INTRO`
 con `targetPhoneme` de dos letras: se ve "M + A" arriba y "MA" grande, se toca, suena, se
-repite). El audio de cada sílaba se generó fundiendo la grabación de la consonante con la de la
-vocal (`mmm` → `aaa`), sin voz sintética. Las bolsas de letras y sílabas entran completas en cada
+repite). El audio de cada sílaba es una grabación humana de la sílaba dicha de corrido, recortada de
+un video de sílabas (ver la entrada del 2026-09-22). Las bolsas de letras y sílabas entran completas en cada
 sesión y lo que se sortea son las palabras. En el nivel 4 hay dos bolsas de palabras (con L y con
 N) para que las de la L queden antes de presentar la N.
 **Alternativas descartadas:** tarjetas de reconocimiento por sílaba (SA → elegir SAPO) como
 paso previo (piden una imagen por sílaba y no muestran la unión de los dos sonidos); leer la
-sílaba con `speechSynthesis` (robótico y distinto por navegador); grabar sílabas del video
-(no las tiene).
+sílaba con `speechSynthesis` (robótico y distinto por navegador).
 **Revisión post-implementación:** la sesión del nivel 3 quedó en 15 tarjetas y la del 4 en 17.
 Las de letra y sílaba son de un toque y una repetición, así que entra en los 10-15 minutos, pero
 es el primer lugar donde mirar si en el aula resulta larga. El test del seed que exige que

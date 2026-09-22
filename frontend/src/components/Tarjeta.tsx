@@ -30,6 +30,8 @@ interface Props {
 }
 
 const PAUSA_TRAS_ACIERTO = 1500;
+/** Cuando la tarjeta hace sonar la palabra sola, hay que darle tiempo a terminar. */
+const PAUSA_CON_SONIDO = 2600;
 
 /**
  * Una tarjeta de práctica, con la mecánica que le corresponde según `kind`.
@@ -59,14 +61,16 @@ export function Tarjeta({ card, species, onArmado, onVoz, onLista, repaso }: Pro
     setInstrucciones(false);
     setEquivocado(null);
     setVozRechazada(false);
-    play(card);
+    // La tarjeta aparece en silencio: el sonido sale cuando el chico toca el
+    // boton, no solo. Que suene sin que nadie lo pida le saca el control de la
+    // mano justo en el gesto que la app le esta pidiendo que haga.
     return () => {
       if (temporizador.current) window.clearTimeout(temporizador.current);
     };
   }, [card.id]);
 
-  const terminar = () => {
-    temporizador.current = window.setTimeout(onLista, PAUSA_TRAS_ACIERTO);
+  const terminar = (pausa = PAUSA_TRAS_ACIERTO) => {
+    temporizador.current = window.setTimeout(onLista, pausa);
   };
 
   const enviar = async (sequence: string[]) => {
@@ -77,10 +81,14 @@ export function Tarjeta({ card, species, onArmado, onVoz, onLista, repaso }: Pro
       if (resultado.correct) {
         setAcierto(true);
         setMarcaError(null);
+        // Recien armada, la palabra suena entera: el chico escucha lo que acaba
+        // de construir y confirma que esta bien antes de repetirla al microfono.
+        const suenaSola = card.kind === 'WORD_BUILDING' || card.kind === 'SENTENCE_BUILDING';
+        if (suenaSola) play(card);
         if (resultado.voiceCheckRequired && onVoz) {
           setEsperandoVoz(true);
         } else {
-          terminar();
+          terminar(suenaSola ? PAUSA_CON_SONIDO : PAUSA_TRAS_ACIERTO);
         }
       } else {
         // Se conserva el prefijo que ya estaba bien: marcar el casillero exacto
@@ -168,7 +176,15 @@ export function Tarjeta({ card, species, onArmado, onVoz, onLista, repaso }: Pro
           <br />
           QUE EMPIEZA CON {card.targetPhoneme}
         </p>
-        <button className={claseLetra} onClick={() => play(card)} aria-label="Escuchar el sonido">
+        {/*
+          El parlante no es un boton aparte (no se puede anidar uno dentro de
+          otro): es la pista de que la tarjeta entera se toca para oir el
+          sonido. Hace falta porque la tarjeta ya no suena sola al aparecer.
+        */}
+        <button className={`${claseLetra} con-pista`} onClick={() => play(card)} aria-label={`Escuchar el sonido ${card.targetPhoneme}`}>
+          <span className="tarjeta-sonido pista" aria-hidden>
+            <img src="/icons/sound-high.svg" width={24} height={24} alt="" />
+          </span>
           <span className={(card.targetPhoneme ?? '').length > 1 ? 'letra-silaba' : ''}>{card.targetPhoneme}</span>
         </button>
         <div className="opciones">

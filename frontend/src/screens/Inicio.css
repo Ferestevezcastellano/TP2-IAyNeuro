@@ -1,18 +1,17 @@
 .inicio {
   width: 100%;
-  height: 100%;
-  min-height: 844px;
   background: var(--crema);
   display: flex;
   flex-direction: column;
 }
 
 .inicio-cabecera {
-  height: 116px;
+  min-height: 96px;
+  flex: 0 0 auto;
   background: var(--teal);
   display: flex;
   align-items: center;
-  padding: 0 24px;
+  padding: calc(12px + env(safe-area-inset-top)) 20px 12px;
   gap: 10px;
 }
 
@@ -29,8 +28,9 @@
 .inicio-hola {
   margin: 0;
   flex: 1 1 auto;
+  min-width: 0;
   font-weight: 700;
-  font-size: 22px;
+  font-size: clamp(17px, 5.5vw, 22px);
   color: #fff;
   letter-spacing: 0.5px;
 }
@@ -50,8 +50,9 @@
 
 .inicio-acciones {
   display: flex;
+  flex: 0 0 auto;
   gap: 8px;
-  padding: 20px 24px 0;
+  padding: clamp(12px, 2.5dvh, 20px) 20px 0;
 }
 
 .inicio-jugar,
@@ -70,21 +71,25 @@
 .niveles {
   list-style: none;
   margin: 0;
-  padding: 20px 24px 24px;
+  padding: clamp(12px, 2.5dvh, 20px) 20px calc(20px + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
   gap: 10px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .nivel-boton {
   width: 100%;
-  height: 58px;
+  height: clamp(50px, 7.5dvh, 58px);
+  flex: 0 0 auto;
   border-radius: 20px;
   background: #fff;
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 0 16px;
+  gap: clamp(8px, 3vw, 14px);
+  padding: 0 clamp(10px, 4vw, 16px);
   text-align: left;
 }
 
@@ -108,8 +113,14 @@
 
 .nivel-titulo {
   flex: 1 1 auto;
+  /* Sin `min-width: 0` un titulo largo ("CONSOLIDACION") no se deja achicar y
+     empuja las estrellas fuera de la fila en pantallas de 280 px. */
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-weight: 700;
-  font-size: 16px;
+  font-size: clamp(14px, 4.2vw, 16px);
   color: var(--tinta);
   letter-spacing: 0.5px;
 }
@@ -117,8 +128,9 @@
 .nivel.trabado .nivel-titulo { color: var(--gris-texto); }
 
 .nivel-estrellas {
+  flex: 0 0 auto;
   font-weight: 700;
-  font-size: 18px;
+  font-size: clamp(15px, 4.5vw, 18px);
   letter-spacing: 1px;
   color: var(--gris-estrella);
 }

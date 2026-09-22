@@ -36,7 +36,9 @@ Cuando termine de arrancar muestra `API escuchando en http://localhost:3000`. De
 Qué queda disponible:
 - `http://localhost:3000` — consola de prueba (una herramienta para recorrer la API con botones; no es la app).
 - `http://localhost:3000/docs` — documentación interactiva de la API (Swagger).
-- `http://localhost:3000/audio/fonema/m.ogg` — los sonidos de las letras (uno por archivo).
+- `http://localhost:3000/audio/fonema/m.ogg` — los sonidos de las letras y de las sílabas (uno
+  por archivo: `m.ogg`, `ma.ogg`, `te.ogg`…). `_silabas-seguidas.ogg` y `_todas-seguidas.ogg` los
+  encadenan todos, para escuchar el banco entero de una.
 
 ## 4. Levantar el frontend (la app)
 
@@ -92,15 +94,28 @@ Está en la consola de prueba (`http://localhost:3000`, solapa **Docente**). Có
 
 Lo que quedó anotado para seguir. En orden de prioridad.
 
-## 1. Sonidos fluidos de las sílabas
+## 1. Grabar el banco de audio con voz propia
 
-**Hoy:** las sílabas (`ma`, `me`, `sa`, `lu`…) se arman fundiendo la grabación de la consonante con la de la vocal, las dos recortadas del video de ColorKids Play. Suena "mmm → aaa", que sirve para mostrar la unión, pero no es una sílaba dicha de corrido por una persona. Además solo funciona con consonantes que se pueden estirar (M, S, L, N): con T, P, C, D, B, G habría que grabar sí o sí.
+**Hoy:** los sonidos de las letras (`m.ogg`, `a.ogg`…) y los de las sílabas (`ma.ogg`, `te.ogg`…)
+son recortes de dos videos de YouTube: las letras de ColorKids Play y las sílabas de FIESTIKIDS.
+Son voces humanas de verdad, sin música de fondo, y suenan bien; el problema es la licencia.
+Ninguno de los dos videos es de uso libre, así que sirven para la demo del TP pero no para
+publicar la app.
+
+Además faltan cuatro sonidos, que hoy caen a la voz sintética del navegador: `ch` y `ll`, que no
+están en el video de letras, y `ca` y `cu` del nivel 6, que no están en el de sílabas.
 
 **Qué hacer:**
-- Grabar las sílabas con una voz real (ideal: la misma persona para todo el banco, en un lugar silencioso, con el celular alcanza). Lista mínima para los niveles 3 y 4: `ma me mi mo mu sa se si so su la le li lo lu na ne ni no nu` (20 archivos). Para el nivel 6: `ca co cu ta te ti to tu`.
-- Guardarlas como `backend/public/audio/fonema/<silaba>.ogg` (mono, 44,1 kHz, normalizadas a -18 LUFS como las demás). El frontend ya las busca por ese nombre: no hay que tocar código.
-- Mismo camino para las letras, si se quiere reemplazar la voz del video por una propia: son 26 archivos `a.ogg` … `z.ogg` (la `h` no suena) más `qu.ogg` y `rr.ogg`. Eso además resuelve el tema de licencia: los recortes del video sirven para la demo, pero no para publicar la app.
-- El proceso con el que se generaron los clips actuales (bajar el video, separar la voz de la música con Demucs, cortar por detección de silencios, fundir consonante + vocal) se hizo a mano y no está en el repo; si se va a repetir, conviene dejarlo como script en `backend/scripts/`.
+- Grabar el banco con una voz propia: ideal la misma persona para todo, en un lugar silencioso,
+  con el celular alcanza. Son 26 letras (la `h` no suena) más `qu` y `rr`, y 45 sílabas
+  (`ma me mi mo mu`, y lo mismo con P, S, L, N, D, F, T y B), más `ca ce ci co cu`.
+- Guardarlas como `backend/public/audio/fonema/<letra o sílaba>.ogg` (mono, 44,1 kHz,
+  normalizadas a -18 LUFS como las de ahora). El frontend las busca por ese nombre: no hay que
+  tocar código, alcanza con reemplazar el archivo.
+- Si en vez de grabar se quiere volver a recortar de un video, el proceso de las sílabas está
+  automatizado en `backend/scripts/silabas.py` (baja el video, separa la voz de la música con
+  Demucs, recorta cada sílaba y normaliza). Sirve de plantilla para cualquier otro video: lo
+  único que hay que volver a medir son los tiempos de arriba del archivo.
 
 ## 2. Mejor personalización de la mascota
 
@@ -113,7 +128,7 @@ Lo que quedó anotado para seguir. En orden de prioridad.
 
 ## 3. Llevarlo al teléfono
 
-**Hoy:** la app está pensada para 390 px de ancho (el frame del mockup) y en la computadora se ve como un teléfono centrado. Se puede abrir desde un celular, pero hay que hacer dos cosas para que sea cómodo.
+**Hoy:** el layout ya es responsive: 390 px sigue siendo el ancho de referencia del mockup, pero las medidas fijas son topes y no valores clavados, así que la pantalla se acomoda sola desde 280 px de ancho hasta el escritorio, y usa el alto real de la ventana (`dvh`) en vez de los 844 px del frame. Está probado con capturas en 280×653, 320×568, 360×640, 390×844, 412×915 y escritorio, sin recortes ni scroll horizontal. Lo que falta para que sea una app de teléfono de verdad es lo de abajo.
 
 **Para probarla ya en el celular, en la misma red Wi-Fi:**
 1. Averiguar la IP de la computadora (`ip addr` en Linux, `ipconfig` en Windows, `ifconfig` en Mac). Ejemplo: `192.168.0.10`.
@@ -129,5 +144,5 @@ Ojo: el reconocimiento de voz de Chrome exige conexión segura (`https`) salvo e
 **Para que sea una app de teléfono de verdad:**
 - **Publicarla con `https`** (por ejemplo backend en Railway/Render y frontend en Vercel/Netlify, o los dos en un mismo servidor detrás de Nginx con certificado de Let's Encrypt). Con `https` el micrófono funciona en el celular.
 - **Convertirla en PWA**: un `manifest.json` (nombre, ícono, color `#ff8a4c`, `display: standalone`) y un service worker que guarde en caché la app y los audios. Con eso se "instala" desde Chrome o Safari a la pantalla de inicio, abre a pantalla completa sin barra del navegador y los sonidos siguen andando sin señal. Vite tiene el plugin `vite-plugin-pwa` que hace casi todo.
-- **Pantalla completa y toques**: el layout ya es de una sola columna; falta usar el alto real de la pantalla (`100dvh` en vez de 844 px fijos), respetar el área segura del notch (`env(safe-area-inset-*)`) y bloquear el zoom con doble toque en los botones de letras (`touch-action: manipulation`).
+- **Probarla en teléfonos reales**: el alto real de la pantalla (`dvh`), el área segura del notch (`env(safe-area-inset-*)`) y el bloqueo del zoom por doble toque (`touch-action: manipulation`) ya están puestos, pero se verificaron con un navegador headless. En un teléfono de verdad hay que mirar sobre todo el notch y la barra de gestos de iOS, que el emulador no reproduce.
 - **Persistencia del backend**: hoy el progreso se borra al reiniciar el servidor. Para usarlo de verdad hace falta una base de datos; la capa de persistencia ya está preparada para eso (ver `backend/README.md`, sección "Qué falta para producción").

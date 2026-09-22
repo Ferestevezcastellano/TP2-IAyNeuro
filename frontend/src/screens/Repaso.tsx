@@ -53,7 +53,7 @@ export function Repaso({ species, onVolver }: Props) {
   if (tarjetas.length === 0 || indice >= tarjetas.length) {
     const terminado = tarjetas.length > 0;
     return (
-      <div className="pantalla" style={{ gap: 20 }}>
+      <div className="pantalla">
         <BotonVolver onClick={onVolver} />
         <div className="espacio" />
         <div className="centro">
@@ -75,7 +75,7 @@ export function Repaso({ species, onVolver }: Props) {
   const card = tarjetas[indice];
 
   return (
-    <div className="pantalla" style={{ gap: 20 }}>
+    <div className="pantalla">
       <BarraSesion total={tarjetas.length} actual={indice} onVolver={onVolver} />
       <Tarjeta
         key={card.id}

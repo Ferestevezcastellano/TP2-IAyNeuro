@@ -100,8 +100,9 @@ export interface SyllableIntroInput {
 
 /**
  * Presentacion de una silaba: la primera combinacion consonante + vocal. Misma
- * mecanica que la letra nueva (se toca, suena, se repite), con el audio de la
- * consonante fundido con el de la vocal para que se escuche "mmmaaa".
+ * mecanica que la letra nueva (se toca, suena, se repite), con la grabacion de
+ * la silaba dicha de corrido (`audio/fonema/ma`), no la consonante y la vocal
+ * una atras de la otra.
  */
 export function buildSyllableIntroCard(input: SyllableIntroInput): Card {
   const syllable = input.syllable.toUpperCase();

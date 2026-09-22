@@ -1,9 +1,10 @@
 .cierre { gap: 16px; }
 
 .cierre-tarjeta {
-  width: 264px;
-  min-height: 357px;
-  margin: 10px auto 0;
+  width: min(264px, 100%);
+  min-height: min(357px, 40dvh);
+  flex: 0 1 auto;
+  margin: 6px auto 0;
   border-radius: 24px;
   background: var(--menta-2);
   display: flex;
@@ -16,7 +17,7 @@
 
 .cierre-estrellas {
   font-weight: 700;
-  font-size: 45px;
+  font-size: clamp(32px, 11vw, 45px);
   line-height: 1;
   letter-spacing: 4px;
   color: var(--amarillo);
@@ -34,8 +35,9 @@
 
 .cierre-manana {
   position: relative;
-  width: 196px;
-  height: 167px;
+  width: min(196px, 60vw);
+  height: min(167px, 20dvh);
+  flex: 0 0 auto;
   margin: 4px auto 0;
   border-radius: 20px;
   background: #fff;
@@ -46,9 +48,9 @@
 .cierre-manana p {
   position: relative;
   z-index: 1;
-  margin: 18px 0 0;
+  margin: 10% 0 0;
   font-weight: 600;
-  font-size: 20px;
+  font-size: clamp(16px, 5vw, 20px);
   color: var(--tinta-suave);
 }
 
@@ -56,9 +58,9 @@
   position: absolute;
   left: 0;
   right: 0;
-  top: 38px;
+  top: 22%;
   font-weight: 700;
-  font-size: 100px;
+  font-size: min(100px, 12dvh);
   line-height: 1.2;
   color: rgba(174, 174, 174, 0.6);
   filter: blur(9px);

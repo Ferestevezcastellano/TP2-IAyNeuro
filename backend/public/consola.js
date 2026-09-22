@@ -124,8 +124,9 @@ async function intentar(accion) {
 
 /* ---------- Sonido ---------- */
 
-// Los fonemas sueltos tienen grabación humana en public/audio/fonema/ (recortes
-// del video de ColorKids Play, solo para la demo). Para todo lo demás, y si falta el archivo,
+// Los fonemas sueltos y las sílabas tienen grabación humana en public/audio/fonema/
+// (recortes de videos de ColorKids Play y FIESTIKIDS, solo para la demo). Para todo lo demás,
+// y si falta el archivo,
 // el sintetizador del navegador lee `spokenAs`, que ya viene como sonido
 // ("mmm") y no como nombre de letra ("eme").
 let audioEnCurso = null;

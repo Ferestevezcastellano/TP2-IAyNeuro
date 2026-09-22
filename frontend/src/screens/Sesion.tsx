@@ -60,7 +60,7 @@ export function Sesion({ species, levelId, onSalir, onTerminada }: Props) {
   const card = sesion.card;
 
   return (
-    <div className="pantalla" style={{ gap: 20 }}>
+    <div className="pantalla">
       <BarraSesion total={sesion.cardsTotal} actual={sesion.cardIndex} onVolver={onSalir} />
       <Tarjeta
         key={card.id}

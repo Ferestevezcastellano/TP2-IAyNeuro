@@ -26,8 +26,10 @@ interface Props {
 /** La mascota tal cual está en los mockups: el SVG exportado de Figma, sin redibujar. */
 export function Mascota({ species, size, accesorios = [], className }: Props) {
   return (
-    <span className={className} style={{ position: 'relative', display: 'inline-block', width: size, height: size, flex: '0 0 auto' }}>
-      <img src={ARCHIVO[species]} alt={NOMBRE_MASCOTA[species]} width={size} height={size} draggable={false} style={{ display: 'block' }} />
+    // `size` es el tamaño del mockup, pero es un techo: si el hueco es más
+    // angosto (un teléfono chico), la mascota se achica en vez de desbordarlo.
+    <span className={className} style={{ position: 'relative', display: 'inline-block', width: size, maxWidth: '100%', aspectRatio: '1', height: 'auto', flex: '0 0 auto' }}>
+      <img src={ARCHIVO[species]} alt={NOMBRE_MASCOTA[species]} width={size} height={size} draggable={false} style={{ display: 'block', width: '100%', height: '100%' }} />
       {accesorios.length > 0 && (
         <span
           aria-hidden

@@ -1,10 +1,19 @@
+/*
+ * Carga. En el mockup el logo, las mascotas y la barra estan clavados en
+ * coordenadas de un lienzo de 390 x 844; aca van en una columna que reparte el
+ * alto que haya, asi en un telefono bajo se juntan en vez de salirse por abajo.
+ */
 .carga {
   position: relative;
   width: 100%;
-  height: 100%;
-  min-height: 844px;
   background: var(--naranja);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(20px, 5dvh, 56px);
+  padding: calc(24px + env(safe-area-inset-top)) 24px calc(24px + env(safe-area-inset-bottom));
 }
 
 .carga-deco {
@@ -13,54 +22,49 @@
   background: var(--naranja-claro);
 }
 
-.carga-deco.d1 { left: 40px; top: 64px; width: 70px; height: 70px; border-radius: 24px; }
-.carga-deco.d2 { left: 274px; top: 120px; width: 44px; height: 44px; border-radius: 16px; }
-.carga-deco.d3 { left: 56px; top: 594px; width: 54px; height: 54px; border-radius: 18px; }
+/* Los cuadraditos de fondo se ubican en porcentaje para que acompañen al alto. */
+.carga-deco.d1 { left: 10%; top: 8%; width: 70px; height: 70px; border-radius: 24px; }
+.carga-deco.d2 { right: 10%; top: 14%; width: 44px; height: 44px; border-radius: 16px; }
+.carga-deco.d3 { left: 14%; bottom: 12%; width: 54px; height: 54px; border-radius: 18px; }
 
 .carga-logo {
-  position: absolute;
-  top: 175px;
-  left: 0;
-  width: 100%;
+  position: relative;
   margin: 0;
   text-align: center;
   font-weight: 700;
-  font-size: 104px;
+  font-size: min(104px, 14dvh, 27vw);
   line-height: 1.2;
   color: #fff;
 }
 
 .carga-mascotas {
-  position: absolute;
-  top: 336px;
-  left: 92px;
-  width: 226px;
+  position: relative;
   display: grid;
-  grid-template-columns: 104px 104px;
-  gap: 15px 18px;
+  grid-template-columns: repeat(2, min(104px, 26vw));
+  justify-content: center;
+  gap: clamp(8px, 2dvh, 15px) 18px;
 }
 
 .carga-barra {
-  position: absolute;
-  top: 632px;
-  left: 85px;
-  width: 220px;
+  position: relative;
+  width: min(220px, 60vw);
   height: 16px;
   border-radius: 999px;
   background: var(--naranja-claro);
   overflow: hidden;
+  flex: 0 0 auto;
 }
 
 .carga-barra i {
   display: block;
   height: 100%;
-  width: 143px;
+  width: 65%;
   border-radius: 999px;
   background: #fff;
   animation: carga-avanza 1.4s ease-in-out both;
 }
 
 @keyframes carga-avanza {
-  from { width: 24px; }
-  to { width: 220px; }
+  from { width: 10%; }
+  to { width: 100%; }
 }
