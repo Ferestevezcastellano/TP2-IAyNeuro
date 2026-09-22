@@ -5,10 +5,10 @@ export class PetSpeciesDto {
   @ApiProperty({ enum: PetSpeciesId })
   id!: PetSpeciesId;
 
-  @ApiProperty({ example: 'PERRO' })
+  @ApiProperty({ example: 'LEÓN' })
   label!: string;
 
-  @ApiProperty({ example: 'img/mascota/perro' })
+  @ApiProperty({ example: 'img/mascota/lion' })
   assetKey!: string;
 
   static from(species: PetSpecies): PetSpeciesDto {
@@ -57,10 +57,10 @@ export class PetDto {
   @ApiProperty({ enum: PetSpeciesId })
   species!: PetSpeciesId;
 
-  @ApiProperty({ example: 'PERRO' })
+  @ApiProperty({ example: 'LEÓN' })
   label!: string;
 
-  @ApiProperty({ example: 'img/mascota/perro' })
+  @ApiProperty({ example: 'img/mascota/lion' })
   assetKey!: string;
 
   @ApiProperty({ type: [OwnedAccessoryDto], description: 'Catalogo completo, con owned y equipped por accesorio.' })

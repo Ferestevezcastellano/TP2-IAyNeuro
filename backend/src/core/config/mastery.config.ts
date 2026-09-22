@@ -16,9 +16,14 @@ export interface MasteryConfig {
 /** Token de DI para poder inyectar otros parametros en los tests. */
 export const MASTERY_CONFIG_TOKEN = Symbol('MASTERY_CONFIG');
 
+/**
+ * Por ahora una sola sesion alcanza para dominar: se baja el minimo a 1 mientras
+ * se calibra. La ventana movil queda en 3 para que, si se vuelve a subir el
+ * minimo, no haya que tocar nada mas.
+ */
 export const MASTERY_CONFIG: MasteryConfig = {
   windowSize: 3,
-  minSessions: 3,
+  minSessions: 1,
   threshold: 0.8,
   starsPerMasteredLevel: 3,
 };

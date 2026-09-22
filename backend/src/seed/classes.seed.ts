@@ -1,9 +1,9 @@
 import { SchoolClass } from '../core/domain';
 
 /**
- * Dos cursos con distinto avance docente, para que la demo muestre en vivo que
- * el limite de la docente es real: en PRIMERO-A el nivel 4 esta cerrado aunque
- * el chico domine el 3, y en PRIMERO-B no.
+ * Dos cursos, los dos habilitados hasta el nivel 5 (todo el Capitulo 2): la
+ * primera version de la app cubre esos niveles y el 6 queda bloqueado por la
+ * docente. Desde el panel docente se puede habilitar para ver que el limite es real.
  */
 export const SEEDED_CLASSES: SchoolClass[] = [
   {
@@ -12,7 +12,7 @@ export const SEEDED_CLASSES: SchoolClass[] = [
     teacherCode: 'PRIMERO-A-DOC',
     name: '1er grado A',
     schoolName: 'Escuela Modelo',
-    unlockedLevelOrder: 3,
+    unlockedLevelOrder: 5,
     createdAt: new Date('2026-03-02T09:00:00.000Z'),
   },
   {
@@ -21,7 +21,7 @@ export const SEEDED_CLASSES: SchoolClass[] = [
     teacherCode: 'PRIMERO-B-DOC',
     name: '1er grado B',
     schoolName: 'Escuela Modelo',
-    unlockedLevelOrder: 6,
+    unlockedLevelOrder: 5,
     createdAt: new Date('2026-03-02T09:00:00.000Z'),
   },
 ];

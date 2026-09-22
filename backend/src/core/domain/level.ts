@@ -8,6 +8,12 @@ export enum LevelKind {
   CONSOLIDATION = 'CONSOLIDATION',
 }
 
+/** Cuantas tarjetas de una bolsa entran en cada sesion. */
+export interface SessionDraw {
+  group: string;
+  count: number;
+}
+
 /** Un nivel es una sesion de 10-15 min. Ver docs/05_niveles.md. */
 export interface Level {
   id: string;
@@ -24,4 +30,11 @@ export interface Level {
    */
   voiceCheckEnabled: boolean;
   accessoryId: string;
+  /**
+   * Receta de la sesion: de cada bolsa del banco se sortean tantas tarjetas.
+   * El banco es mas grande que la sesion a proposito: dominar exige varias
+   * sesiones, y si todas fueran iguales el chico se aprenderia las respuestas
+   * de memoria en vez de los sonidos.
+   */
+  sessionDraw: SessionDraw[];
 }

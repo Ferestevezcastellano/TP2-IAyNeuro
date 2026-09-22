@@ -5,10 +5,12 @@ const card: Card = {
   id: 'card-mesa',
   levelId: 'level-03-m-s',
   position: 1,
+  group: 'PALABRA',
   kind: CardKind.WORD_BUILDING,
   prompt: 'ARMA LA PALABRA',
   targetWord: 'MESA',
   audioKey: 'audio/palabra/mesa',
+  spokenAs: 'mesa',
   tiles: ['M', 'E', 'S', 'A'].map((label, index) => ({
     id: `t${index}`,
     label,
@@ -50,6 +52,23 @@ describe('WordAssemblyValidator', () => {
 
     expect(result.correct).toBe(false);
     expect(result.firstWrongIndex).toBe(4);
+  });
+
+  it('con letras repetidas, cualquiera de los dos botones iguales vale en cualquier lugar', () => {
+    const masa: Card = {
+      ...card,
+      id: 'card-masa',
+      targetWord: 'MASA',
+      tiles: ['M', 'A', 'S', 'A', 'U'].map((label, index) => ({ id: `t${index}`, label, kind: TileKind.LETTER })),
+      solution: ['t0', 't1', 't2', 't3'],
+    };
+
+    expect(validator.validate(masa, ['t0', 't3', 't2', 't1']).correct).toBe(true);
+    expect(validator.validate(masa, ['t0', 't1', 't2', 't4']).firstWrongIndex).toBe(3);
+  });
+
+  it('un id que no es de la tarjeta es un error', () => {
+    expect(validator.validate(card, ['t0', 'ajeno']).firstWrongIndex).toBe(1);
   });
 
   it('el casillero vacio no es correcto', () => {

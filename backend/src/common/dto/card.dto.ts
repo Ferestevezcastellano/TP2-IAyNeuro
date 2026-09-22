@@ -16,6 +16,12 @@ export class CardTileDto {
 
   @ApiPropertyOptional({ description: 'Clave de la imagen del boton.', example: 'img/palabra/mesa' })
   imageKey?: string;
+
+  @ApiPropertyOptional({
+    description: 'Como suena el boton al tocarlo, para un sintetizador de voz: el fonema ("mmm"), nunca el nombre de la letra ("eme").',
+    example: 'mmm',
+  })
+  spokenAs?: string;
 }
 
 /**
@@ -31,8 +37,11 @@ export class CardDto {
   @ApiProperty({ example: 'level-03-m-s' })
   levelId!: string;
 
-  @ApiProperty({ description: 'Posicion de la tarjeta dentro de la sesion, arrancando en 1.' })
+  @ApiProperty({ description: 'Orden pedagogico dentro del banco del nivel. La posicion en la sesion es `cardIndex`.' })
   position!: number;
+
+  @ApiProperty({ description: 'Bolsa del banco de la que salio: LETRA, SILABA, PALABRA, ORACION o una letra.', example: 'PALABRA' })
+  group!: string;
 
   @ApiProperty({ enum: CardKind })
   kind!: CardKind;
@@ -55,6 +64,9 @@ export class CardDto {
   @ApiProperty({ description: 'Clave del audio principal de la tarjeta.', example: 'audio/palabra/mesa' })
   audioKey!: string;
 
+  @ApiProperty({ description: 'Como suena el audio principal, para un sintetizador de voz.', example: 'mesa' })
+  spokenAs!: string;
+
   @ApiProperty({ type: [CardTileDto], description: 'Botones tocables, en el orden en que se muestran.' })
   tiles!: CardTileDto[];
 
@@ -72,6 +84,7 @@ export class CardDto {
       id: card.id,
       levelId: card.levelId,
       position: card.position,
+      group: card.group,
       kind: card.kind,
       prompt: card.prompt,
       targetWord: card.targetWord,
@@ -79,12 +92,14 @@ export class CardDto {
       targetSentence: card.targetSentence,
       imageKey: card.imageKey,
       audioKey: card.audioKey,
+      spokenAs: card.spokenAs,
       tiles: card.tiles.map((tile: CardTile) => ({
         id: tile.id,
         label: tile.label,
         kind: tile.kind,
         audioKey: tile.audioKey,
         imageKey: tile.imageKey,
+        spokenAs: tile.spokenAs,
       })),
       expectedLength: card.solution.length,
       voiceCheckRequired: Boolean(card.voiceTarget),

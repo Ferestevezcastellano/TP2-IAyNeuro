@@ -13,6 +13,7 @@ function level(order: number): Level {
     cumulativeLetters: [],
     kind: LevelKind.WORD_BUILDING,
     voiceCheckEnabled: true,
+    sessionDraw: [],
     accessoryId: `acc-${order}`,
   };
 }

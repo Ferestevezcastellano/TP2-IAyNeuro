@@ -1,0 +1,66 @@
+.carga {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 844px;
+  background: var(--naranja);
+  overflow: hidden;
+}
+
+.carga-deco {
+  position: absolute;
+  display: block;
+  background: var(--naranja-claro);
+}
+
+.carga-deco.d1 { left: 40px; top: 64px; width: 70px; height: 70px; border-radius: 24px; }
+.carga-deco.d2 { left: 274px; top: 120px; width: 44px; height: 44px; border-radius: 16px; }
+.carga-deco.d3 { left: 56px; top: 594px; width: 54px; height: 54px; border-radius: 18px; }
+
+.carga-logo {
+  position: absolute;
+  top: 175px;
+  left: 0;
+  width: 100%;
+  margin: 0;
+  text-align: center;
+  font-weight: 700;
+  font-size: 104px;
+  line-height: 1.2;
+  color: #fff;
+}
+
+.carga-mascotas {
+  position: absolute;
+  top: 336px;
+  left: 92px;
+  width: 226px;
+  display: grid;
+  grid-template-columns: 104px 104px;
+  gap: 15px 18px;
+}
+
+.carga-barra {
+  position: absolute;
+  top: 632px;
+  left: 85px;
+  width: 220px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--naranja-claro);
+  overflow: hidden;
+}
+
+.carga-barra i {
+  display: block;
+  height: 100%;
+  width: 143px;
+  border-radius: 999px;
+  background: #fff;
+  animation: carga-avanza 1.4s ease-in-out both;
+}
+
+@keyframes carga-avanza {
+  from { width: 24px; }
+  to { width: 220px; }
+}

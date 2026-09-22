@@ -48,6 +48,8 @@ export class PhoneticNormalizerService {
         .replace(/w/g, 'b')
         // la y al final de palabra es vocal (REY suena REI)
         .replace(/y(?![a-zñ])/g, 'i')
+        // un sonido estirado es el mismo sonido: "mmm" y "m" son la misma M
+        .replace(/(.)\1+/g, '$1')
     );
   }
 

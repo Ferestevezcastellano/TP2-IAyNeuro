@@ -1,14 +1,21 @@
 import { Card, Level, LevelKind } from '../core/domain';
-import { buildSentenceCard, buildSoundCard, buildWordCard } from './card-builder';
+import { buildLetterIntroCard, buildSentenceCard, buildSoundCard, buildSyllableIntroCard, buildWordCard } from './card-builder';
 
 /**
  * Niveles 1 a 6 de `docs/05_niveles.md`, que son el Capitulo 2 completo del
  * cuadernillo "Yo amo aprender - Lengua, 1er grado" (CABA, 2026) mas el primer
  * nivel del Capitulo 4.
  *
+ * Cada nivel trae un banco mas grande que una sesion y una receta
+ * (`sessionDraw`) que dice cuantas tarjetas de cada bolsa se sortean. Dominar
+ * exige varias sesiones, y si fueran todas iguales el chico memorizaria las
+ * respuestas en vez de los sonidos.
+ *
  * Dos reglas del cuadernillo que el contenido respeta y conviene no romper al
- * agregar niveles: ninguna palabra usa una letra que el chico todavia no vio
- * (regla de acumulacion), y cada nivel entra en una sesion de 10-15 minutos.
+ * agregar niveles: ninguna palabra que se arma usa una letra que el chico
+ * todavia no vio (regla de acumulacion), y cada sesion entra en 10-15 minutos.
+ * Las bolsas siguen la estructura interna del cuadernillo: LETRA (sonido nuevo
+ * aislado) -> SILABA -> PALABRA -> ORACION.
  */
 
 export interface SeededLevel {
@@ -16,12 +23,65 @@ export interface SeededLevel {
   cards: Card[];
 }
 
+export const GROUP = {
+  LETTER: 'LETRA',
+  SYLLABLE: 'SILABA',
+  WORD: 'PALABRA',
+  SENTENCE: 'ORACION',
+  VOWELS: 'VOCALES',
+} as const;
+
 const L1 = 'level-01-a-e';
 const L2 = 'level-02-i-o-u';
 const L3 = 'level-03-m-s';
 const L4 = 'level-04-l-n';
 const L5 = 'level-05-consolidacion';
 const L6 = 'level-06-c-t';
+
+/** Numera las tarjetas en el orden en que se declaran, que es el orden pedagogico. */
+function numbered(cards: Card[]): Card[] {
+  return cards.map((card, index) => ({ ...card, position: index + 1 }));
+}
+
+/**
+ * Una tarjeta de reconocimiento por cada respuesta, con dos dibujos de mas
+ * tomados en rueda de la lista de distractores. La verificacion por voz va en
+ * una de cada dos, para que la sesion no se haga larga.
+ */
+function soundCards(
+  levelId: string,
+  group: string,
+  phoneme: string,
+  answers: string[],
+  distractors: string[],
+  prompt?: string,
+): Card[] {
+  return answers.map((answer, index) =>
+    buildSoundCard({
+      levelId,
+      position: 0,
+      group,
+      phoneme,
+      answer,
+      options: [distractors[index % distractors.length], distractors[(index + 1) % distractors.length]],
+      prompt,
+      voiceCheck: index % 2 === 0,
+    }),
+  );
+}
+
+/** Las cinco silabas de una consonante, en el orden de las vocales. */
+function syllableCards(levelId: string, consonant: string): Card[] {
+  return ['A', 'E', 'I', 'O', 'U'].map((vowel) =>
+    buildSyllableIntroCard({ levelId, position: 0, group: GROUP.SYLLABLE, syllable: `${consonant}${vowel}`, voiceCheck: true }),
+  );
+}
+
+const A_WORDS = ['ÁRBOL', 'ARAÑA', 'AVIÓN', 'ABEJA', 'ANILLO', 'AUTO'];
+const E_WORDS = ['ELEFANTE', 'ESCALERA', 'ESTRELLA', 'ESPEJO', 'ERIZO', 'ENCHUFE'];
+const I_WORDS = ['IGLÚ', 'IMÁN', 'ISLA', 'IGLESIA'];
+const O_WORDS = ['OSO', 'OJO', 'OVEJA', 'OREJA'];
+const U_WORDS = ['UVA', 'UÑA', 'UNICORNIO', 'UNO'];
 
 export const SEEDED_LEVELS: SeededLevel[] = [
   {
@@ -36,13 +96,18 @@ export const SEEDED_LEVELS: SeededLevel[] = [
       kind: LevelKind.PHONEME_ISOLATION,
       voiceCheckEnabled: true,
       accessoryId: 'acc-gorro',
+      sessionDraw: [
+        { group: GROUP.LETTER, count: 2 },
+        { group: 'A', count: 2 },
+        { group: 'E', count: 2 },
+      ],
     },
-    cards: [
-      buildSoundCard({ levelId: L1, position: 1, phoneme: 'A', answer: 'ÁRBOL', options: ['ELEFANTE'], voiceCheck: true }),
-      buildSoundCard({ levelId: L1, position: 2, phoneme: 'A', answer: 'ARAÑA', options: ['ESCALERA', 'ELEFANTE'], voiceCheck: false }),
-      buildSoundCard({ levelId: L1, position: 3, phoneme: 'E', answer: 'ELEFANTE', options: ['AVIÓN'], voiceCheck: true }),
-      buildSoundCard({ levelId: L1, position: 4, phoneme: 'E', answer: 'ESTRELLA', options: ['ARAÑA', 'ÁRBOL'], voiceCheck: false }),
-    ],
+    cards: numbered([
+      buildLetterIntroCard({ levelId: L1, position: 0, group: GROUP.LETTER, letter: 'A', example: 'ÁRBOL', voiceCheck: true }),
+      ...soundCards(L1, 'A', 'A', A_WORDS, E_WORDS),
+      buildLetterIntroCard({ levelId: L1, position: 0, group: GROUP.LETTER, letter: 'E', example: 'ELEFANTE', voiceCheck: true }),
+      ...soundCards(L1, 'E', 'E', E_WORDS, A_WORDS),
+    ]),
   },
   {
     level: {
@@ -56,14 +121,28 @@ export const SEEDED_LEVELS: SeededLevel[] = [
       kind: LevelKind.PHONEME_ISOLATION,
       voiceCheckEnabled: true,
       accessoryId: 'acc-anteojos',
+      sessionDraw: [
+        { group: GROUP.LETTER, count: 3 },
+        { group: 'I', count: 1 },
+        { group: 'O', count: 1 },
+        { group: 'U', count: 1 },
+        { group: GROUP.VOWELS, count: 2 },
+      ],
     },
-    cards: [
-      buildSoundCard({ levelId: L2, position: 1, phoneme: 'I', answer: 'IGLÚ', options: ['OSO'], voiceCheck: true }),
-      buildSoundCard({ levelId: L2, position: 2, phoneme: 'O', answer: 'OSO', options: ['UVA', 'IMÁN'], voiceCheck: true }),
-      buildSoundCard({ levelId: L2, position: 3, phoneme: 'U', answer: 'UVA', options: ['IMÁN', 'ÁRBOL'], voiceCheck: true }),
-      buildSoundCard({ levelId: L2, position: 4, phoneme: 'E', answer: 'ELEFANTE', options: ['IGLÚ', 'OSO', 'UVA'], prompt: '¿CUÁL EMPIEZA CON E? ESCUCHAMOS LAS CINCO VOCALES.', voiceCheck: false }),
-      buildSoundCard({ levelId: L2, position: 5, phoneme: 'A', answer: 'ARAÑA', options: ['IGLÚ', 'UVA', 'OSO'], prompt: '¿CUÁL EMPIEZA CON A? ESCUCHAMOS LAS CINCO VOCALES.', voiceCheck: false }),
-    ],
+    cards: numbered([
+      buildLetterIntroCard({ levelId: L2, position: 0, group: GROUP.LETTER, letter: 'I', example: 'IGLÚ', voiceCheck: true }),
+      ...soundCards(L2, 'I', 'I', I_WORDS, [...O_WORDS, ...U_WORDS]),
+      buildLetterIntroCard({ levelId: L2, position: 0, group: GROUP.LETTER, letter: 'O', example: 'OSO', voiceCheck: true }),
+      ...soundCards(L2, 'O', 'O', O_WORDS, [...U_WORDS, ...I_WORDS]),
+      buildLetterIntroCard({ levelId: L2, position: 0, group: GROUP.LETTER, letter: 'U', example: 'UVA', voiceCheck: true }),
+      ...soundCards(L2, 'U', 'U', U_WORDS, [...I_WORDS, ...O_WORDS]),
+      // Repaso mezclado de las cinco vocales, como la seccion "Las vocales" del cuadernillo.
+      buildSoundCard({ levelId: L2, position: 0, group: GROUP.VOWELS, phoneme: 'E', answer: 'ELEFANTE', options: ['IGLÚ', 'OSO', 'UVA'], prompt: '¿CUÁL EMPIEZA CON E? ESCUCHAMOS LAS CINCO VOCALES.', voiceCheck: false }),
+      buildSoundCard({ levelId: L2, position: 0, group: GROUP.VOWELS, phoneme: 'A', answer: 'ARAÑA', options: ['IGLÚ', 'UVA', 'OSO'], prompt: '¿CUÁL EMPIEZA CON A? ESCUCHAMOS LAS CINCO VOCALES.', voiceCheck: false }),
+      buildSoundCard({ levelId: L2, position: 0, group: GROUP.VOWELS, phoneme: 'I', answer: 'ISLA', options: ['ÁRBOL', 'ESTRELLA', 'OSO'], prompt: '¿CUÁL EMPIEZA CON I? ESCUCHAMOS LAS CINCO VOCALES.', voiceCheck: false }),
+      buildSoundCard({ levelId: L2, position: 0, group: GROUP.VOWELS, phoneme: 'O', answer: 'OVEJA', options: ['ABEJA', 'IMÁN', 'UVA'], prompt: '¿CUÁL EMPIEZA CON O? ESCUCHAMOS LAS CINCO VOCALES.', voiceCheck: false }),
+      buildSoundCard({ levelId: L2, position: 0, group: GROUP.VOWELS, phoneme: 'U', answer: 'UNO', options: ['ERIZO', 'OJO', 'ANILLO'], prompt: '¿CUÁL EMPIEZA CON U? ESCUCHAMOS LAS CINCO VOCALES.', voiceCheck: false }),
+    ]),
   },
   {
     level: {
@@ -77,14 +156,26 @@ export const SEEDED_LEVELS: SeededLevel[] = [
       kind: LevelKind.WORD_BUILDING,
       voiceCheckEnabled: true,
       accessoryId: 'acc-bufanda',
+      // Primero todo lo de la M (letra y sus cinco silabas), despues todo lo de la S, y al final palabras.
+      sessionDraw: [
+        { group: GROUP.LETTER, count: 2 },
+        { group: GROUP.SYLLABLE, count: 10 },
+        { group: GROUP.WORD, count: 3 },
+      ],
     },
-    cards: [
-      buildSoundCard({ levelId: L3, position: 1, phoneme: 'MA', answer: 'MASA', options: ['OSO'], prompt: '¿CUÁL EMPIEZA CON MA?', voiceCheck: true }),
-      buildWordCard({ levelId: L3, position: 2, word: 'MESA', distractors: ['I', 'O'], voiceCheck: true }),
-      buildWordCard({ levelId: L3, position: 3, word: 'MASA', distractors: ['U'], voiceCheck: false }),
-      buildWordCard({ levelId: L3, position: 4, word: 'OSO', distractors: ['M', 'E'], voiceCheck: true }),
-      buildWordCard({ levelId: L3, position: 5, word: 'SUMA', distractors: ['I'], voiceCheck: false }),
-    ],
+    cards: numbered([
+      buildLetterIntroCard({ levelId: L3, position: 0, group: GROUP.LETTER, letter: 'M', example: 'MESA', voiceCheck: true }),
+      ...syllableCards(L3, 'M'),
+      buildLetterIntroCard({ levelId: L3, position: 0, group: GROUP.LETTER, letter: 'S', example: 'SOL', voiceCheck: true }),
+      ...syllableCards(L3, 'S'),
+      buildWordCard({ levelId: L3, position: 0, group: GROUP.WORD, word: 'MESA', distractors: ['I', 'O'], voiceCheck: true }),
+      buildWordCard({ levelId: L3, position: 0, group: GROUP.WORD, word: 'MASA', distractors: ['U'], voiceCheck: false }),
+      buildWordCard({ levelId: L3, position: 0, group: GROUP.WORD, word: 'MISA', distractors: ['E', 'U'], voiceCheck: true }),
+      buildWordCard({ levelId: L3, position: 0, group: GROUP.WORD, word: 'SUMA', distractors: ['I'], voiceCheck: false }),
+      buildWordCard({ levelId: L3, position: 0, group: GROUP.WORD, word: 'OSO', distractors: ['M', 'E'], voiceCheck: true }),
+      buildWordCard({ levelId: L3, position: 0, group: GROUP.WORD, word: 'MUSA', distractors: ['E', 'O'], voiceCheck: true }),
+      buildWordCard({ levelId: L3, position: 0, group: GROUP.WORD, word: 'ASA', distractors: ['M', 'U'], voiceCheck: false }),
+    ]),
   },
   {
     level: {
@@ -98,14 +189,34 @@ export const SEEDED_LEVELS: SeededLevel[] = [
       kind: LevelKind.WORD_BUILDING,
       voiceCheckEnabled: true,
       accessoryId: 'acc-capa',
+      // Todo lo de la L (letra, silabas, palabras con L, M y S), despues todo lo de la N, y la primera oracion.
+      sessionDraw: [
+        { group: GROUP.LETTER, count: 2 },
+        { group: GROUP.SYLLABLE, count: 10 },
+        { group: 'PALABRA-L', count: 2 },
+        { group: 'PALABRA-N', count: 2 },
+        { group: GROUP.SENTENCE, count: 1 },
+      ],
     },
-    cards: [
-      buildWordCard({ levelId: L4, position: 1, word: 'LUNA', distractors: ['S', 'O'], voiceCheck: true }),
-      buildWordCard({ levelId: L4, position: 2, word: 'SOL', distractors: ['M', 'I'], voiceCheck: true }),
-      buildWordCard({ levelId: L4, position: 3, word: 'MANO', distractors: ['E'], voiceCheck: false }),
-      buildWordCard({ levelId: L4, position: 4, word: 'MONO', distractors: ['L', 'A'], voiceCheck: false }),
-      buildSentenceCard({ levelId: L4, position: 5, sentence: 'LA LUNA SALE', distractors: ['SOL'], voiceCheck: true }),
-    ],
+    cards: numbered([
+      buildLetterIntroCard({ levelId: L4, position: 0, group: GROUP.LETTER, letter: 'L', example: 'LUNA', voiceCheck: true }),
+      ...syllableCards(L4, 'L'),
+      buildWordCard({ levelId: L4, position: 0, group: 'PALABRA-L', word: 'SOL', distractors: ['M', 'I'], voiceCheck: true }),
+      buildWordCard({ levelId: L4, position: 0, group: 'PALABRA-L', word: 'SALA', distractors: ['M', 'E'], voiceCheck: true }),
+      buildWordCard({ levelId: L4, position: 0, group: 'PALABRA-L', word: 'LIMA', distractors: ['S', 'O'], voiceCheck: false }),
+      buildWordCard({ levelId: L4, position: 0, group: 'PALABRA-L', word: 'MIEL', distractors: ['S', 'A'], voiceCheck: true }),
+      buildWordCard({ levelId: L4, position: 0, group: 'PALABRA-L', word: 'ISLA', distractors: ['M', 'E'], voiceCheck: false }),
+      buildLetterIntroCard({ levelId: L4, position: 0, group: GROUP.LETTER, letter: 'N', example: 'NENA', voiceCheck: true }),
+      ...syllableCards(L4, 'N'),
+      buildWordCard({ levelId: L4, position: 0, group: 'PALABRA-N', word: 'LUNA', distractors: ['S', 'O'], voiceCheck: true }),
+      buildWordCard({ levelId: L4, position: 0, group: 'PALABRA-N', word: 'MANO', distractors: ['E'], voiceCheck: false }),
+      buildWordCard({ levelId: L4, position: 0, group: 'PALABRA-N', word: 'MONO', distractors: ['L', 'A'], voiceCheck: false }),
+      buildWordCard({ levelId: L4, position: 0, group: 'PALABRA-N', word: 'LANA', distractors: ['M', 'O'], voiceCheck: true }),
+      buildWordCard({ levelId: L4, position: 0, group: 'PALABRA-N', word: 'NENA', distractors: ['L', 'U'], voiceCheck: false }),
+      buildWordCard({ levelId: L4, position: 0, group: 'PALABRA-N', word: 'UNO', distractors: ['M', 'A'], voiceCheck: true }),
+      buildSentenceCard({ levelId: L4, position: 0, group: GROUP.SENTENCE, sentence: 'LA LUNA SALE', distractors: ['SOL'], voiceCheck: true }),
+      buildSentenceCard({ levelId: L4, position: 0, group: GROUP.SENTENCE, sentence: 'EL SOL ILUMINA', distractors: ['LUNA'], voiceCheck: true }),
+    ]),
   },
   {
     level: {
@@ -119,14 +230,30 @@ export const SEEDED_LEVELS: SeededLevel[] = [
       kind: LevelKind.CONSOLIDATION,
       voiceCheckEnabled: true,
       accessoryId: 'acc-medalla',
+      // Sin letras nuevas: solo palabras y oraciones con todo lo visto, mezcladas.
+      sessionDraw: [
+        { group: GROUP.WORD, count: 4 },
+        { group: GROUP.SENTENCE, count: 2 },
+      ],
     },
-    cards: [
-      buildWordCard({ levelId: L5, position: 1, word: 'SALA', distractors: ['N', 'O'], voiceCheck: false }),
-      buildWordCard({ levelId: L5, position: 2, word: 'LIMA', distractors: ['S', 'U'], voiceCheck: true }),
-      buildSoundCard({ levelId: L5, position: 3, phoneme: 'LU', answer: 'LUNA', options: ['MANO', 'SOL'], prompt: '¿CUÁL EMPIEZA CON LU?', voiceCheck: false }),
-      buildSentenceCard({ levelId: L5, position: 4, sentence: 'EL SOL ILUMINA LA SALA', distractors: ['LUNA'], voiceCheck: true }),
-      buildSentenceCard({ levelId: L5, position: 5, sentence: 'LA LUNA SALE SOLA', distractors: ['SOL', 'MANO'], voiceCheck: true }),
-    ],
+    cards: numbered([
+      buildWordCard({ levelId: L5, position: 0, group: GROUP.WORD, word: 'SALA', distractors: ['N', 'O'], voiceCheck: false }),
+      buildWordCard({ levelId: L5, position: 0, group: GROUP.WORD, word: 'LIMA', distractors: ['S', 'U'], voiceCheck: true }),
+      buildWordCard({ levelId: L5, position: 0, group: GROUP.WORD, word: 'LANA', distractors: ['M', 'I'], voiceCheck: false }),
+      buildWordCard({ levelId: L5, position: 0, group: GROUP.WORD, word: 'MESA', distractors: ['L', 'U'], voiceCheck: true }),
+      buildWordCard({ levelId: L5, position: 0, group: GROUP.WORD, word: 'MONO', distractors: ['S', 'E'], voiceCheck: false }),
+      buildWordCard({ levelId: L5, position: 0, group: GROUP.WORD, word: 'SUMA', distractors: ['N', 'O'], voiceCheck: true }),
+      buildWordCard({ levelId: L5, position: 0, group: GROUP.WORD, word: 'MANO', distractors: ['L', 'I'], voiceCheck: false }),
+      buildWordCard({ levelId: L5, position: 0, group: GROUP.WORD, word: 'LUNA', distractors: ['M', 'E'], voiceCheck: true }),
+      buildWordCard({ levelId: L5, position: 0, group: GROUP.WORD, word: 'SOL', distractors: ['N', 'A'], voiceCheck: false }),
+      buildWordCard({ levelId: L5, position: 0, group: GROUP.WORD, word: 'MIEL', distractors: ['N', 'O'], voiceCheck: true }),
+      buildWordCard({ levelId: L5, position: 0, group: GROUP.WORD, word: 'NENA', distractors: ['S', 'I'], voiceCheck: false }),
+      buildWordCard({ levelId: L5, position: 0, group: GROUP.WORD, word: 'ISLA', distractors: ['N', 'E'], voiceCheck: true }),
+      buildSentenceCard({ levelId: L5, position: 0, group: GROUP.SENTENCE, sentence: 'EL SOL ILUMINA LA SALA', distractors: ['LUNA'], voiceCheck: true }),
+      buildSentenceCard({ levelId: L5, position: 0, group: GROUP.SENTENCE, sentence: 'LA LUNA SALE SOLA', distractors: ['SOL', 'MANO'], voiceCheck: true }),
+      buildSentenceCard({ levelId: L5, position: 0, group: GROUP.SENTENCE, sentence: 'LA NENA SUMA SOLA', distractors: ['MONO'], voiceCheck: true }),
+      buildSentenceCard({ levelId: L5, position: 0, group: GROUP.SENTENCE, sentence: 'EL MONO USA LA LANA', distractors: ['SOL'], voiceCheck: true }),
+    ]),
   },
   {
     level: {
@@ -140,14 +267,31 @@ export const SEEDED_LEVELS: SeededLevel[] = [
       kind: LevelKind.WORD_BUILDING,
       voiceCheckEnabled: true,
       accessoryId: 'acc-mochila',
+      sessionDraw: [
+        { group: GROUP.LETTER, count: 2 },
+        { group: GROUP.SYLLABLE, count: 1 },
+        { group: GROUP.WORD, count: 3 },
+        { group: GROUP.SENTENCE, count: 1 },
+      ],
     },
-    cards: [
-      buildWordCard({ levelId: L6, position: 1, word: 'CASA', distractors: ['T', 'O'], voiceCheck: true }),
-      buildWordCard({ levelId: L6, position: 2, word: 'CAMA', distractors: ['N'], voiceCheck: false }),
-      buildWordCard({ levelId: L6, position: 3, word: 'TELA', distractors: ['C', 'I'], voiceCheck: false }),
-      buildWordCard({ levelId: L6, position: 4, word: 'MOTO', distractors: ['C', 'A'], voiceCheck: true }),
-      buildWordCard({ levelId: L6, position: 5, word: 'TOMATE', distractors: ['S'], voiceCheck: false }),
-      buildSentenceCard({ levelId: L6, position: 6, sentence: 'EL TUCÁN ESTÁ EN LA CASA', distractors: ['MOTO'], voiceCheck: true }),
-    ],
+    cards: numbered([
+      buildLetterIntroCard({ levelId: L6, position: 0, group: GROUP.LETTER, letter: 'C', example: 'CASA', voiceCheck: true }),
+      buildLetterIntroCard({ levelId: L6, position: 0, group: GROUP.LETTER, letter: 'T', example: 'TOMATE', voiceCheck: true }),
+      ...soundCards(L6, GROUP.SYLLABLE, 'CA', ['CASA'], ['TELA', 'MOTO']),
+      ...soundCards(L6, GROUP.SYLLABLE, 'CU', ['CUNA'], ['TOMATE', 'SOL']),
+      ...soundCards(L6, GROUP.SYLLABLE, 'TO', ['TOMATE'], ['CASA', 'LUNA']),
+      ...soundCards(L6, GROUP.SYLLABLE, 'TE', ['TELA'], ['CAMA', 'MONO']),
+      buildWordCard({ levelId: L6, position: 0, group: GROUP.WORD, word: 'CASA', distractors: ['T', 'O'], voiceCheck: true }),
+      buildWordCard({ levelId: L6, position: 0, group: GROUP.WORD, word: 'CAMA', distractors: ['N'], voiceCheck: false }),
+      buildWordCard({ levelId: L6, position: 0, group: GROUP.WORD, word: 'TELA', distractors: ['C', 'I'], voiceCheck: false }),
+      buildWordCard({ levelId: L6, position: 0, group: GROUP.WORD, word: 'MOTO', distractors: ['C', 'A'], voiceCheck: true }),
+      buildWordCard({ levelId: L6, position: 0, group: GROUP.WORD, word: 'TOMATE', distractors: ['S'], voiceCheck: false }),
+      buildWordCard({ levelId: L6, position: 0, group: GROUP.WORD, word: 'LATA', distractors: ['C', 'O'], voiceCheck: true }),
+      buildWordCard({ levelId: L6, position: 0, group: GROUP.WORD, word: 'COLA', distractors: ['T', 'E'], voiceCheck: false }),
+      buildWordCard({ levelId: L6, position: 0, group: GROUP.WORD, word: 'CUNA', distractors: ['M', 'T'], voiceCheck: true }),
+      buildWordCard({ levelId: L6, position: 0, group: GROUP.WORD, word: 'CANASTA', distractors: ['L'], voiceCheck: false }),
+      buildSentenceCard({ levelId: L6, position: 0, group: GROUP.SENTENCE, sentence: 'EL TUCÁN ESTÁ EN LA CASA', distractors: ['MOTO'], voiceCheck: true }),
+      buildSentenceCard({ levelId: L6, position: 0, group: GROUP.SENTENCE, sentence: 'LA CAMA ESTÁ EN LA CASA', distractors: ['LATA'], voiceCheck: true }),
+    ]),
   },
 ];

@@ -29,6 +29,19 @@ export class FeedbackService {
   forAssembly(card: Card, result: AssemblyResult, attemptNumber: number): Feedback {
     const target = (card.targetWord ?? card.targetSentence ?? card.targetPhoneme ?? '').toUpperCase();
 
+    if (card.kind === CardKind.LETTER_INTRO) {
+      const unit = card.targetPhoneme ?? '';
+      return {
+        tone: FeedbackTone.CELEBRATE,
+        valoro:
+          unit.length > 1
+            ? `¡${unit.split('').join(' Y ')} JUNTAS SUENAN ${card.spokenAs.toUpperCase()}!`
+            : `¡ESA ES LA ${unit}! SUENA ${card.spokenAs.toUpperCase()}.`,
+        mePregunto: null,
+        sugiero: card.voiceTarget ? 'AHORA HACÉ VOS ESE SONIDO, BIEN LARGO.' : 'SEGUIMOS CON LA QUE VIENE.',
+      };
+    }
+
     if (result.correct) {
       return {
         tone: FeedbackTone.CELEBRATE,
@@ -147,6 +160,8 @@ export class FeedbackService {
 
   private hint(card: Card): string {
     switch (card.kind) {
+      case CardKind.LETTER_INTRO:
+        return 'TOCÁ LA LETRA GRANDE Y ESCUCHÁ CÓMO SUENA.';
       case CardKind.SOUND_RECOGNITION:
         return 'TOCÁ EL ALTAVOZ Y ESCUCHÁ CÓMO EMPIEZA CADA DIBUJO.';
       case CardKind.SENTENCE_BUILDING:

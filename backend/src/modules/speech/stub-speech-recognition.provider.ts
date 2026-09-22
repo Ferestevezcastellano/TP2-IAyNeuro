@@ -44,9 +44,14 @@ export class StubSpeechRecognitionProvider extends SpeechRecognitionPort {
     return { transcript: this.degrade(expected, digest[2]), confidence: 0.35 + (roll % 15) / 100, provider: this.name };
   }
 
-  /** Simula una pronunciacion incompleta: se come una letra de la palabra. */
+  /**
+   * Simula una pronunciacion incompleta: se come una letra de la palabra. Para
+   * un fonema estirado ("mmm") simula el error tipico: decir el nombre de la
+   * letra ("eme") en vez de su sonido.
+   */
   private degrade(expected: string, seed: number): string {
     const clean = expected.trim();
+    if (/^(.)\1*$/.test(clean)) return `e${clean[0]}e`;
     if (clean.length <= 2) return '';
     const cut = 1 + (seed % (clean.length - 1));
     return clean.slice(0, cut);

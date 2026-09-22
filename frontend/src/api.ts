@@ -1,0 +1,207 @@
+export const API_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:3000';
+
+export type PetSpecies = 'LION' | 'POLAR_BEAR' | 'RHINOCEROS' | 'KOALA';
+
+export type CardKind = 'LETTER_INTRO' | 'SOUND_RECOGNITION' | 'WORD_BUILDING' | 'SENTENCE_BUILDING';
+
+export interface Tile {
+  id: string;
+  label: string;
+  kind: 'LETTER' | 'SYLLABLE' | 'WORD' | 'IMAGE';
+  audioKey?: string;
+  imageKey?: string;
+  spokenAs?: string;
+}
+
+export interface Card {
+  id: string;
+  levelId: string;
+  position: number;
+  group: string;
+  kind: CardKind;
+  prompt: string;
+  targetWord?: string;
+  targetPhoneme?: string;
+  targetSentence?: string;
+  imageKey?: string;
+  audioKey: string;
+  spokenAs: string;
+  tiles: Tile[];
+  expectedLength: number;
+  voiceCheckRequired: boolean;
+  voiceTarget?: string;
+}
+
+export interface Feedback {
+  tone: 'CELEBRATE' | 'ENCOURAGE' | 'GUIDE';
+  valoro: string;
+  mePregunto: string | null;
+  sugiero: string;
+}
+
+export interface SessionState {
+  sessionId: string;
+  levelId: string;
+  levelOrder: number;
+  status: string;
+  cardIndex: number;
+  cardsTotal: number;
+  card: Card | null;
+}
+
+export interface AttemptResult {
+  correct: boolean;
+  firstWrongIndex: number | null;
+  matchedPrefixLength: number;
+  expectedLength: number;
+  attemptNumber: number;
+  feedback: Feedback;
+  voiceCheckRequired: boolean;
+  session: SessionState;
+}
+
+export interface VoiceResult {
+  accepted: boolean;
+  transcript: string;
+  expected: string;
+  similarity: number;
+  feedback: Feedback;
+  session: SessionState;
+}
+
+export type LevelStatus = 'MASTERED' | 'IN_PROGRESS' | 'AVAILABLE' | 'LOCKED_BY_PROGRESS' | 'LOCKED_BY_TEACHER';
+
+export interface Level {
+  id: string;
+  order: number;
+  title: string;
+  newLetters: string[];
+  cumulativeLetters: string[];
+  status: LevelStatus;
+  playable: boolean;
+  lockedReason: string | null;
+  stars: number;
+  masteryAverage: number;
+  sessionsCompleted: number;
+}
+
+export interface Accessory {
+  id: string;
+  label: string;
+  slot: string;
+  unlockedByLevelOrder: number;
+  owned: boolean;
+  equipped: boolean;
+}
+
+export interface Pet {
+  species: PetSpecies;
+  label: string;
+  accessories: Accessory[];
+}
+
+export interface Profile {
+  studentId: string;
+  className: string;
+  stars: number;
+  pet: Pet;
+  currentLevel: Level | null;
+  masteredLevels: number;
+}
+
+export interface SessionSummary {
+  sessionId: string;
+  levelId: string;
+  accuracy: number;
+  cardsSolved: number;
+  cardsTotal: number;
+  masteryAverage: number;
+  sessionsCompleted: number;
+  sessionsRemaining: number;
+  mastered: boolean;
+  masteredNow: boolean;
+  starsAwarded: number;
+  totalStars: number;
+  accessoryUnlocked: { id: string; label: string } | null;
+  nextLevel: Level | null;
+  feedback: Feedback;
+}
+
+export interface ReviewSound {
+  letter: string;
+  audioKey: string;
+  spokenAs: string;
+  levelOrder: number;
+}
+
+const TOKEN_KEY = 'ami.studentToken';
+
+export function getToken(): string | null {
+  try {
+    return localStorage.getItem(TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setToken(token: string | null): void {
+  try {
+    if (token) localStorage.setItem(TOKEN_KEY, token);
+    else localStorage.removeItem(TOKEN_KEY);
+  } catch {
+    // sin almacenamiento, la sesión dura lo que dura la pestaña
+  }
+}
+
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+  }
+}
+
+async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  const token = getToken();
+  if (token) headers['x-ami-student-token'] = token;
+
+  const response = await fetch(`${API_URL}${path}`, {
+    method,
+    headers,
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+
+  const data = await response.json().catch(() => null);
+  if (!response.ok) {
+    const message = data?.message
+      ? Array.isArray(data.message)
+        ? data.message.join(' · ')
+        : data.message
+      : `${response.status} ${response.statusText}`;
+    throw new ApiError(message, response.status);
+  }
+  return data as T;
+}
+
+export const api = {
+  verifyClassCode: (classCode: string) =>
+    request<{ valid: boolean; className?: string }>('POST', '/onboarding/class-code/verify', { classCode }),
+  register: (classCode: string, petSpecies: PetSpecies) =>
+    request<{ studentToken: string }>('POST', '/onboarding/students', { classCode, petSpecies }),
+  profile: () => request<Profile>('GET', '/me'),
+  levels: () => request<Level[]>('GET', '/me/levels'),
+  pet: () => request<Pet>('GET', '/me/pet'),
+  equip: (equippedAccessoryIds: string[]) => request<Pet>('PATCH', '/me/pet', { equippedAccessoryIds }),
+  startSession: (levelId?: string) => request<SessionState>('POST', '/practice/sessions', levelId ? { levelId } : {}),
+  attempt: (sessionId: string, cardId: string, sequence: string[]) =>
+    request<AttemptResult>('POST', `/practice/sessions/${sessionId}/cards/${cardId}/attempt`, { sequence }),
+  voiceCheck: (sessionId: string, cardId: string, transcript: string) =>
+    request<VoiceResult>('POST', `/practice/sessions/${sessionId}/cards/${cardId}/voice-check`, { transcript }),
+  complete: (sessionId: string) => request<SessionSummary>('POST', `/practice/sessions/${sessionId}/complete`, {}),
+  reviewSounds: () => request<ReviewSound[]>('GET', '/review/sounds'),
+  reviewCards: (limit: number) => request<{ cards: Card[]; available: number }>('GET', `/review/cards?limit=${limit}`),
+  reviewAttempt: (cardId: string, sequence: string[]) =>
+    request<{ correct: boolean; firstWrongIndex: number | null; feedback: Feedback }>('POST', '/review/attempts', { cardId, sequence }),
+};

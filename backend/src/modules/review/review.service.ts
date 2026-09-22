@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { phonemeOf } from '../../core/config/phonemes';
 import { Card, LevelStatus, Student } from '../../core/domain';
 import { CardRepository } from '../../core/ports';
 import { Feedback, FeedbackService, WordAssemblyValidator } from '../../core/services';
@@ -8,6 +9,7 @@ import { StudentService } from '../student/student.service';
 export interface ReviewSound {
   letter: string;
   audioKey: string;
+  spokenAs: string;
   levelOrder: number;
   levelTitle: string;
 }
@@ -41,8 +43,7 @@ export class ReviewService {
       .filter((access) => access.status === LevelStatus.MASTERED)
       .flatMap((access) =>
         access.level.newLetters.map((letter) => ({
-          letter,
-          audioKey: `audio/fonema/${letter.toLowerCase()}`,
+          ...phonemeOf(letter),
           levelOrder: access.level.order,
           levelTitle: access.level.title,
         })),

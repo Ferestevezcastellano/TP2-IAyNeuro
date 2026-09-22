@@ -21,7 +21,7 @@ describe('RewardService', () => {
     student = {
       id: 'alumno-1',
       classId: 'class-primero-a',
-      pet: { species: PetSpeciesId.DOG, accessoriesOwned: [], accessoriesEquipped: [] },
+      pet: { species: PetSpeciesId.LION, accessoriesOwned: [], accessoriesEquipped: [] },
       stars: 0,
       createdAt: new Date(),
       lastSeenAt: new Date(),
@@ -54,7 +54,7 @@ describe('RewardService', () => {
   });
 
   it('no paga si el nivel todavia no esta dominado', () => {
-    const inProgress = mastery.register(mastery.empty(student.id, 'level-03-m-s', 3), 1).progress;
+    const inProgress = mastery.register(mastery.empty(student.id, 'level-03-m-s', 3), 0.5).progress;
     const grant = rewards.grant(student, inProgress, accessory);
 
     expect(grant.starsAwarded).toBe(0);

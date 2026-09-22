@@ -1,9 +1,9 @@
 import { PetSpecies, PetSpeciesId } from '../core/domain';
 
-/** Las cuatro mascotas de la grilla 2x2 del onboarding. */
+/** Las cuatro mascotas de la grilla 2x2 del onboarding, las mismas de los mockups de Figma. */
 export const SEEDED_PETS: PetSpecies[] = [
-  { id: PetSpeciesId.DOG, label: 'PERRO', assetKey: 'img/mascota/perro' },
-  { id: PetSpeciesId.CAT, label: 'GATO', assetKey: 'img/mascota/gato' },
-  { id: PetSpeciesId.LION, label: 'LEÓN', assetKey: 'img/mascota/leon' },
-  { id: PetSpeciesId.BEAR, label: 'OSO', assetKey: 'img/mascota/oso' },
+  { id: PetSpeciesId.LION, label: 'LEÓN', assetKey: 'img/mascota/lion' },
+  { id: PetSpeciesId.KOALA, label: 'KOALA', assetKey: 'img/mascota/koala' },
+  { id: PetSpeciesId.POLAR_BEAR, label: 'OSO POLAR', assetKey: 'img/mascota/polar-bear' },
+  { id: PetSpeciesId.RHINOCEROS, label: 'RINOCERONTE', assetKey: 'img/mascota/rhinoceros' },
 ];

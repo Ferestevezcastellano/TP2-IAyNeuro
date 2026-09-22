@@ -1,5 +1,7 @@
-/** Mecanica de la tarjeta. Las tres comparten el gesto: tocar botones en orden. */
+/** Mecanica de la tarjeta. Todas comparten el gesto: tocar botones en orden. */
 export enum CardKind {
+  /** Se presenta una letra nueva: se la toca, suena su fonema y el chico lo repite. */
+  LETTER_INTRO = 'LETTER_INTRO',
   /** Suena un fonema y el chico elige la imagen que empieza con ese sonido. */
   SOUND_RECOGNITION = 'SOUND_RECOGNITION',
   /** Imagen de una palabra y botones por letra para armarla. */
@@ -22,6 +24,8 @@ export interface CardTile {
   kind: TileKind;
   audioKey?: string;
   imageKey?: string;
+  /** Como suena el boton al tocarlo: "mmm" para la M, nunca "eme". */
+  spokenAs?: string;
 }
 
 /**
@@ -31,7 +35,10 @@ export interface CardTile {
 export interface Card {
   id: string;
   levelId: string;
+  /** Orden pedagogico dentro del banco del nivel. La sesion respeta este orden. */
   position: number;
+  /** Bolsa de la que se sortea la tarjeta al armar una sesion. Ver `Level.sessionDraw`. */
+  group: string;
   kind: CardKind;
   /** Consigna en mayuscula, como toda la interfaz de primer grado. */
   prompt: string;
@@ -40,6 +47,8 @@ export interface Card {
   targetSentence?: string;
   imageKey?: string;
   audioKey: string;
+  /** Como suena el audio principal de la tarjeta, para un sintetizador de voz. */
+  spokenAs: string;
   tiles: CardTile[];
   /** Ids de tiles en el orden esperado. */
   solution: string[];

@@ -1,12 +1,14 @@
+import { MASTERY_CONFIG } from '../config/mastery.config';
 import { LevelProgress } from '../domain';
 import { MasteryService } from './mastery.service';
 
+/** La regla completa se prueba con el minimo de tres sesiones, que es el que se va a recalibrar. */
 describe('MasteryService', () => {
   let service: MasteryService;
   let progress: LevelProgress;
 
   beforeEach(() => {
-    service = new MasteryService();
+    service = new MasteryService({ ...MASTERY_CONFIG, minSessions: 3 });
     progress = service.empty('alumno-1', 'level-03-m-s', 3);
   });
 
@@ -77,5 +79,20 @@ describe('MasteryService', () => {
 
     expect(result.recentAccuracies).toEqual([1, 0, 0.9]);
     expect(result.bestAccuracy).toBe(1);
+  });
+
+  describe('con la configuracion por defecto (minimo de una sesion)', () => {
+    it('domina con una sola sesion al 0.8 o mas', () => {
+      const porDefecto = new MasteryService();
+      const inicial = porDefecto.empty('alumno-1', 'level-01-a-e', 1);
+
+      const floja = porDefecto.register(inicial, 0.7);
+      expect(floja.progress.mastered).toBe(false);
+      expect(porDefecto.sessionsRemaining(floja.progress)).toBe(0);
+
+      const buena = porDefecto.register(floja.progress, 0.9);
+      expect(buena.masteredNow).toBe(true);
+      expect(buena.progress.mastered).toBe(true);
+    });
   });
 });

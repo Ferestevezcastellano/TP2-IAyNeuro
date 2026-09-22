@@ -27,6 +27,7 @@ import {
   MasteryService,
   PhoneticNormalizerService,
   RewardService,
+  SessionDeckService,
   SessionScoringService,
   WordAssemblyValidator,
 } from '../../core/services';
@@ -88,6 +89,7 @@ export class PracticeService {
     private readonly students: StudentService,
     private readonly validator: WordAssemblyValidator,
     private readonly scoring: SessionScoringService,
+    private readonly deck: SessionDeckService,
     private readonly mastery: MasteryService,
     private readonly rewards: RewardService,
     private readonly feedback: FeedbackService,
@@ -123,7 +125,7 @@ export class PracticeService {
       await this.sessions.save({ ...open, status: SessionStatus.ABANDONED, completedAt: new Date() });
     }
 
-    const cards = await this.cards.findByLevelId(access.level.id);
+    const cards = this.deck.draw(access.level, await this.cards.findByLevelId(access.level.id));
     if (cards.length === 0) {
       throw new NotFoundException(`El nivel ${access.level.id} no tiene tarjetas cargadas.`);
     }

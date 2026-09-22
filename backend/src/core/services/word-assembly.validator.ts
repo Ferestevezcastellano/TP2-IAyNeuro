@@ -15,14 +15,24 @@ export interface AssemblyResult {
  * Compara la secuencia de botones tocados contra la solucion de la tarjeta.
  * Informa el primer error en vez de un simple falso, para que la interfaz pueda
  * senalar el casillero exacto en lugar de borrar todo lo que el chico armo.
+ *
+ * Compara por lo que dice el boton y no por su id: en MASA hay dos botones A y
+ * cualquiera de los dos vale en cualquiera de los dos lugares.
  */
 @Injectable()
 export class WordAssemblyValidator {
   validate(card: Card, sequence: string[]): AssemblyResult {
-    const expected = card.solution;
-    let matched = 0;
+    const labelOf = new Map(card.tiles.map((tile) => [tile.id, tile.label]));
+    const expected = card.solution.map((tileId) => labelOf.get(tileId));
+    const touched = sequence.map((tileId) => labelOf.get(tileId));
 
-    while (matched < sequence.length && matched < expected.length && sequence[matched] === expected[matched]) {
+    let matched = 0;
+    while (
+      matched < touched.length &&
+      matched < expected.length &&
+      touched[matched] !== undefined &&
+      touched[matched] === expected[matched]
+    ) {
       matched += 1;
     }
 

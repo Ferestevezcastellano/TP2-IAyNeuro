@@ -1,0 +1,74 @@
+.cierre { gap: 16px; }
+
+.cierre-tarjeta {
+  width: 264px;
+  min-height: 357px;
+  margin: 10px auto 0;
+  border-radius: 24px;
+  background: var(--menta-2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 24px;
+}
+
+.cierre-estrellas {
+  font-weight: 700;
+  font-size: 45px;
+  line-height: 1;
+  letter-spacing: 4px;
+  color: var(--amarillo);
+}
+
+.cierre-estrellas.apagadas { color: rgba(255, 255, 255, 0.8); }
+
+.cierre-nota {
+  margin: 0;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--tinta-suave);
+  text-align: center;
+}
+
+.cierre-manana {
+  position: relative;
+  width: 196px;
+  height: 167px;
+  margin: 4px auto 0;
+  border-radius: 20px;
+  background: #fff;
+  overflow: hidden;
+  text-align: center;
+}
+
+.cierre-manana p {
+  position: relative;
+  z-index: 1;
+  margin: 18px 0 0;
+  font-weight: 600;
+  font-size: 20px;
+  color: var(--tinta-suave);
+}
+
+.cierre-borroso {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 38px;
+  font-weight: 700;
+  font-size: 100px;
+  line-height: 1.2;
+  color: rgba(174, 174, 174, 0.6);
+  filter: blur(9px);
+  user-select: none;
+}
+
+.cierre-logro {
+  margin: 0;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--teal);
+  text-align: center;
+}

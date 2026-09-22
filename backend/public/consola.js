@@ -14,7 +14,7 @@
 // El backend nombra las ilustraciones con claves simbólicas (imageKey) y no
 // sirve binarios. Hasta que exista el banco de imágenes, un emoji alcanza para
 // que la tarjeta se entienda.
-const EMOJI_MASCOTA = { DOG: '🐶', CAT: '🐱', LION: '🦁', BEAR: '🐻' };
+const EMOJI_MASCOTA = { LION: '🦁', POLAR_BEAR: '🐻‍❄️', RHINOCEROS: '🦏', KOALA: '🐨' };
 
 const EMOJI_ACCESORIO = {
   'acc-gorro': '🎩',
@@ -26,11 +26,16 @@ const EMOJI_ACCESORIO = {
 };
 
 const EMOJI_PALABRA = {
-  'ÁRBOL': '🌳', 'ARAÑA': '🕷️', 'AVIÓN': '✈️', 'ELEFANTE': '🐘', 'ESCALERA': '🪜',
-  'ESTRELLA': '⭐', 'IGLÚ': '🧊', 'IMÁN': '🧲', 'OSO': '🐻', 'UVA': '🍇',
-  'MESA': '🪑', 'MASA': '🥟', 'SUMA': '➕', 'LUNA': '🌙', 'SOL': '☀️',
-  'MANO': '✋', 'MONO': '🐒', 'SALA': '🛋️', 'LIMA': '🍋', 'CASA': '🏠',
-  'CAMA': '🛏️', 'TELA': '🧵', 'MOTO': '🏍️', 'TOMATE': '🍅', 'TUCÁN': '🦜',
+  'ÁRBOL': '🌳', 'ARAÑA': '🕷️', 'AVIÓN': '✈️', 'ABEJA': '🐝', 'ANILLO': '💍', 'AUTO': '🚗',
+  'ELEFANTE': '🐘', 'ESCALERA': '🪜', 'ESTRELLA': '⭐', 'ESPEJO': '🪞', 'ERIZO': '🦔', 'ENCHUFE': '🔌',
+  'IGLÚ': '🧊', 'IMÁN': '🧲', 'ISLA': '🏝️', 'IGLESIA': '⛪',
+  'OSO': '🐻', 'OJO': '👁️', 'OVEJA': '🐑', 'OREJA': '👂',
+  'UVA': '🍇', 'UÑA': '💅', 'UNICORNIO': '🦄', 'UNO': '1️⃣',
+  'MESA': '🪑', 'MASA': '🥟', 'SUMA': '➕', 'MUSA': '🧚', 'ASA': '🏺', 'SAPO': '🐸', 'SILLA': '💺',
+  'LUNA': '🌙', 'SOL': '☀️', 'MANO': '✋', 'MONO': '🐒', 'SALA': '🛋️', 'LIMA': '🍋',
+  'LANA': '🧶', 'NENA': '👧', 'NUBE': '☁️',
+  'CASA': '🏠', 'CAMA': '🛏️', 'TELA': '🧵', 'MOTO': '🏍️', 'TOMATE': '🍅', 'TUCÁN': '🦜',
+  'LATA': '🥫', 'COLA': '🥤', 'CUNA': '👶', 'CANASTA': '🧺',
 };
 
 const ilustracion = (palabra) => EMOJI_PALABRA[(palabra || '').toUpperCase()] || '🔤';
@@ -117,7 +122,13 @@ async function intentar(accion) {
   }
 }
 
-/* ---------- Voz, con lo que el navegador ya trae ---------- */
+/* ---------- Sonido ---------- */
+
+// Los fonemas sueltos tienen grabación humana en public/audio/fonema/ (recortes
+// del video de ColorKids Play, solo para la demo). Para todo lo demás, y si falta el archivo,
+// el sintetizador del navegador lee `spokenAs`, que ya viene como sonido
+// ("mmm") y no como nombre de letra ("eme").
+let audioEnCurso = null;
 
 function decir(texto) {
   if (!('speechSynthesis' in window) || !texto) return;
@@ -126,6 +137,29 @@ function decir(texto) {
   frase.lang = 'es-AR';
   frase.rate = 0.8;
   speechSynthesis.speak(frase);
+}
+
+/** Hace sonar una tarjeta o un botón: grabación si la hay, si no la voz sintética. */
+function sonar(objeto) {
+  if (!objeto) return;
+  const hablado = objeto.spokenAs || objeto.label || '';
+  const clave = objeto.audioKey || '';
+
+  if (audioEnCurso) {
+    audioEnCurso.pause();
+    audioEnCurso = null;
+  }
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+
+  if (!clave.startsWith('audio/fonema/')) {
+    decir(hablado);
+    return;
+  }
+
+  const audio = new Audio(`/${clave}.ogg`);
+  audioEnCurso = audio;
+  audio.onerror = () => decir(hablado);
+  audio.play().catch(() => decir(hablado));
 }
 
 const Reconocedor = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -192,6 +226,7 @@ function entrar() {
 function abrirNivel(levelId) {
   return intentar(async () => {
     estado.sesion = await api('POST', '/practice/sessions', levelId ? { levelId } : {});
+    sonar(estado.sesion.card);
     estado.armado = [];
     estado.marcaError = null;
     estado.feedback = null;
@@ -210,7 +245,7 @@ function tocarBoton(tileId) {
   estado.armado = [...estado.armado, tileId];
 
   const tile = tarjeta.tiles.find((item) => item.id === tileId);
-  if (tile) decir(tile.label);
+  if (tile) sonar(tile);
 
   if (estado.armado.length === tarjeta.expectedLength) {
     enviarArmado();
@@ -258,6 +293,7 @@ function enviarArmado() {
 
 function pasarATarjeta(sesion) {
   estado.sesion = sesion;
+  sonar(sesion.card);
   estado.armado = [];
   estado.marcaError = null;
   estado.esperandoVoz = false;
@@ -301,14 +337,11 @@ function verificarVoz(transcripcionForzada) {
       { transcript: transcripcion },
     );
 
-    estado.feedback = resultado.feedback;
-    estado.resultadoVoz = resultado;
-
     // Aceptada o no, la sesión sigue: el chico ya armó la palabra y dejarlo
     // trabado porque el micrófono del aula es malo sería feedback punitivo.
-    estado.sesion = resultado.session;
-    estado.armado = [];
-    estado.esperandoVoz = false;
+    pasarATarjeta(resultado.session);
+    estado.feedback = resultado.feedback;
+    estado.resultadoVoz = resultado;
   });
 }
 
@@ -363,7 +396,7 @@ function tocarBotonRepaso(tileId) {
   estado.armado = [...estado.armado, tileId];
 
   const tile = tarjeta.tiles.find((item) => item.id === tileId);
-  if (tile) decir(tile.label);
+  if (tile) sonar(tile);
 
   if (estado.armado.length !== tarjeta.expectedLength) {
     render();
@@ -467,14 +500,18 @@ const plural = (cantidad, singular, muchos) => `${cantidad} ${cantidad === 1 ? s
 
 /** La escena grande de la tarjeta: el dibujo, o el altavoz si lo que hay que reconocer es un sonido. */
 function escenaDe(tarjeta) {
+  if (tarjeta.kind === 'LETTER_INTRO') {
+    return `${escapar(tarjeta.targetPhoneme)}<small>SUENA ${escapar((tarjeta.spokenAs || '').toUpperCase())} · COMO EN ${ilustracion(tarjeta.targetWord)} ${escapar(tarjeta.targetWord || '')}</small>`;
+  }
   if (tarjeta.kind === 'SOUND_RECOGNITION') {
-    return `\u{1f50a}<small>ESCUCH\u00c1 EL SONIDO ${escapar(tarjeta.targetPhoneme || '')}</small>`;
+    return `\u{1f50a}<small>ESCUCH\u00c1 EL SONIDO ${escapar((tarjeta.spokenAs || tarjeta.targetPhoneme || '').toUpperCase())}</small>`;
   }
   return `${ilustracion(tarjeta.targetWord)}<small>${escapar(tarjeta.targetWord || tarjeta.targetSentence || '')}</small>`;
 }
 
 /** Etiqueta corta de una tarjeta, para los chips de Repaso. */
 function etiquetaDe(tarjeta) {
+  if (tarjeta.kind === 'LETTER_INTRO') return `\u{1f524} ${escapar(tarjeta.targetPhoneme || '')}`;
   if (tarjeta.kind === 'SOUND_RECOGNITION') return `\u{1f50a} ${escapar(tarjeta.targetPhoneme || '')}`;
   return `${ilustracion(tarjeta.targetWord)} ${escapar(tarjeta.targetWord || tarjeta.targetSentence || '')}`;
 }
@@ -494,7 +531,7 @@ function accesoriosPuestos() {
 
 function vistaOnboarding() {
   const especies = [
-    ['DOG', 'PERRO'], ['CAT', 'GATO'], ['LION', 'LEÓN'], ['BEAR', 'OSO'],
+    ['LION', 'LEÓN'], ['KOALA', 'KOALA'], ['POLAR_BEAR', 'OSO POLAR'], ['RHINOCEROS', 'RINOCERONTE'],
   ];
 
   return `
@@ -647,11 +684,11 @@ function vistaSesion() {
     `;
   }
 
-  const aDecir = tarjeta.targetPhoneme || tarjeta.targetWord || tarjeta.targetSentence || '';
+  const aDecir = (tarjeta.voiceTarget || '').toUpperCase();
 
   return `
     <section class="panel tarjeta">
-      <p class="sub">Nivel ${sesion.levelOrder} · tarjeta ${sesion.cardIndex + 1} de ${sesion.cardsTotal}</p>
+      <p class="sub">Nivel ${sesion.levelOrder} · tarjeta ${sesion.cardIndex + 1} de ${sesion.cardsTotal} · ${escapar(tarjeta.group.toLowerCase())}</p>
       <p class="consigna">${escapar(tarjeta.prompt)}</p>
 
       <button class="escena" id="btnEscena">${escenaDe(tarjeta)}</button>
@@ -755,7 +792,13 @@ function vistaRepaso() {
         Práctica libre sobre lo ya dominado. Nada de lo que pase acá toca el promedio de los niveles:
         si repasar pudiera bajar el puntaje, el chico aprendería a no repasar.
       </p>
-      <p>Sonidos dominados: <strong>${repaso.sonidos.map((item) => escapar(item.letter)).join(' · ') || '—'}</strong></p>
+      <p>Sonidos dominados:
+        ${repaso.sonidos.length === 0 ? '<strong>—</strong>' : repaso.sonidos.map((item) => `
+          <button class="suave" data-sonido="${escapar(item.audioKey)}" data-hablado="${escapar(item.spokenAs)}" title="${escapar(item.spokenAs)}">
+            \u{1f50a} ${escapar(item.letter)}
+          </button>
+        `).join('')}
+      </p>
       <div class="chips">
         ${repaso.cards.map((item) => `
           <button data-repaso="${item.id}" aria-pressed="${tarjeta && tarjeta.id === item.id}">
@@ -939,15 +982,21 @@ function cablear() {
 
   alTocar('btnEscena', () => {
     const tarjeta = estado.pantalla === 'repaso' ? estado.tarjetaRepaso : (estado.sesion && estado.sesion.card);
-    if (tarjeta) decir(tarjeta.targetWord || tarjeta.targetSentence || tarjeta.targetPhoneme);
+    if (tarjeta) sonar(tarjeta);
+  });
+
+  document.querySelectorAll('[data-sonido]').forEach((boton) => {
+    boton.addEventListener('click', () => sonar({ audioKey: boton.dataset.sonido, spokenAs: boton.dataset.hablado }));
   });
 
   alTocar('btnEscuchar', () => verificarVoz(undefined));
   alTocar('btnVozBien', () => verificarVoz(estado.sesion.card.voiceTarget));
   alTocar('btnVozMal', () => {
     const objetivo = estado.sesion.card.voiceTarget || '';
-    // Una pronunciación a medias, que es como suena de verdad cuando no sale.
-    verificarVoz(objetivo.slice(0, Math.max(1, Math.floor(objetivo.length / 2))));
+    // Para un fonema, el error típico es decir el nombre de la letra ("eme").
+    // Para una palabra, una pronunciación a medias, que es como suena cuando no sale.
+    const esFonema = /^(.)\1*$/.test(objetivo);
+    verificarVoz(esFonema ? `e${objetivo[0]}e` : objetivo.slice(0, Math.max(1, Math.floor(objetivo.length / 2))));
   });
 
   document.querySelectorAll('[data-nivel]').forEach((boton) => {

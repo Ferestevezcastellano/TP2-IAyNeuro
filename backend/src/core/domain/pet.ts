@@ -1,9 +1,9 @@
 /** Especies disponibles para la mascota que el chico elige en el onboarding. */
 export enum PetSpeciesId {
-  DOG = 'DOG',
-  CAT = 'CAT',
   LION = 'LION',
-  BEAR = 'BEAR',
+  POLAR_BEAR = 'POLAR_BEAR',
+  RHINOCEROS = 'RHINOCEROS',
+  KOALA = 'KOALA',
 }
 
 /** Entrada de catalogo de una especie. El asset lo resuelve el frontend. */

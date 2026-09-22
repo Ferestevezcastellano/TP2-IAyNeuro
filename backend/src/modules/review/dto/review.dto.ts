@@ -11,6 +11,9 @@ export class ReviewSoundDto {
   @ApiProperty({ example: 'audio/fonema/m' })
   audioKey!: string;
 
+  @ApiProperty({ description: 'Como suena la letra, para un sintetizador de voz.', example: 'mmm' })
+  spokenAs!: string;
+
   @ApiProperty({ description: 'Nivel donde se aprendio.', example: 3 })
   levelOrder!: number;
 

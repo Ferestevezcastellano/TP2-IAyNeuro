@@ -16,6 +16,16 @@ describe('PhoneticNormalizerService', () => {
     expect(phonetics.similarity(a, b)).toBe(1);
   });
 
+  it('un fonema estirado es el mismo fonema', () => {
+    expect(phonetics.similarity('m', 'mmm')).toBe(1);
+    expect(phonetics.similarity('aaaa', 'aaa')).toBe(1);
+  });
+
+  it('el nombre de la letra no es su sonido', () => {
+    expect(phonetics.similarity('eme', 'mmm')).toBeLessThan(0.7);
+    expect(phonetics.similarity('ese', 'sss')).toBeLessThan(0.7);
+  });
+
   it('distingue palabras que suenan distinto', () => {
     expect(phonetics.similarity('PERRO', 'PERO')).toBeLessThan(1);
     expect(phonetics.similarity('MESA', 'PESA')).toBeLessThan(1);

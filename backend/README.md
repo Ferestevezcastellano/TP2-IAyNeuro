@@ -30,7 +30,15 @@ npm run demo         # recorrido completo por HTTP, con el servidor ya levantado
 
 En `http://localhost:3000` hay una página que consume esta misma API con botones: elegir mascota, tocar las letras para armar la palabra, ver el feedback de AMI, ganar las estrellas y, desde la solapa Docente, habilitar niveles para el curso. Existe porque probar el recorrido desde Swagger obliga a copiar a mano el `sessionId`, el `cardId` y el id del botón correcto entre un endpoint y el siguiente, tres sesiones seguidas por nivel.
 
-No es el frontend de la app —ese se desarrolla aparte y tiene su propio diseño— y la página lo aclara arriba de todo. Las ilustraciones son emojis porque el banco de imágenes todavía no existe, los audios los genera `speechSynthesis` y la verificación por voz usa el `SpeechRecognition` del navegador, las dos sin costo y sin instalar nada. Donde el navegador no las trae, quedan botones para simular la voz. El código está en `public/`, sin build ni dependencias.
+No es el frontend de la app —ese se desarrolla aparte y tiene su propio diseño— y la página lo aclara arriba de todo. Las ilustraciones son emojis porque el banco de imágenes todavía no existe. Los fonemas sueltos (tocar una letra, presentar una letra nueva) suenan con grabaciones humanas de `public/audio/fonema/`; todo lo demás lo lee `speechSynthesis` a partir del campo `spokenAs` que trae cada tarjeta y cada botón, y la verificación por voz usa el `SpeechRecognition` del navegador, las dos sin costo y sin instalar nada. Donde el navegador no las trae, quedan botones para simular la voz. El código está en `public/`, sin build ni dependencias.
+
+### Audios de fonemas
+
+`public/audio/fonema/*.ogg` son los sonidos de cada letra recortados del video **"LOS SONIDOS de las letras del ABECEDARIO"** (ColorKids Play, [youtu.be/iMxAw5OLF5g](https://youtu.be/iMxAw5OLF5g)): las 26 letras menos la H, que no suena, más `qu.ogg` y `rr.ogg` como copias de Q y R. El video tiene música de fondo continua, así que primero se separó la voz de la música con [Demucs](https://github.com/facebookresearch/demucs) (`htdemucs`, dos pistas: voz / resto) y los clips se cortan de la pista de voz, con una puerta de ruido suave para lo que quedara por debajo. Cada clip es la primera de las tres repeticiones que hace la voz del video, con un margen de 80 ms antes y 150 ms después, fundido en los bordes y volumen normalizado a -18 LUFS. CH y LL no están en el video y caen a la voz sintética.
+
+Las **sílabas** de los niveles 3 y 4 (`ma.ogg`, `me.ogg`… `nu.ogg`) se armaron fundiendo la grabación de la consonante (primeros 550 ms) con la de la vocal, con un cruce de 120 ms: se escucha "mmmaaa", que es justo el gesto de juntar los dos sonidos. Funciona porque M, S, L y N se pueden estirar; para oclusivas (T, P, C) habría que grabar aparte.
+
+El video no tiene licencia libre: los clips sirven para la demo del TP, pero **no se pueden redistribuir en una app publicada sin permiso del canal**. Para producción hay que grabar los fonemas o usar una fuente con licencia (por ejemplo, las grabaciones IPA de Wikimedia Commons, CC BY-SA, que suenan más "de laboratorio" y por eso se descartaron para la demo).
 
 ## Datos semilla
 
@@ -40,19 +48,36 @@ Seis niveles, los del Capítulo 2 del cuadernillo *Yo amo aprender — Lengua, 1
 |---|---|---|
 | 1 | A, E | sonido aislado |
 | 2 | I, O, U | sonido aislado |
-| 3 | M, S | primeras sílabas y palabras |
-| 4 | L, N | primera oración |
-| 5 | Consolidación | sin letras nuevas |
-| 6 | C (ca, co, cu), T | palabras y oración |
+| 3 | M, S | M → ma, me, mi, mo, mu → S → sa…su → palabras |
+| 4 | L, N | todo lo de la L (letra, sílabas, palabras con L, M y S) → todo lo de la N → primera oración |
+| 5 | Consolidación | sin letras nuevas: solo palabras y oraciones con todo lo visto |
+| 6 | C (ca, co, cu), T | presentación de la letra, palabras y oración |
 
-Dos cursos, con distinto avance docente a propósito:
+Dos cursos:
 
 | Código de clase | Código de docente | Habilitado hasta |
 |---|---|---|
-| `PRIMERO-A` | `PRIMERO-A-DOC` | nivel 3 |
-| `PRIMERO-B` | `PRIMERO-B-DOC` | nivel 6 |
+| `PRIMERO-A` | `PRIMERO-A-DOC` | nivel 5 |
+| `PRIMERO-B` | `PRIMERO-B-DOC` | nivel 5 |
 
-Las imágenes y los audios no están: cada tarjeta trae `imageKey` y `audioKey`, claves simbólicas (`img/palabra/mesa`, `audio/fonema/m`) que el frontend resuelve contra su propio banco de assets.
+Los dos cursos arrancan habilitados hasta el nivel 5 (todo el Capítulo 2); el 6 aparece bloqueado por la docente. Desde el panel docente se puede habilitar más.
+
+Las mascotas son las de los mockups de Figma: `LION`, `POLAR_BEAR`, `RHINOCEROS`, `KOALA`.
+
+Las imágenes y los audios no están: cada tarjeta trae `imageKey` y `audioKey`, claves simbólicas (`img/palabra/mesa`, `audio/fonema/m`) que el frontend resuelve contra su propio banco de assets. Además trae `spokenAs`, cómo suena eso para un sintetizador de voz: **para una letra es siempre el fonema y nunca el nombre** (`mmm`, no `eme`), porque el chico arma palabras juntando sonidos y "eme" + "a" no da "ma". Los parámetros están en `src/core/config/phonemes.ts`.
+
+### Banco y sesión
+
+Cada nivel tiene un **banco** de tarjetas más grande que una sesión, repartido en bolsas (`group`): `LETRA` (presentación del sonido nuevo aislado), `SILABA`, `PALABRA`, `ORACION`, y en los niveles de vocales una bolsa por letra. Al abrir una sesión, `sessionDraw` dice cuántas tarjetas se sortean de cada bolsa; el mazo sale siempre en orden pedagógico (letra nueva → sílabas → palabras → oraciones), pero las tarjetas concretas cambian de una sesión a la otra. Es a propósito: un nivel se vuelve a jugar (para dominarlo, o para repetirlo después), y si todas las sesiones fueran iguales el chico se aprendería qué dibujo va con qué sonido en vez de escuchar el sonido.
+
+| Nivel | Banco | Por sesión |
+|---|---|---|
+| 1 | 14 | 6 (2 letras + 2 de A + 2 de E) |
+| 2 | 20 | 8 (3 letras + 1 de I, O y U + 2 de las cinco vocales) |
+| 3 | 19 | 15 (M, sus 5 sílabas, S, sus 5 sílabas, siempre; + 3 palabras de 7) |
+| 4 | 25 | 17 (L, 5 sílabas, 2 palabras con L; N, 5 sílabas, 2 palabras con N; 1 oración) |
+| 5 | 16 | 6 (4 palabras + 2 oraciones) |
+| 6 | 17 | 7 (2 letras + 1 sílaba + 3 palabras + 1 oración) |
 
 ## Cómo se identifica cada uno
 
@@ -123,11 +148,11 @@ Los dos esquemas están declarados en Swagger, así que el botón *Authorize* de
 
 ## Las tres reglas que importan
 
-**Dominio.** Un nivel no se domina por acertar una vez. Se mide con el promedio móvil de las **últimas 3 sesiones**, con un mínimo de **3 sesiones** y un umbral de **0.8**. Dentro de una sesión, cada tarjeta puntúa según cuántos intentos necesitó (1 al primero, 0.5 al segundo, 0.25 al tercero), porque el chico que se corrige solo aprendió algo y contarlo como error sería falso. Donde hay verificación por voz, la voz pesa el 40% de la tarjeta. Los parámetros están juntos en `src/core/config/mastery.config.ts`.
+**Dominio.** Se mide con el promedio móvil de las **últimas 3 sesiones** sobre un umbral de **0.8**, con un mínimo de sesiones que hoy está en **1** (una sesión al 80 % ya domina el nivel; el mínimo se va a recalibrar más adelante). Dentro de una sesión, cada tarjeta puntúa según cuántos intentos necesitó (1 al primero, 0.5 al segundo, 0.25 al tercero), porque el chico que se corrige solo aprendió algo y contarlo como error sería falso. Donde hay verificación por voz, la voz pesa el 40% de la tarjeta. Los parámetros están juntos en `src/core/config/mastery.config.ts`.
 
 **Avance.** El nivel siguiente necesita las dos condiciones a la vez: que el anterior esté dominado y que la docente ya lo haya habilitado para el curso. Habilitar de más no adelanta a nadie, y dominar de más no pasa por encima de lo que el aula todavía no vio. Por eso hay dos estados de bloqueo distintos, `LOCKED_BY_PROGRESS` y `LOCKED_BY_TEACHER`, con su motivo en texto listo para mostrar.
 
-**Feedback.** Siempre con la estructura Valoro / Me pregunto / Sugiero del pilar 2, en tres campos separados para que la interfaz le dé a cada parte su tiempo. Un error informa el índice del primer botón equivocado en lugar de un simple *incorrecto*, así el casillero se marca sin borrar lo que el chico ya armó. No hay puntaje negativo, ranking ni comparación entre chicos, y ningún endpoint de alumno expone datos de otro.
+**Feedback.** Siempre con la estructura Valoro / Me pregunto / Sugiero del pilar 2, en tres campos separados para que la interfaz le dé a cada parte su tiempo. Un error informa el índice del primer botón equivocado en lugar de un simple *incorrecto*, así el casillero se marca sin borrar lo que el chico ya armó. El armado se compara por lo que dice cada botón y no por su id: en MASA hay dos botones A y cualquiera vale en cualquiera de los dos lugares. No hay puntaje negativo, ranking ni comparación entre chicos, y ningún endpoint de alumno expone datos de otro.
 
 ## Verificación por voz
 
@@ -148,7 +173,7 @@ AMI_SPEECH_PROVIDER=vosk AMI_VOSK_MODEL_PATH=./models/vosk-model-small-es-0.42 n
 
 Espera WAV PCM 16 bits mono a 16 kHz, y acota el vocabulario a lo que la tarjeta espera, que es lo que más sube la precisión con habla infantil.
 
-El endpoint también acepta un campo `transcript` en lugar del audio, para un frontend que prefiera usar el reconocimiento del navegador. En los tres casos la decisión final la toma el servidor y es **fonética, no ortográfica**: un normalizador rioplatense más distancia de edición, con umbral de similitud 0.7. BACA vale por VACA, KESO por QUESO y SAPATO por ZAPATO, porque a los seis años decir bien la palabra y escribirla bien son dos habilidades distintas y este nivel evalúa la primera. Un rechazo nunca traba la sesión: el chico ya armó la palabra, y dejarlo encerrado porque el micrófono del aula es malo sería exactamente el feedback punitivo que la app evita.
+El endpoint también acepta un campo `transcript` en lugar del audio, para un frontend que prefiera usar el reconocimiento del navegador. En los tres casos la decisión final la toma el servidor y es **fonética, no ortográfica**: un normalizador rioplatense más distancia de edición, con umbral de similitud 0.7. BACA vale por VACA, KESO por QUESO, SAPATO por ZAPATO y "m" por "mmm" (un sonido estirado es el mismo sonido; "eme" no lo es), porque a los seis años decir bien la palabra y escribirla bien son dos habilidades distintas y este nivel evalúa la primera. Un rechazo nunca traba la sesión: el chico ya armó la palabra, y dejarlo encerrado porque el micrófono del aula es malo sería exactamente el feedback punitivo que la app evita.
 
 ## Estructura
 

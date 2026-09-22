@@ -5,6 +5,7 @@ import {
   MasteryService,
   PhoneticNormalizerService,
   RewardService,
+  SessionDeckService,
   SessionScoringService,
   WordAssemblyValidator,
 } from './services';
@@ -15,6 +16,7 @@ const services = [
   MasteryService,
   PhoneticNormalizerService,
   RewardService,
+  SessionDeckService,
   SessionScoringService,
   WordAssemblyValidator,
 ];
