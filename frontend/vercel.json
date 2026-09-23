@@ -4,7 +4,7 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://ami-backend.onrender.com/:path*" },
+    { "source": "/api/:path*", "destination": "https://ami-backend-wcvo.onrender.com/:path*" },
     { "source": "/((?!api/|assets/|mascotas/|accesorios/|icons/|ilustraciones/).*)", "destination": "/index.html" }
   ]
 }
