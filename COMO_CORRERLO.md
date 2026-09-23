@@ -131,15 +131,30 @@ están en el video de letras, y `ca` y `cu` del nivel 6, que no están en el de 
 **Hoy:** el layout ya es responsive: 390 px sigue siendo el ancho de referencia del mockup, pero las medidas fijas son topes y no valores clavados, así que la pantalla se acomoda sola desde 280 px de ancho hasta el escritorio, y usa el alto real de la ventana (`dvh`) en vez de los 844 px del frame. Está probado con capturas en 280×653, 320×568, 360×640, 390×844, 412×915 y escritorio, sin recortes ni scroll horizontal. Lo que falta para que sea una app de teléfono de verdad es lo de abajo.
 
 **Para probarla ya en el celular, en la misma red Wi-Fi:**
-1. Averiguar la IP de la computadora (`ip addr` en Linux, `ipconfig` en Windows, `ifconfig` en Mac). Ejemplo: `192.168.0.10`.
-2. Levantar el frontend apuntando al backend por esa IP y aceptando conexiones de afuera:
-   ```bash
-   cd frontend
-   VITE_API_URL=http://192.168.0.10:3000 npm run dev -- --host
-   ```
-3. En el celular, abrir `http://192.168.0.10:5173` en Chrome.
+1. Levantar backend y frontend como siempre. El frontend ya acepta conexiones de otros equipos y
+   le reenvía la API al backend (`/api`), así que no hay que configurar `VITE_API_URL`.
+2. Averiguar la IP de la computadora (`ip addr` en Linux). Ejemplo: `192.168.0.10`.
+3. El micrófono del teléfono solo funciona en páginas seguras, y por IP la página es `http`.
+   Para marcarla como segura, una sola vez, en Chrome del celular:
+   - abrir `chrome://flags/#unsafely-treat-insecure-origin-as-secure`
+   - escribir `http://192.168.0.10:5173` en el cuadro, poner **Enabled** y tocar **Relaunch**.
+4. Abrir `http://192.168.0.10:5173`.
 
-Ojo: el reconocimiento de voz de Chrome exige conexión segura (`https`) salvo en `localhost`, así que por IP el micrófono no va a andar; la pronunciación se da por hecha, como en Firefox.
+(`npm run dev:telefono` sirve la app por `https` con certificado autofirmado, pero Chrome la
+sigue tratando como insegura y no da el micrófono: el paso 3 es lo que anda.)
+
+**Reconocimiento de voz en Linux (y en Firefox):** Chrome y Chromium en Linux no traen el
+reconocimiento de voz de Google (dan error `network`). En ese caso la app graba el audio y lo
+reconoce el backend con Vosk, si está activado:
+```bash
+cd backend
+npm install vosk-koffi
+mkdir -p models && cd models
+curl -O https://alphacephei.com/vosk/models/vosk-model-small-es-0.42.zip && unzip vosk-model-small-es-0.42.zip && cd ..
+AMI_SPEECH_PROVIDER=vosk AMI_VOSK_MODEL_PATH=./models/vosk-model-small-es-0.42 npm run start:dev
+```
+Vosk anda bien con palabras pero es flojo con sílabas sueltas: el reconocedor de Google (Chrome
+en Android, Windows o Mac) es bastante mejor.
 
 **Para que sea una app de teléfono de verdad:**
 - **Publicarla con `https`** (por ejemplo backend en Railway/Render y frontend en Vercel/Netlify, o los dos en un mismo servidor detrás de Nginx con certificado de Let's Encrypt). Con `https` el micrófono funciona en el celular.

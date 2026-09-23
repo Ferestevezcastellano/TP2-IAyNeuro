@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import type { Card, Feedback, PetSpecies, Tile } from '../api';
-import { canListen, listen, play } from '../audio';
+import type { Card, EntradaVoz, Feedback, PetSpecies, Tile } from '../api';
+import { listen, play } from '../audio';
 import { Ilustracion } from './Ilustracion';
 import { BotonSonido, CajaFeedback } from './comunes';
 import { Mascota } from './Mascota';
@@ -24,8 +24,8 @@ interface Props {
   card: Card;
   species: PetSpecies;
   onArmado: (sequence: string[]) => Promise<ResultadoArmado>;
-  /** `transcript` en null significa que no se pudo escuchar. */
-  onVoz?: (transcript: string | null) => Promise<ResultadoVoz>;
+  /** `null` significa que no se pudo escuchar. */
+  onVoz?: (voz: EntradaVoz) => Promise<ResultadoVoz>;
   /** La tarjeta quedó resuelta (y dicha, si pedía voz). */
   onLista: () => void;
   /** En Repaso la letra va en verde agua, como en el mockup, y no hay verificación por voz. */
@@ -55,7 +55,12 @@ export function Tarjeta({ card, species, onArmado, onVoz, onLista, repaso }: Pro
   /** Si al cerrar la hoja se vuelve a intentar la voz en vez de pasar de tarjeta. */
   const [puedeReintentar, setPuedeReintentar] = useState(false);
   const [noSeEntendio, setNoSeEntendio] = useState(false);
-  const [intentosVoz, setIntentosVoz] = useState(0);
+  /** Veces seguidas que el micrófono no captó nada. Los rechazos no cuentan acá. */
+  const [vacios, setVacios] = useState(0);
+  /** Falló el pedido al servidor: se avisa y se deja volver a tocar. */
+  const [sinConexion, setSinConexion] = useState(false);
+  /** El micrófono no se puede usar: por qué, para el adulto que está al lado. */
+  const [sinMicrofono, setSinMicrofono] = useState<string | null>(null);
   const temporizador = useRef<number | null>(null);
 
   useEffect(() => {
@@ -70,7 +75,9 @@ export function Tarjeta({ card, species, onArmado, onVoz, onLista, repaso }: Pro
     setVozRechazada(false);
     setPuedeReintentar(false);
     setNoSeEntendio(false);
-    setIntentosVoz(0);
+    setVacios(0);
+    setSinConexion(false);
+    setSinMicrofono(null);
     // La tarjeta aparece en silencio: el sonido sale cuando el chico toca el
     // boton, no solo. Que suene sin que nadie lo pida le saca el control de la
     // mano justo en el gesto que la app le esta pidiendo que haga.
@@ -85,6 +92,7 @@ export function Tarjeta({ card, species, onArmado, onVoz, onLista, repaso }: Pro
 
   const enviar = async (sequence: string[], sonandoUltima?: Promise<void>) => {
     setOcupado(true);
+    setSinConexion(false);
     try {
       const resultado = await onArmado(sequence);
       setFeedback(resultado.feedback);
@@ -111,6 +119,14 @@ export function Tarjeta({ card, species, onArmado, onVoz, onLista, repaso }: Pro
         setEquivocado(sequence[resultado.matchedPrefixLength] ?? null);
         setArmado(sequence.slice(0, resultado.matchedPrefixLength));
       }
+    } catch {
+      // Si el pedido falla (se cortó el wifi, el servidor se reinició), la
+      // tarjeta NO puede quedar con la ficha puesta: el próximo toque la
+      // agregaría de más y el armado ya nunca llegaría al largo esperado, que
+      // es justo lo que dejaba la letra trabada sin avanzar ni abrir el micrófono.
+      setArmado([]);
+      setMarcaError(null);
+      setSinConexion(true);
     } finally {
       setOcupado(false);
     }
@@ -121,7 +137,9 @@ export function Tarjeta({ card, species, onArmado, onVoz, onLista, repaso }: Pro
     const sonando = play(tile);
     setMarcaError(null);
     setEquivocado(null);
-    const siguiente = [...armado, tile.id];
+    // Por las dudas: si el armado ya estaba completo, el toque arranca de nuevo.
+    const base = armado.length >= card.expectedLength ? [] : armado;
+    const siguiente = [...base, tile.id];
     setArmado(siguiente);
     if (siguiente.length === card.expectedLength) void enviar(siguiente, sonando);
   };
@@ -134,54 +152,89 @@ export function Tarjeta({ card, species, onArmado, onVoz, onLista, repaso }: Pro
     setArmado((actual) => actual.slice(0, indice));
   };
 
-  /** Tras este numero de intentos sin entender, se sigue sin verificar. */
-  const MAX_INTENTOS_VOZ = 2;
+  /** Tras estas veces seguidas sin captar nada, se sigue sin verificar. */
+  const MAX_VACIOS = 3;
+
+  /**
+   * Manda la pronunciación al servidor. `null` es "no se pudo escuchar": el
+   * chico avanza, pero el intento queda SIN VERIFICAR y no suma como acierto de
+   * voz. Lo que NO se hace nunca es mandar la respuesta esperada como si la
+   * hubiera dicho.
+   */
+  const verificar = async (voz: EntradaVoz) => {
+    if (!onVoz) return;
+    const resultado = await onVoz(voz);
+
+    setFeedback(resultado.feedback);
+    setVozRechazada(!resultado.accepted);
+
+    if (resultado.accepted) {
+      setEsperandoVoz(false);
+      terminar();
+      return;
+    }
+
+    // Rechazada. Si quedan intentos, la tarjeta NO pasa: se le muestra como
+    // se hace el sonido y el microfono queda listo para volver a probar.
+    setPuedeReintentar(resultado.canRetry);
+    setEsperandoVoz(resultado.canRetry);
+    setInstrucciones(true);
+  };
 
   const hablar = async () => {
     if (!onVoz || escuchando || ocupado) return;
     setEscuchando(true);
     setNoSeEntendio(false);
+    setSinConexion(false);
+    setSinMicrofono(null);
     try {
-      // `listen()` devuelve tres cosas distintas y hay que tratarlas distinto:
-      //   null  -> el navegador no tiene reconocimiento
-      //   ''    -> escucho pero no entendio nada
-      //   texto -> lo que dijo el chico
-      const escuchado = canListen ? await listen() : null;
-      const intento = intentosVoz + 1;
-      setIntentosVoz(intento);
+      const escucha = await listen();
+
+      // El microfono no se puede usar (sin permiso, sin https, navegador sin
+      // reconocimiento). Antes esto pasaba de tarjeta al instante, sin que el
+      // chico llegara a hablar. Ahora se queda: se explica por que y se ofrece
+      // seguir sin decirlo, pero lo decide la persona, no la app.
+      if (escucha.tipo === 'sin-microfono') {
+        setSinMicrofono(escucha.motivo);
+        return;
+      }
 
       // No se entendio, pero el navegador SI puede escuchar: no es un error del
-      // chico, es que el microfono no capto. Le damos otra oportunidad antes de
-      // seguir. Lo que NO se hace nunca es mandar la respuesta esperada como si
-      // la hubiera dicho: eso daba por buena cualquier cosa.
-      if (escuchado === '' && intento < MAX_INTENTOS_VOZ) {
-        setNoSeEntendio(true);
+      // chico, es que el microfono no capto. Le damos otra oportunidad. Se
+      // cuentan aparte de los rechazos: antes un "no te escuche" despues de un
+      // "lo dijiste mal" agotaba los intentos y salteaba la tarjeta.
+      if (escucha.tipo === 'vacio') {
+        const seguidos = vacios + 1;
+        setVacios(seguidos);
+        if (seguidos < MAX_VACIOS) {
+          setNoSeEntendio(true);
+          return;
+        }
+        await verificar(null);
         return;
       }
 
-      // O el navegador no puede escuchar, o ya lo intentamos y no hubo caso.
-      // El chico avanza igual, pero el intento queda SIN VERIFICAR: no suma
-      // como acierto de voz ni en el puntaje ni en el panel docente.
-      const resultado = escuchado ? await onVoz(escuchado) : await onVoz(null);
-
-      setFeedback(resultado.feedback);
-      setVozRechazada(!resultado.accepted);
-
-      if (resultado.accepted) {
-        setEsperandoVoz(false);
-        terminar();
-        return;
-      }
-
-      // Rechazada. Si quedan intentos, la tarjeta NO pasa: se le muestra como
-      // se hace el sonido y el microfono queda listo para volver a probar.
-      // Antes esto salteaba el ejercicio, que es justo lo contrario de lo que
-      // el propio feedback le estaba prometiendo ("lo decimos una vez mas").
-      setPuedeReintentar(resultado.canRetry);
-      setEsperandoVoz(resultado.canRetry);
-      setInstrucciones(true);
+      setVacios(0);
+      await verificar(escucha.tipo === 'texto' ? escucha.texto : { audioBase64: escucha.audioBase64 });
+    } catch {
+      // El servidor no contesto: se queda en la misma tarjeta con el microfono listo.
+      setSinConexion(true);
     } finally {
       setEscuchando(false);
+    }
+  };
+
+  /** Seguir sin decirlo, cuando el microfono no anda. Queda sin verificar. */
+  const seguirSinVoz = async () => {
+    if (ocupado) return;
+    setOcupado(true);
+    setSinMicrofono(null);
+    try {
+      await verificar(null);
+    } catch {
+      setSinConexion(true);
+    } finally {
+      setOcupado(false);
     }
   };
 
@@ -212,7 +265,7 @@ export function Tarjeta({ card, species, onArmado, onVoz, onLista, repaso }: Pro
           <span className={esSilaba ? 'letra-silaba' : ''}>{unidad}</span>
         </button>
         <p className="t-instruccion">TOCÁ PARA ESCUCHAR EL SONIDO</p>
-        <BloqueVoz visible={conVoz} activo={vozPendiente} escuchando={escuchando} noSeEntendio={noSeEntendio} onHablar={hablar} />
+        <BloqueVoz visible={conVoz} activo={vozPendiente} escuchando={escuchando} noSeEntendio={noSeEntendio} sinConexion={sinConexion} sinMicrofono={sinMicrofono} onHablar={hablar} onSeguir={seguirSinVoz} />
         <div className="espacio" />
         <CajaFeedback species={species} feedback={feedback} estrellas={conEstrellas} />
         {instrucciones && <HojaInstrucciones species={species} letra={card.targetWord ?? card.targetPhoneme ?? ''} sonido={card.spokenAs} reintenta={puedeReintentar} onCerrar={cerrarInstrucciones} />}
@@ -250,7 +303,7 @@ export function Tarjeta({ card, species, onArmado, onVoz, onLista, repaso }: Pro
             );
           })}
         </div>
-        <BloqueVoz visible={conVoz} activo={vozPendiente} escuchando={escuchando} noSeEntendio={noSeEntendio} onHablar={hablar} compacto />
+        <BloqueVoz visible={conVoz} activo={vozPendiente} escuchando={escuchando} noSeEntendio={noSeEntendio} sinConexion={sinConexion} sinMicrofono={sinMicrofono} onHablar={hablar} onSeguir={seguirSinVoz} compacto />
         <div className="espacio" />
         {feedback && (acierto || marcaError !== null) ? (
           <CajaFeedback species={species} feedback={feedback} estrellas={conEstrellas} />
@@ -307,7 +360,7 @@ export function Tarjeta({ card, species, onArmado, onVoz, onLista, repaso }: Pro
         })}
       </div>
 
-      <BloqueVoz visible={conVoz} activo={vozPendiente} escuchando={escuchando} noSeEntendio={noSeEntendio} onHablar={hablar} compacto />
+      <BloqueVoz visible={conVoz} activo={vozPendiente} escuchando={escuchando} noSeEntendio={noSeEntendio} sinConexion={sinConexion} sinMicrofono={sinMicrofono} onHablar={hablar} onSeguir={seguirSinVoz} compacto />
       <div className="espacio" />
       <CajaFeedback species={species} feedback={feedback} estrellas={conEstrellas} />
       {instrucciones && <HojaInstrucciones species={species} letra={objetivo} sonido={card.spokenAs} reintenta={puedeReintentar} onCerrar={cerrarInstrucciones} />}
@@ -322,12 +375,28 @@ interface BloqueVozProps {
   compacto?: boolean;
   /** Escuchó pero no entendió nada. No es un error del chico: se le pide de nuevo. */
   noSeEntendio?: boolean;
+  sinConexion?: boolean;
+  /** Por qué no se puede usar el micrófono; si viene, se ofrece seguir sin decirlo. */
+  sinMicrofono?: string | null;
   onHablar: () => void;
+  onSeguir: () => void;
 }
 
 /** El micrófono y "AHORA DECILO VOS". Se ve apagado hasta que el armado esté bien. */
-function BloqueVoz({ visible, activo, escuchando, compacto, noSeEntendio, onHablar }: BloqueVozProps) {
+function BloqueVoz({ visible, activo, escuchando, compacto, noSeEntendio, sinConexion, sinMicrofono, onHablar, onSeguir }: BloqueVozProps) {
+  if (sinConexion) return <p className="aviso">NO SE PUDO CONECTAR. TOCÁ DE NUEVO.</p>;
   if (!visible) return null;
+  if (sinMicrofono) {
+    return (
+      <div className="sin-microfono">
+        <p className="aviso">{sinMicrofono}</p>
+        <div className="sin-microfono-botones">
+          <button className="btn-secundario" onClick={onHablar}>PROBAR DE NUEVO</button>
+          <button className="btn-secundario" onClick={onSeguir}>SEGUIR SIN DECIRLO</button>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className={`bloque-voz ${compacto ? 'compacto' : ''} ${activo ? 'activo' : ''}`}>
       <button className={`btn-mic ${escuchando ? 'escuchando' : ''}`} onClick={onHablar} disabled={!activo || escuchando} aria-label="Decilo vos">

@@ -1,4 +1,13 @@
-export const API_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:3000';
+/**
+ * Por defecto la API se pide al mismo origen que la app, bajo `/api`, y Vite la
+ * reenvía al backend (ver `vite.config.ts`). Así, abriendo la app desde el
+ * teléfono por la IP de la compu o por un túnel https, la API viaja por el mismo
+ * camino sin configurar nada. `VITE_API_URL` la apunta a otro lado.
+ */
+export const API_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? '/api';
+
+/** Un pedido que no contesta en este tiempo se da por fallido, en vez de dejar la pantalla esperando. */
+const REQUEST_TIMEOUT_MS = 12000;
 
 export type PetSpecies = 'LION' | 'POLAR_BEAR' | 'RHINOCEROS' | 'KOALA';
 
@@ -59,6 +68,9 @@ export interface AttemptResult {
   voiceCheckRequired: boolean;
   session: SessionState;
 }
+
+/** Lo que se manda a verificar: texto ya reconocido, audio grabado, o nada. */
+export type EntradaVoz = string | { audioBase64: string } | null;
 
 export interface VoiceResult {
   accepted: boolean;
@@ -166,16 +178,26 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
+async function request<T>(method: string, path: string, body?: unknown, timeoutMs = REQUEST_TIMEOUT_MS): Promise<T> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   const token = getToken();
   if (token) headers['x-ami-student-token'] = token;
 
-  const response = await fetch(`${API_URL}${path}`, {
-    method,
-    headers,
-    body: body === undefined ? undefined : JSON.stringify(body),
-  });
+  const controller = new AbortController();
+  const timer = window.setTimeout(() => controller.abort(), timeoutMs);
+  let response: Response;
+  try {
+    response = await fetch(`${API_URL}${path}`, {
+      method,
+      headers,
+      body: body === undefined ? undefined : JSON.stringify(body),
+      signal: controller.signal,
+    });
+  } catch {
+    throw new ApiError('NO SE PUDO HABLAR CON EL SERVIDOR.', 0);
+  } finally {
+    window.clearTimeout(timer);
+  }
 
   const data = await response.json().catch(() => null);
   if (!response.ok) {
@@ -202,16 +224,24 @@ export const api = {
   attempt: (sessionId: string, cardId: string, sequence: string[]) =>
     request<AttemptResult>('POST', `/practice/sessions/${sessionId}/cards/${cardId}/attempt`, { sequence }),
   /**
-   * Verifica la pronunciación. `transcript` en null significa "no se pudo
-   * escuchar": el chico avanza igual, pero el intento queda registrado sin
-   * verificar y no cuenta como acierto de voz.
+   * Verifica la pronunciación: lo que entendió el navegador, o el audio grabado
+   * para que lo reconozca el servidor. `null` significa "no se pudo escuchar":
+   * el chico avanza igual, pero el intento queda registrado sin verificar y no
+   * cuenta como acierto de voz.
    */
-  voiceCheck: (sessionId: string, cardId: string, transcript: string | null) =>
+  voiceCheck: (sessionId: string, cardId: string, voz: EntradaVoz) =>
     request<VoiceResult>(
       'POST',
       `/practice/sessions/${sessionId}/cards/${cardId}/voice-check`,
-      transcript === null ? { unverified: true } : { transcript },
+      voz === null ? { unverified: true } : typeof voz === 'string' ? { transcript: voz } : { audioBase64: voz.audioBase64 },
     ),
+  /**
+   * Despierta al servidor. En el plan gratis de Render se apaga tras 15 minutos
+   * sin uso y tarda hasta un minuto en volver: se espera acá, con la pantalla de
+   * carga, y no en medio de una tarjeta.
+   */
+  despertar: () => request<{ provider: string }>('GET', '/catalog/speech', undefined, 90000),
+  speechProvider: () => request<{ provider: string }>('GET', '/catalog/speech'),
   complete: (sessionId: string) => request<SessionSummary>('POST', `/practice/sessions/${sessionId}/complete`, {}),
   reviewSounds: () => request<ReviewSound[]>('GET', '/review/sounds'),
   reviewCards: (limit: number) => request<{ cards: Card[]; available: number }>('GET', `/review/cards?limit=${limit}`),

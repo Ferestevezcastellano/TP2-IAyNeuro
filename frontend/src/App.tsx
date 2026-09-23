@@ -35,6 +35,7 @@ export default function App() {
 
     (async () => {
       let destino: Pantalla = { nombre: 'onboarding' };
+      await api.despertar().catch(() => undefined);
       if (getToken()) {
         try {
           await refrescar();

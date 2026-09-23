@@ -2,6 +2,7 @@ import { Controller, Get } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AccessoryDto, PetSpeciesDto } from '../../common/dto/pet.dto';
 import { LevelDto } from '../../common/dto/level.dto';
+import { SpeechRecognitionPort } from '../../core/ports';
 import { CatalogService } from './catalog.service';
 import { MasteryRulesDto } from './dto/mastery-rules.dto';
 
@@ -12,7 +13,20 @@ import { MasteryRulesDto } from './dto/mastery-rules.dto';
 @ApiTags('Catalogo')
 @Controller('catalog')
 export class CatalogController {
-  constructor(private readonly catalog: CatalogService) {}
+  constructor(
+    private readonly catalog: CatalogService,
+    private readonly speech: SpeechRecognitionPort,
+  ) {}
+
+  @Get('speech')
+  @ApiOperation({
+    summary: 'Que reconocedor de voz tiene el servidor.',
+    description:
+      'Si es `vosk`, el frontend puede mandar el audio grabado cuando el navegador no reconoce voz (Linux, Firefox). Con `stub` no conviene: no escucha de verdad.',
+  })
+  speechProvider(): { provider: string } {
+    return { provider: this.speech.name };
+  }
 
   @Get('pets')
   @ApiOperation({ summary: 'Las cuatro mascotas entre las que elige el chico.' })

@@ -71,8 +71,8 @@ export function Sesion({ species, levelId, onSalir, onTerminada }: Props) {
           if (r.correct && !r.voiceCheckRequired) siguiente.current = r.session;
           return r;
         }}
-        onVoz={async (transcript) => {
-          const r = await api.voiceCheck(sesion.sessionId, card.id, transcript);
+        onVoz={async (voz) => {
+          const r = await api.voiceCheck(sesion.sessionId, card.id, voz);
           siguiente.current = r.session;
           return r;
         }}

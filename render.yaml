@@ -1,0 +1,23 @@
+# Backend de AMI en Render (plan gratis). Render lo lee al crear un "Blueprint"
+# desde este repositorio: no hay que cargar nada a mano.
+#
+# El plan gratis apaga el servidor tras 15 minutos sin uso y, como el estado
+# vive en memoria, al volver a prenderse los alumnos arrancan de cero. El
+# contenido de los niveles se carga solo en cada arranque.
+services:
+  - type: web
+    name: ami-backend
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start:prod
+    healthCheckPath: /catalog/levels
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      # El teléfono reconoce la voz con Chrome, no hace falta el servidor. Vosk
+      # (para Linux o Firefox) necesita un modelo de 40 MB y más memoria que la
+      # del plan gratis: queda apagado.
+      - key: AMI_SPEECH_PROVIDER
+        value: stub
