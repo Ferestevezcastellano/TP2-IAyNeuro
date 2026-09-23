@@ -102,6 +102,8 @@ export class PracticeController {
     const result = await this.practice.voiceCheck(student, sessionId, cardId, body);
     return {
       accepted: result.accepted,
+      verified: result.verified,
+      canRetry: result.canRetry,
       transcript: result.transcript,
       expected: result.expected,
       similarity: result.similarity,

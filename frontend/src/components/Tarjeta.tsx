@@ -15,6 +15,8 @@ export interface ResultadoArmado {
 
 export interface ResultadoVoz {
   accepted: boolean;
+  /** Si todavía quedan intentos para esta misma tarjeta. */
+  canRetry: boolean;
   feedback: Feedback;
 }
 
@@ -22,7 +24,8 @@ interface Props {
   card: Card;
   species: PetSpecies;
   onArmado: (sequence: string[]) => Promise<ResultadoArmado>;
-  onVoz?: (transcript: string) => Promise<ResultadoVoz>;
+  /** `transcript` en null significa que no se pudo escuchar. */
+  onVoz?: (transcript: string | null) => Promise<ResultadoVoz>;
   /** La tarjeta quedó resuelta (y dicha, si pedía voz). */
   onLista: () => void;
   /** En Repaso la letra va en verde agua, como en el mockup, y no hay verificación por voz. */
@@ -49,6 +52,10 @@ export function Tarjeta({ card, species, onArmado, onVoz, onLista, repaso }: Pro
   const [ocupado, setOcupado] = useState(false);
   const [equivocado, setEquivocado] = useState<string | null>(null);
   const [vozRechazada, setVozRechazada] = useState(false);
+  /** Si al cerrar la hoja se vuelve a intentar la voz en vez de pasar de tarjeta. */
+  const [puedeReintentar, setPuedeReintentar] = useState(false);
+  const [noSeEntendio, setNoSeEntendio] = useState(false);
+  const [intentosVoz, setIntentosVoz] = useState(0);
   const temporizador = useRef<number | null>(null);
 
   useEffect(() => {
@@ -61,6 +68,9 @@ export function Tarjeta({ card, species, onArmado, onVoz, onLista, repaso }: Pro
     setInstrucciones(false);
     setEquivocado(null);
     setVozRechazada(false);
+    setPuedeReintentar(false);
+    setNoSeEntendio(false);
+    setIntentosVoz(0);
     // La tarjeta aparece en silencio: el sonido sale cuando el chico toca el
     // boton, no solo. Que suene sin que nadie lo pida le saca el control de la
     // mano justo en el gesto que la app le esta pidiendo que haga.
@@ -124,19 +134,52 @@ export function Tarjeta({ card, species, onArmado, onVoz, onLista, repaso }: Pro
     setArmado((actual) => actual.slice(0, indice));
   };
 
+  /** Tras este numero de intentos sin entender, se sigue sin verificar. */
+  const MAX_INTENTOS_VOZ = 2;
+
   const hablar = async () => {
     if (!onVoz || escuchando || ocupado) return;
     setEscuchando(true);
+    setNoSeEntendio(false);
     try {
-      // Sin reconocimiento en el navegador, la demo sigue igual: se da por dicho.
-      const escuchado = canListen ? await listen() : card.voiceTarget ?? '';
-      const transcript = escuchado || card.voiceTarget || '';
-      const resultado = await onVoz(transcript);
+      // `listen()` devuelve tres cosas distintas y hay que tratarlas distinto:
+      //   null  -> el navegador no tiene reconocimiento
+      //   ''    -> escucho pero no entendio nada
+      //   texto -> lo que dijo el chico
+      const escuchado = canListen ? await listen() : null;
+      const intento = intentosVoz + 1;
+      setIntentosVoz(intento);
+
+      // No se entendio, pero el navegador SI puede escuchar: no es un error del
+      // chico, es que el microfono no capto. Le damos otra oportunidad antes de
+      // seguir. Lo que NO se hace nunca es mandar la respuesta esperada como si
+      // la hubiera dicho: eso daba por buena cualquier cosa.
+      if (escuchado === '' && intento < MAX_INTENTOS_VOZ) {
+        setNoSeEntendio(true);
+        return;
+      }
+
+      // O el navegador no puede escuchar, o ya lo intentamos y no hubo caso.
+      // El chico avanza igual, pero el intento queda SIN VERIFICAR: no suma
+      // como acierto de voz ni en el puntaje ni en el panel docente.
+      const resultado = escuchado ? await onVoz(escuchado) : await onVoz(null);
+
       setFeedback(resultado.feedback);
-      setEsperandoVoz(false);
       setVozRechazada(!resultado.accepted);
-      if (!resultado.accepted) setInstrucciones(true);
-      else terminar();
+
+      if (resultado.accepted) {
+        setEsperandoVoz(false);
+        terminar();
+        return;
+      }
+
+      // Rechazada. Si quedan intentos, la tarjeta NO pasa: se le muestra como
+      // se hace el sonido y el microfono queda listo para volver a probar.
+      // Antes esto salteaba el ejercicio, que es justo lo contrario de lo que
+      // el propio feedback le estaba prometiendo ("lo decimos una vez mas").
+      setPuedeReintentar(resultado.canRetry);
+      setEsperandoVoz(resultado.canRetry);
+      setInstrucciones(true);
     } finally {
       setEscuchando(false);
     }
@@ -144,6 +187,12 @@ export function Tarjeta({ card, species, onArmado, onVoz, onLista, repaso }: Pro
 
   const cerrarInstrucciones = () => {
     setInstrucciones(false);
+    if (puedeReintentar) {
+      // Queda en la misma tarjeta, con el microfono habilitado.
+      setPuedeReintentar(false);
+      setVozRechazada(false);
+      return;
+    }
     terminar();
   };
 
@@ -163,10 +212,10 @@ export function Tarjeta({ card, species, onArmado, onVoz, onLista, repaso }: Pro
           <span className={esSilaba ? 'letra-silaba' : ''}>{unidad}</span>
         </button>
         <p className="t-instruccion">TOCÁ PARA ESCUCHAR EL SONIDO</p>
-        <BloqueVoz visible={conVoz} activo={vozPendiente} escuchando={escuchando} onHablar={hablar} />
+        <BloqueVoz visible={conVoz} activo={vozPendiente} escuchando={escuchando} noSeEntendio={noSeEntendio} onHablar={hablar} />
         <div className="espacio" />
         <CajaFeedback species={species} feedback={feedback} estrellas={conEstrellas} />
-        {instrucciones && <HojaInstrucciones species={species} letra={card.targetWord ?? card.targetPhoneme ?? ''} sonido={card.spokenAs} onCerrar={cerrarInstrucciones} />}
+        {instrucciones && <HojaInstrucciones species={species} letra={card.targetWord ?? card.targetPhoneme ?? ''} sonido={card.spokenAs} reintenta={puedeReintentar} onCerrar={cerrarInstrucciones} />}
       </>
     );
   }
@@ -201,12 +250,12 @@ export function Tarjeta({ card, species, onArmado, onVoz, onLista, repaso }: Pro
             );
           })}
         </div>
-        <BloqueVoz visible={conVoz} activo={vozPendiente} escuchando={escuchando} onHablar={hablar} compacto />
+        <BloqueVoz visible={conVoz} activo={vozPendiente} escuchando={escuchando} noSeEntendio={noSeEntendio} onHablar={hablar} compacto />
         <div className="espacio" />
         {feedback && (acierto || marcaError !== null) ? (
           <CajaFeedback species={species} feedback={feedback} estrellas={conEstrellas} />
         ) : null}
-        {instrucciones && <HojaInstrucciones species={species} letra={card.targetPhoneme ?? ''} sonido={card.spokenAs} onCerrar={cerrarInstrucciones} />}
+        {instrucciones && <HojaInstrucciones species={species} letra={card.targetPhoneme ?? ''} sonido={card.spokenAs} reintenta={puedeReintentar} onCerrar={cerrarInstrucciones} />}
       </>
     );
   }
@@ -258,10 +307,10 @@ export function Tarjeta({ card, species, onArmado, onVoz, onLista, repaso }: Pro
         })}
       </div>
 
-      <BloqueVoz visible={conVoz} activo={vozPendiente} escuchando={escuchando} onHablar={hablar} compacto />
+      <BloqueVoz visible={conVoz} activo={vozPendiente} escuchando={escuchando} noSeEntendio={noSeEntendio} onHablar={hablar} compacto />
       <div className="espacio" />
       <CajaFeedback species={species} feedback={feedback} estrellas={conEstrellas} />
-      {instrucciones && <HojaInstrucciones species={species} letra={objetivo} sonido={card.spokenAs} onCerrar={cerrarInstrucciones} />}
+      {instrucciones && <HojaInstrucciones species={species} letra={objetivo} sonido={card.spokenAs} reintenta={puedeReintentar} onCerrar={cerrarInstrucciones} />}
     </>
   );
 }
@@ -271,18 +320,22 @@ interface BloqueVozProps {
   activo: boolean;
   escuchando: boolean;
   compacto?: boolean;
+  /** Escuchó pero no entendió nada. No es un error del chico: se le pide de nuevo. */
+  noSeEntendio?: boolean;
   onHablar: () => void;
 }
 
 /** El micrófono y "AHORA DECILO VOS". Se ve apagado hasta que el armado esté bien. */
-function BloqueVoz({ visible, activo, escuchando, compacto, onHablar }: BloqueVozProps) {
+function BloqueVoz({ visible, activo, escuchando, compacto, noSeEntendio, onHablar }: BloqueVozProps) {
   if (!visible) return null;
   return (
     <div className={`bloque-voz ${compacto ? 'compacto' : ''} ${activo ? 'activo' : ''}`}>
       <button className={`btn-mic ${escuchando ? 'escuchando' : ''}`} onClick={onHablar} disabled={!activo || escuchando} aria-label="Decilo vos">
         <img src="/icons/microphone.svg" width={24} height={24} alt="" />
       </button>
-      <p className="t-instruccion">{escuchando ? 'TE ESCUCHO...' : 'AHORA DECILO VOS'}</p>
+      <p className="t-instruccion">
+        {escuchando ? 'TE ESCUCHO...' : noSeEntendio ? 'NO TE ESCUCHE, PROBA DE NUEVO' : 'AHORA DECILO VOS'}
+      </p>
     </div>
   );
 }
@@ -291,11 +344,13 @@ interface HojaProps {
   species: PetSpecies;
   letra: string;
   sonido: string;
+  /** Al cerrar se vuelve a intentar en la misma tarjeta. */
+  reintenta?: boolean;
   onCerrar: () => void;
 }
 
 /** 05 — La hoja naranja con la mascota mostrando cómo se hace el sonido. */
-function HojaInstrucciones({ species, letra, sonido, onCerrar }: HojaProps) {
+function HojaInstrucciones({ species, letra, sonido, reintenta, onCerrar }: HojaProps) {
   return (
     <div className="hoja" role="dialog" aria-label="Cómo se hace el sonido">
       <button className="btn-volver" onClick={onCerrar} aria-label="Cerrar">
@@ -315,6 +370,11 @@ function HojaInstrucciones({ species, letra, sonido, onCerrar }: HojaProps) {
           </p>
         </div>
       )}
+      {/* El boton dice exactamente lo que va a pasar al tocarlo: si quedan
+          intentos se vuelve a la misma tarjeta, y si no, se sigue. */}
+      <button className="btn-hoja" onClick={onCerrar}>
+        {reintenta ? 'PROBAR DE NUEVO' : 'SEGUIR'}
+      </button>
     </div>
   );
 }

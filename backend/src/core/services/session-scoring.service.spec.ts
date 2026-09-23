@@ -95,6 +95,7 @@ describe('SessionScoringService', () => {
             confidence: 0.4,
             similarity: 0.5,
             accepted: false,
+            verified: true,
             provider: 'stub',
             at: new Date(),
           },
@@ -105,6 +106,36 @@ describe('SessionScoringService', () => {
 
     // Armado perfecto (1) y voz rechazada (0): queda el peso del armado.
     expect(withRejectedVoice.accuracy).toBe(0.6);
+  });
+
+  it('una voz que no se pudo verificar no suma ni resta: la tarjeta vale por el armado', () => {
+    const cards = [card('c1', 'MESA')];
+    const score = scoring.score(
+      session(cards, {
+        attempts: [attempt('c1', true, 1)],
+        voiceChecks: [
+          {
+            cardId: 'c1',
+            transcript: '',
+            expected: 'MESA',
+            confidence: 0,
+            similarity: 0,
+            // El chico pasa igual, pero nadie lo escucho.
+            accepted: true,
+            verified: false,
+            provider: 'none',
+            at: new Date(),
+          },
+        ],
+      }),
+      cards,
+    );
+
+    // Vale 1 por el armado, no 1 por haber "dicho bien" una palabra que nadie
+    // escucho: si contara como acierto de voz, un microfono roto inflaria la
+    // metrica de dominio, que es lo unico que el TP tiene que medir bien.
+    expect(score.accuracy).toBe(1);
+    expect(score.cards[0].voiceScore).toBeNull();
   });
 
   it('armado perfecto mas voz aceptada da 1', () => {
@@ -120,6 +151,7 @@ describe('SessionScoringService', () => {
             confidence: 0.9,
             similarity: 1,
             accepted: true,
+            verified: true,
             provider: 'stub',
             at: new Date(),
           },

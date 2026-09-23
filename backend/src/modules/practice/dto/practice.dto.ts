@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsBase64, IsInt, IsOptional, IsString, Min, MinLength } from 'class-validator';
+import { IsArray, IsBase64, IsBoolean, IsInt, IsOptional, IsString, Min, MinLength } from 'class-validator';
 import { CardDto } from '../../../common/dto/card.dto';
 import { FeedbackDto } from '../../../common/dto/feedback.dto';
 import { LevelWithStatusDto } from '../../../common/dto/level.dto';
@@ -109,6 +109,16 @@ export class VoiceCheckRequestDto {
   @IsString()
   @MinLength(1)
   transcript?: string;
+
+  @ApiPropertyOptional({
+    description:
+      'El cliente no pudo escuchar (el navegador no tiene reconocimiento, el microfono no respondio, o no se entendio nada). ' +
+      'El intento se registra sin verificar: el chico avanza, pero no cuenta como acierto de voz.',
+    example: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  unverified?: boolean;
 }
 
 export class VoiceCheckResultDto {
@@ -126,6 +136,20 @@ export class VoiceCheckResultDto {
 
   @ApiProperty({ description: 'Confianza que reporta el reconocedor.', example: 0.82 })
   confidence!: number;
+
+  @ApiProperty({
+    description:
+      'Si la pronunciacion se comparo de verdad. En false el chico avanza igual, pero el intento no cuenta como acierto de voz.',
+    example: true,
+  })
+  verified!: boolean;
+
+  @ApiProperty({
+    description:
+      'Si todavia puede volver a intentar la pronunciacion de esta misma tarjeta. Un rechazo no saltea la tarjeta.',
+    example: false,
+  })
+  canRetry!: boolean;
 
   @ApiProperty({ description: 'Que reconocedor resolvio el audio.', example: 'stub' })
   provider!: string;

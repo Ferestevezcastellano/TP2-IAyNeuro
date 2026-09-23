@@ -31,6 +31,17 @@ export interface VoiceCheck {
   confidence: number;
   similarity: number;
   accepted: boolean;
+  /**
+   * Si la pronunciacion se comparo de verdad contra lo esperado.
+   *
+   * Es false cuando el cliente no pudo escuchar: el navegador no tiene
+   * reconocimiento, el microfono no respondio, o no se entendio nada. En ese
+   * caso el chico pasa igual (no es su error), pero el intento NO cuenta como
+   * acierto de voz: ni para el puntaje de la sesion ni para el panel docente.
+   * Dar por buena una pronunciacion que nadie escucho infla la metrica de
+   * dominio, que es lo unico que este TP tiene que medir bien.
+   */
+  verified: boolean;
   provider: string;
   at: Date;
 }

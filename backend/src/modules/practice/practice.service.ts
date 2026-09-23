@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import {
   Accessory,
   Card,
+  CardKind,
   Level,
   LevelStatus,
   PracticeSession,
@@ -31,7 +32,11 @@ import {
   SessionScoringService,
   WordAssemblyValidator,
 } from '../../core/services';
-import { VOICE_SIMILARITY_THRESHOLD } from '../../core/config/mastery.config';
+import {
+  ISOLATED_PHONEME_FLOOR,
+  MAX_VOICE_ATTEMPTS,
+  VOICE_SIMILARITY_THRESHOLD,
+} from '../../core/config/mastery.config';
 import { StudentService } from '../student/student.service';
 
 export interface SessionView {
@@ -51,10 +56,14 @@ export interface AttemptOutcome extends SessionView {
 
 export interface VoiceOutcome extends SessionView {
   accepted: boolean;
+  /** Si todavia puede volver a intentar la pronunciacion de esta misma tarjeta. */
+  canRetry: boolean;
   transcript: string;
   expected: string;
   similarity: number;
   confidence: number;
+  /** Si la pronunciacion se llego a comparar de verdad contra lo esperado. */
+  verified: boolean;
   provider: string;
   feedback: Feedback;
 }
@@ -216,7 +225,7 @@ export class PracticeService {
     student: Student,
     sessionId: string,
     cardId: string,
-    input: { audioBase64?: string; transcript?: string },
+    input: { audioBase64?: string; transcript?: string; unverified?: boolean },
   ): Promise<VoiceOutcome> {
     const session = await this.requireOpenSession(student, sessionId);
     const card = await this.requireCurrentCard(session, cardId);
@@ -233,8 +242,17 @@ export class PracticeService {
     let transcript: string;
     let confidence: number;
     let provider: string;
+    let verified = true;
 
-    if (input.transcript !== undefined) {
+    if (input.unverified) {
+      // El cliente avisa que no pudo escuchar. No se inventa una pronunciacion:
+      // el chico avanza, pero el intento queda marcado como no verificado y no
+      // suma como acierto de voz en el puntaje ni en el panel docente.
+      transcript = '';
+      confidence = 0;
+      provider = 'none';
+      verified = false;
+    } else if (input.transcript !== undefined) {
       transcript = input.transcript;
       confidence = 1;
       provider = 'client';
@@ -247,16 +265,32 @@ export class PracticeService {
       throw new BadRequestException('Hace falta audioBase64 o transcript.');
     }
 
-    const similarity = this.phonetics.similarity(transcript, expected);
-    const accepted = similarity >= VOICE_SIMILARITY_THRESHOLD;
+    const similarity = verified ? this.phonetics.similarity(transcript, expected) : 0;
+
+    // Un fonema aislado ("aaa", "mmm") esta fuera del alcance del reconocedor del
+    // navegador. Si el parecido queda muy bajo en una tarjeta de letra nueva, es
+    // casi seguro que fallo el reconocedor y no el chico: se registra sin
+    // verificar en vez de acusarlo de haberlo dicho mal.
+    if (verified && card.kind === CardKind.LETTER_INTRO && similarity < ISOLATED_PHONEME_FLOOR) {
+      verified = false;
+    }
+
+    // Sin verificar, el chico pasa igual: no es su error que el microfono no ande.
+    const accepted = verified ? similarity >= VOICE_SIMILARITY_THRESHOLD : true;
+
+    const intentos = session.voiceChecks.filter((check) => check.cardId === cardId).length + 1;
+    // Un rechazo NO saltea la tarjeta: se puede volver a intentar. Solo se
+    // avanza al aceptar, o cuando se agotaron los intentos.
+    const avanza = accepted || intentos >= MAX_VOICE_ATTEMPTS;
+    const canRetry = !accepted && !avanza;
 
     const updated: PracticeSession = {
       ...session,
       voiceChecks: [
         ...session.voiceChecks,
-        { cardId, transcript, expected, confidence, similarity, accepted, provider, at: new Date() },
+        { cardId, transcript, expected, confidence, similarity, accepted, verified, provider, at: new Date() },
       ],
-      currentCardIndex: session.currentCardIndex + 1,
+      currentCardIndex: avanza ? session.currentCardIndex + 1 : session.currentCardIndex,
     };
 
     const saved = await this.sessions.save(updated);
@@ -265,11 +299,13 @@ export class PracticeService {
       session: saved,
       card: await this.currentCard(saved),
       accepted,
+      canRetry,
       transcript,
       expected,
       similarity: Number(similarity.toFixed(4)),
       confidence: Number(confidence.toFixed(4)),
       provider,
+      verified,
       feedback: this.feedback.forVoice(card, accepted, similarity),
     };
   }

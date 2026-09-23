@@ -39,11 +39,13 @@ export class SessionScoringService {
 
       const voiceRequired = Boolean(card?.voiceTarget);
       const voiceChecks = session.voiceChecks.filter((check) => check.cardId === cardId);
-      const voiceScore = voiceRequired
-        ? voiceChecks.some((check) => check.accepted)
-          ? 1
-          : 0
-        : null;
+      const verificados = voiceChecks.filter((check) => check.verified);
+      // Si la tarjeta pedia voz pero no se pudo verificar ninguna vez, la
+      // tarjeta se puntua solo por el armado: no hay con que puntuar la voz y
+      // castigar al chico por un microfono que no anduvo seria falso.
+      const sinVerificar = voiceChecks.length > 0 && verificados.length === 0;
+      const voiceScore =
+        !voiceRequired || sinVerificar ? null : verificados.some((check) => check.accepted) ? 1 : 0;
 
       const score =
         voiceScore === null ? assemblyScore : assemblyScore * (1 - VOICE_WEIGHT) + voiceScore * VOICE_WEIGHT;

@@ -383,6 +383,22 @@ button:disabled { cursor: default; }
   color: var(--tinta);
 }
 
+/* La salida de la hoja. Dice qué va a pasar al tocarla: volver a probar la
+   misma tarjeta, o seguir. Antes solo estaba la cruz y no quedaba claro. */
+.btn-hoja {
+  display: block;
+  width: min(244px, 70vw);
+  height: 54px;
+  margin: 18px auto 0;
+  border-radius: 20px;
+  background: var(--crema);
+  color: var(--naranja-fuerte);
+  font-family: var(--fredoka);
+  font-weight: 600;
+  font-size: 17px;
+  letter-spacing: 0.4px;
+}
+
 /* ---- Utilidades ---- */
 .espacio { flex: 1 1 auto; }
 .centro { text-align: center; }

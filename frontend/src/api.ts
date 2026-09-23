@@ -62,6 +62,10 @@ export interface AttemptResult {
 
 export interface VoiceResult {
   accepted: boolean;
+  /** Si todavía puede volver a intentar la pronunciación de esta misma tarjeta. */
+  canRetry: boolean;
+  /** Si la pronunciación se llegó a comparar de verdad contra lo esperado. */
+  verified: boolean;
   transcript: string;
   expected: string;
   similarity: number;
@@ -197,8 +201,17 @@ export const api = {
   startSession: (levelId?: string) => request<SessionState>('POST', '/practice/sessions', levelId ? { levelId } : {}),
   attempt: (sessionId: string, cardId: string, sequence: string[]) =>
     request<AttemptResult>('POST', `/practice/sessions/${sessionId}/cards/${cardId}/attempt`, { sequence }),
-  voiceCheck: (sessionId: string, cardId: string, transcript: string) =>
-    request<VoiceResult>('POST', `/practice/sessions/${sessionId}/cards/${cardId}/voice-check`, { transcript }),
+  /**
+   * Verifica la pronunciación. `transcript` en null significa "no se pudo
+   * escuchar": el chico avanza igual, pero el intento queda registrado sin
+   * verificar y no cuenta como acierto de voz.
+   */
+  voiceCheck: (sessionId: string, cardId: string, transcript: string | null) =>
+    request<VoiceResult>(
+      'POST',
+      `/practice/sessions/${sessionId}/cards/${cardId}/voice-check`,
+      transcript === null ? { unverified: true } : { transcript },
+    ),
   complete: (sessionId: string) => request<SessionSummary>('POST', `/practice/sessions/${sessionId}/complete`, {}),
   reviewSounds: () => request<ReviewSound[]>('GET', '/review/sounds'),
   reviewCards: (limit: number) => request<{ cards: Card[]; available: number }>('GET', `/review/cards?limit=${limit}`),
