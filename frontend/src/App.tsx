@@ -110,7 +110,12 @@ export default function App() {
       {pantalla.nombre === 'repaso' && perfil && <Repaso species={perfil.pet.species} onVolver={irAlInicio} />}
 
       {pantalla.nombre === 'personalizacion' && perfil && (
-        <Personalizacion species={perfil.pet.species} onVolver={irAlInicio} />
+        <Personalizacion
+          species={perfil.pet.species}
+          estrellas={perfil.stars}
+          niveles={niveles}
+          onVolver={irAlInicio}
+        />
       )}
     </div>
   );

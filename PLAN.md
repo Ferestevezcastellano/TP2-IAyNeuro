@@ -34,13 +34,21 @@
   que quedó fuera del repo, ninguno de los dos en CI.
 - **El frontend no tiene tests automatizados** — se recorrió con Playwright (onboarding, sesión completa
   de nivel 1 y de nivel 3, repaso, personalización, cierre) pero el guion quedó fuera del repo.
-- **Ilustraciones y arte de accesorios** — el frontend usa emojis donde el mockup tiene imágenes
-  generadas; la hoja de instrucciones solo tiene imagen para el león.
+- **Ilustraciones de las palabras** — el frontend usa emojis donde el mockup tiene imágenes
+  generadas; la hoja de instrucciones solo tiene imagen para el león. Los accesorios ya no:
+  son SVG propios en `frontend/public/accesorios/`.
 - **La consola de prueba no tiene tests** — se verificó a mano con Playwright, pero nada impide
   que un cambio en un DTO la rompa en silencio. El bug de `sesion.id` contra `sessionId` apareció
   justamente así.
 
 ### Completadas
+
+- 2026-09-23 — Accesorios como capas SVG superpuestas, en vez de emojis
+- 2026-09-23 — Personalización rehecha con escenario, reacción del personaje y siluetas de lo bloqueado
+
+- 2026-09-23 — Personalización rehecha: los bloqueados muestran las letras que faltan
+
+- 2026-09-23 — Verificación por voz: se elimina el fallback que daba por buena cualquier pronunciación
 
 - 2026-09-20 — Backend MVP en NestJS
 - 2026-09-20 — Consola de prueba servida por el propio backend
@@ -52,6 +60,112 @@
 - 2026-09-22 — Layout responsive de 280 px al escritorio, con el alto real de la ventana y el área segura del notch
 
 ## Bitácora de decisiones
+
+### 2026-09-23 — Los accesorios son capas SVG, no imágenes del animal vestido
+**Contexto:** los accesorios se dibujaban como un emoji flotando al lado de la mascota. Para
+reemplazarlos por arte de verdad había dos caminos, y la diferencia no es estética sino de
+cantidad de archivos.
+**Decisión:** cada accesorio es un SVG propio, dibujado en el **mismo lienzo de 150×150 que las
+mascotas** y ya ubicado en la posición que le toca sobre la cara. Superponerlos es apilar `<img>`
+del mismo tamaño, sin cálculo de anclaje por especie. La capa y la mochila van detrás de la
+mascota; bufanda, medalla, anteojos y gorro, delante, en ese orden.
+El motivo es aritmético: si el arte fuera "el animal con el accesorio puesto", harían falta
+4 animales × 6 accesorios = 24 imágenes, y con dos accesorios encima se va a cientos. Por capas son
+6 archivos, y cada accesorio nuevo suma uno solo.
+**Alternativas descartadas:** generar las combinaciones con IA (la explosión combinatoria de
+arriba, y encima ninguna combinación queda consistente con las otras); bajar SVG de internet (el
+proyecto ya tiene un problema de licencias abierto con los audios de YouTube, y repetirlo con el
+arte en el mismo TP es sumar riesgo por comodidad).
+**Si se quiere mejorar el arte:** generar con IA **cada accesorio suelto sobre fondo transparente**
+—nunca el animal vestido— y reemplazar los 6 archivos de `frontend/public/accesorios/`. No hay que
+tocar código: `ARCHIVO_ACCESORIO` en `Mascota.tsx` mapea id → archivo.
+**Paleta usada:** la de las mascotas exportadas de Figma (#313234 de tinta, #FCD53F, #FFBDA1,
+#FEFAEE) más los acentos de la app, para que las piezas no se vean de otro set.
+
+
+### 2026-09-23 — El accesorio bloqueado dice qué letras hay que aprender
+**Contexto:** la pantalla de personalización era una lista de botones con emojis, y los accesorios
+que faltaban decían "NIVEL 4". Eso no le dice nada a un chico que todavía no lee números como
+metas.
+**Decisión:** rehacerla con mascota grande arriba y una bandeja abajo con cuatro categorías
+(Gorros, Anteojos, Ropa, Especiales), pocas opciones por vez y grandes. Y el cambio que importa:
+**un accesorio bloqueado muestra las letras que hay que dominar para ganarlo**, no el número de
+nivel. La bufanda dice `M S`.
+Así el premio nombra exactamente lo que hay que aprender, y querer el gorro y querer aprender la M
+pasan a ser la misma cosa. Un candado solo frustra; una letra da una meta.
+**Alternativas descartadas:** esconder los accesorios bloqueados (sin horizonte no hay deseo);
+dejar el número de nivel (no es una meta legible a los seis años); un botón de "seguí jugando para
+desbloquear más" abajo de todo, como en la referencia (es publicidad de la propia app, y el dato ya
+está en cada ítem).
+**Lo que falta:** el arte. Los accesorios siguen siendo emojis; hacen falta SVG en
+`frontend/public/accesorios/` con el estilo de las mascotas del Figma.
+
+
+### 2026-09-23 — Un rechazo de voz ya no saltea la tarjeta, y un fonema aislado no se da por mal dicho
+**Contexto:** con la verificación por voz andando de verdad aparecieron dos problemas que antes
+estaban tapados, porque nada se rechazaba nunca.
+El primero: `voiceCheck` hacía `currentCardIndex + 1` **siempre**, también al rechazar. O sea que
+equivocarse salteaba el ejercicio. Y el feedback decía "¿LO DECIMOS UNA VEZ MÁS, BIEN DESPACITO?"
+mientras la API ya había pasado a la tarjeta siguiente: la interfaz prometía un reintento que el
+sistema no permitía.
+El segundo: las tarjetas `LETTER_INTRO` piden decir un fonema aislado ("aaa", "mmm"), y el
+reconocedor del navegador no puede transcribir eso. Devuelve vacío o una palabra cualquiera. El
+resultado era que después de hacer todo bien igual aparecía la hoja de "MIRÁ MI BOCA Y DECÍ EEE",
+acusando al chico de un error que casi siempre era del reconocedor.
+**Decisión:** dos reglas separadas.
+1. Un rechazo no avanza. Hay hasta `MAX_VOICE_ATTEMPTS` (3) intentos por tarjeta; recién al
+   agotarlos la sesión sigue. La respuesta expone `canRetry` para que el frontend sepa si la hoja
+   de instrucciones vuelve al micrófono o pasa de tarjeta, y el botón de la hoja ahora dice
+   exactamente qué va a pasar: "PROBAR DE NUEVO" o "SEGUIR".
+2. En una tarjeta de letra nueva, si el parecido queda por debajo de `ISOLATED_PHONEME_FLOOR`
+   (0,4), el intento se registra **sin verificar** en vez de rechazarse. La verificación real se
+   sostiene donde el reconocedor funciona —palabras y oraciones— y no se le dice "así no se dice"
+   a un chico por una limitación de la Web Speech API.
+**Alternativas descartadas:** bajar el umbral general de 0,7 (debilita la verificación justo donde
+sí funciona, que son las palabras); sacar la verificación por voz de las tarjetas de letra
+(el chico igual tiene que decirlo en voz alta: ese es el ejercicio, lo que no corresponde es
+puntuarlo con un instrumento que no sirve para eso); dejar que el rechazo saltee pero avisando
+(el feedback ya prometía reintentar, y prometer algo que no pasa es peor que no ofrecerlo).
+**Cómo se verificó:** contra la API real. Tres rechazos seguidos sobre la misma tarjeta:
+`canRetry=true` en los dos primeros y la tarjeta no cambia; al tercero `canRetry=false` y recién
+ahí avanza. Y una transcripción muy lejana en una tarjeta de letra ("PANTALON" contra "aaa",
+similitud 0,125) sale `verified=false` en vez de rechazada, así que la hoja de instrucciones ya no
+aparece. 70 tests en verde.
+**Lo que queda anotado:** el umbral de 0,7 y el piso de 0,4 siguen elegidos a ojo. Ahora que la
+verificación es real, calibrarlos con habla infantil es más urgente que antes.
+
+
+### 2026-09-23 — Un intento de voz que nadie escuchó se registra como "no verificado", no como acierto
+**Contexto:** probando la app se podía decir "pantalón" cuando la palabra era "manzana" y la daba
+por buena. La causa estaba en `frontend/src/components/Tarjeta.tsx`: `listen()` devuelve `''`
+cuando el reconocedor falla, cuando termina sin resultado o cuando se acaban los 6 segundos, y
+había un fallback `escuchado || card.voiceTarget` que en ese caso mandaba **la respuesta esperada**
+como si el chico la hubiera dicho. El backend la comparaba contra sí misma: similitud 1, aceptada
+siempre.
+No era solo cosmético. `session-scoring.service.ts` usa `check.accepted` para puntuar la tarjeta, y
+ese puntaje alimenta el promedio móvil que decide el dominio. Un micrófono que no andaba inflaba la
+única métrica que el TP tiene que medir bien.
+**Decisión:** separar tres casos que antes eran uno solo. `listen()` ya devolvía `null` (el
+navegador no tiene reconocimiento), `''` (escuchó y no entendió) y el texto dicho; ahora quien
+llama los distingue. Si no se entendió y el navegador sí puede escuchar, se le pide al chico que
+lo diga de nuevo (una vez). Si después de eso sigue sin entenderse, o si el navegador directamente
+no puede, se manda `{ unverified: true }`: el backend registra el intento con `verified: false`,
+el chico **avanza igual** —no es su error que el micrófono no ande— pero la tarjeta se puntúa solo
+por el armado, como si nunca hubiera pedido voz.
+**Alternativas descartadas:** mandar el transcript vacío y dejar que el backend lo rechace (castiga
+al chico por un micrófono roto, y le mete errores falsos al panel docente); bloquear la tarjeta
+hasta que se entienda (deja al chico trabado por algo que no depende de él); dejar el fallback pero
+solo cuando `canListen === false` (sigue inventando una pronunciación que nadie escuchó, solo que
+menos seguido).
+**Cómo se verificó:** contra la API real, tres casos en sesiones separadas. Decir "PANTALON" cuando
+había que decir "aaa" → `accepted=false, verified=true`, similitud 0,125. Decir lo correcto →
+`accepted=true, verified=true`, similitud 1. Sin escuchar → `accepted=true, verified=false`,
+similitud 0. Más un test nuevo en `session-scoring.service.spec.ts` que fija que un intento no
+verificado deja `voiceScore` en null y la tarjeta vale por el armado (70 tests en total).
+**Lo que queda anotado:** el umbral de similitud sigue en 0,7 elegido a ojo, y ahora que la
+verificación es real importa más que antes: si rechaza pronunciaciones correctas de habla infantil,
+es el peor error posible para esta app.
+
 
 ### 2026-09-22 — Sílabas con voz humana, recortadas del estribillo de un video
 **Contexto:** las sílabas se venían armando fundiendo la grabación de la consonante con la de la

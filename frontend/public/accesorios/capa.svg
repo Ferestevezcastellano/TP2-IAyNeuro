@@ -1,0 +1,7 @@
+<!-- Capa. Va DETRÁS de la mascota: asoma a los costados y por abajo. -->
+<svg width="150" height="150" viewBox="0 0 150 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M75 108c26 0 44 10 52 28 2 5-1 10-6 10H29c-5 0-8-5-6-10 8-18 26-28 52-28z" fill="#8B7FE8"/>
+  <path d="M75 108c26 0 44 10 52 28 2 5-1 10-6 10h-18c3-17-6-30-28-38z" fill="#6F62CF"/>
+  <!-- cuello -->
+  <path d="M52 110c0-4 3-7 7-7h32c4 0 7 3 7 7 0 3-2 5-5 5H57c-3 0-5-2-5-5z" fill="#FCD53F"/>
+</svg>

@@ -92,12 +92,53 @@ const RecognizerCtor: Recognizer | undefined =
   (window as unknown as { SpeechRecognition?: Recognizer }).SpeechRecognition ??
   (window as unknown as { webkitSpeechRecognition?: Recognizer }).webkitSpeechRecognition;
 
+/**
+ * Un arpegio corto de confirmación. No es un fonema ni una consigna: es el
+ * sonido de que algo salió bien, y por eso suena distinto a todo lo demás.
+ * Hoy lo usa la pantalla del compañero cada vez que el chico se prueba algo.
+ */
+let contexto: AudioContext | null = null;
+export function celebrar(notas: number[] = [523.25, 659.25, 783.99, 1046.5]): void {
+  try {
+    const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!Ctor) return;
+    contexto = contexto ?? new Ctor();
+    if (contexto.state === 'suspended') void contexto.resume();
+    const ctx = contexto;
+    notas.forEach((hz, i) => {
+      const t0 = ctx.currentTime + i * 0.11;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.value = hz;
+      gain.gain.setValueAtTime(0, t0);
+      gain.gain.linearRampToValueAtTime(0.16, t0 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.38);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(t0);
+      osc.stop(t0 + 0.4);
+    });
+  } catch {
+    // Sin audio la pantalla funciona igual; no vale romper la celebración por esto.
+  }
+}
+
 export const canListen = Boolean(RecognizerCtor);
 
 /** Si el micrófono no responde en este tiempo, se sigue igual: no hay que dejar al chico esperando. */
 const LISTEN_TIMEOUT_MS = 6000;
 
-/** Escucha el micrófono y devuelve lo que entendió. Null si el navegador no puede. */
+/**
+ * Escucha el micrófono.
+ *
+ * - `null`  → el navegador no tiene reconocimiento de voz.
+ * - `''`    → escuchó pero no entendió nada (silencio, error o se acabó el tiempo).
+ * - texto   → lo que entendió.
+ *
+ * Los tres casos son distintos y quien llama TIENE que distinguirlos: dar por
+ * buena una pronunciación que nadie escuchó es exactamente el bug que hacía que
+ * decir "pantalón" contara como haber dicho "manzana".
+ */
 export function listen(): Promise<string | null> {
   if (!RecognizerCtor) return Promise.resolve(null);
 

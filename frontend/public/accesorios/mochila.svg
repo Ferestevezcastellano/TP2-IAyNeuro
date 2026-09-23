@@ -1,0 +1,13 @@
+<!-- Mochila. Como son íconos de cabeza, se ven los tirantes y el borde de arriba. -->
+<svg width="150" height="150" viewBox="0 0 150 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- tirantes -->
+  <path d="M46 112c0-4 3-7 7-7s7 3 7 7v38h-14z" fill="#2E86C1"/>
+  <path d="M90 112c0-4 3-7 7-7s7 3 7 7v38H90z" fill="#2E86C1"/>
+  <!-- hebillas -->
+  <path d="M46 132h14v6H46zM90 132h14v6H90z" fill="#1B5E8C"/>
+  <!-- cuerpo que asoma por atrás -->
+  <path d="M38 126h74v24H38z" fill="#3A9BD9"/>
+  <path d="M38 140h74v10H38z" fill="#2E86C1"/>
+  <!-- bolsillo -->
+  <path d="M62 132h26v12H62z" fill="#FCD53F"/>
+</svg>

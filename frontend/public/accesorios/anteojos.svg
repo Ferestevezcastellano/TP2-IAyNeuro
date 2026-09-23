@@ -1,0 +1,15 @@
+<!-- Anteojos. Cruzan la cara a la altura de los ojos. -->
+<svg width="150" height="150" viewBox="0 0 150 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- patillas -->
+  <path d="M22 66h12v7H22zM116 66h12v7h-12z" fill="#313234"/>
+  <!-- puente -->
+  <path d="M68 68h14v6H68z" fill="#313234"/>
+  <!-- aros -->
+  <circle cx="52" cy="71" r="19" fill="#B5D2F2" fill-opacity=".55"/>
+  <circle cx="98" cy="71" r="19" fill="#B5D2F2" fill-opacity=".55"/>
+  <circle cx="52" cy="71" r="19" stroke="#313234" stroke-width="5" fill="none"/>
+  <circle cx="98" cy="71" r="19" stroke="#313234" stroke-width="5" fill="none"/>
+  <!-- brillo -->
+  <path d="M44 63a11 11 0 0 1 9-5l-13 14a11 11 0 0 1 4-9z" fill="#FEFAEE" fill-opacity=".85"/>
+  <path d="M90 63a11 11 0 0 1 9-5l-13 14a11 11 0 0 1 4-9z" fill="#FEFAEE" fill-opacity=".85"/>
+</svg>
