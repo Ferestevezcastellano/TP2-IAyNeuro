@@ -10,14 +10,16 @@ services:
     runtime: node
     plan: free
     rootDir: backend
-    buildCommand: npm ci && npm run build
+    buildCommand: npm ci && npm run build && bash scripts/bajar-modelo-vosk.sh
     startCommand: npm run start:prod
     healthCheckPath: /catalog/levels
     envVars:
       - key: NODE_VERSION
         value: 22
-      # El teléfono reconoce la voz con Chrome, no hace falta el servidor. Vosk
-      # (para Linux o Firefox) necesita un modelo de 40 MB y más memoria que la
-      # del plan gratis: queda apagado.
+      # En el teléfono la voz la reconoce Chrome. En Linux o Firefox el navegador
+      # no puede, y la app manda el audio grabado: lo reconoce Vosk acá. Con el
+      # modelo cargado el proceso usa unos 230 MB, dentro de los 512 del plan.
       - key: AMI_SPEECH_PROVIDER
-        value: stub
+        value: vosk
+      - key: AMI_VOSK_MODEL_PATH
+        value: ./models/vosk-model-small-es-0.42

@@ -1,4 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { SpeechRecognitionPort, SpeechTranscription } from '../../core/ports';
 
 /** Bytes de cabecera de un WAV canonico, antes de las muestras. */
@@ -27,28 +29,47 @@ const DISTRACTORES = [...VOCALES, ...CONSONANTES.flatMap((c) => VOCALES.map((v) 
  */
 @Injectable()
 export class VoskSpeechRecognitionProvider extends SpeechRecognitionPort implements OnModuleInit {
-  readonly name = 'vosk';
   private readonly logger = new Logger(VoskSpeechRecognitionProvider.name);
   private model: unknown = null;
   private vosk: any = null;
 
+  /**
+   * `vosk` solo si el modelo cargo. Si no, el frontend no le manda audio y
+   * muestra el aviso de que este navegador no reconoce la voz.
+   */
+  get name(): string {
+    return this.model ? 'vosk' : 'vosk-sin-modelo';
+  }
+
+  /**
+   * Si Vosk no carga (falta el modelo, o una libreria del sistema), el servidor
+   * arranca igual: sin reconocimiento por servidor, pero con todo lo demas. Que
+   * la voz de Linux falle no puede tirar la app entera.
+   */
   async onModuleInit(): Promise<void> {
+    try {
+      this.cargarModelo();
+    } catch (error) {
+      this.model = null;
+      this.logger.error(`Vosk no cargo; sigo sin reconocimiento por servidor. ${(error as Error).message}`);
+    }
+  }
+
+  private cargarModelo(): void {
     const modelPath = process.env.AMI_VOSK_MODEL_PATH;
     if (!modelPath) {
-      throw new Error(
-        'AMI_SPEECH_PROVIDER=vosk requiere AMI_VOSK_MODEL_PATH apuntando al modelo descomprimido.',
-      );
+      throw new Error('AMI_SPEECH_PROVIDER=vosk requiere AMI_VOSK_MODEL_PATH apuntando al modelo descomprimido.');
+    }
+    // vosk-koffi no falla con una ruta mala: devuelve un modelo vacio y
+    // revienta recien al reconocer. Por eso se mira antes que este el modelo.
+    if (!existsSync(join(modelPath, 'am')) || !existsSync(join(modelPath, 'conf'))) {
+      throw new Error(`No hay un modelo de Vosk en ${modelPath}.`);
     }
 
-    try {
-      // Carga diferida: vosk no esta en dependencies para que la demo no lo
-      // necesite. `vosk-koffi` es la misma API con binarios ya compilados, y es
-      // la que anda en Node 20+; `vosk` queda como alternativa.
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      this.vosk = this.cargar('vosk-koffi') ?? this.cargar('vosk');
-    } catch {
-      this.vosk = null;
-    }
+    // Carga diferida: vosk no esta en dependencies para que la demo no lo
+    // necesite. `vosk-koffi` es la misma API con binarios ya compilados, y es
+    // la que anda en Node 20+; `vosk` queda como alternativa.
+    this.vosk = this.cargar('vosk-koffi') ?? this.cargar('vosk');
     if (!this.vosk) {
       throw new Error('Falta la dependencia opcional de Vosk. Instalala con: npm install vosk-koffi');
     }
@@ -59,6 +80,7 @@ export class VoskSpeechRecognitionProvider extends SpeechRecognitionPort impleme
   }
 
   async transcribe(audio: Buffer, expected: string): Promise<SpeechTranscription> {
+    if (!this.model) return { transcript: '', confidence: 0, provider: this.name };
     const sampleRate = Number(process.env.AMI_VOSK_SAMPLE_RATE ?? 16000);
 
     // Acotar el vocabulario sube muchisimo la precision con habla infantil, que
