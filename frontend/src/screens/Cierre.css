@@ -1,0 +1,180 @@
+.cierre { gap: 12px; }
+
+.cierre-tarjeta {
+  width: min(264px, 100%);
+  min-height: min(250px, 30dvh);
+  flex: 0 1 auto;
+  margin: 6px auto 0;
+  border-radius: 24px;
+  background: var(--menta-2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 18px;
+}
+
+.cierre-estrellas {
+  font-weight: 700;
+  font-size: clamp(32px, 11vw, 45px);
+  line-height: 1;
+  letter-spacing: 4px;
+  color: var(--amarillo);
+}
+
+.cierre-estrellas.apagadas { color: rgba(255, 255, 255, 0.8); }
+
+.cierre-nota {
+  margin: 0;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--tinta-suave);
+  text-align: center;
+}
+
+.cierre-fila {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.cierre-hoy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.cierre-hoy .t-instruccion { margin: 0; }
+
+.cierre-manana {
+  position: relative;
+  width: min(140px, 38vw);
+  height: min(120px, 15dvh);
+  flex: 0 0 auto;
+  border-radius: 20px;
+  background: #fff;
+  overflow: hidden;
+  text-align: center;
+}
+
+.cierre-manana p {
+  position: relative;
+  z-index: 1;
+  margin: 10% 0 0;
+  font-weight: 600;
+  font-size: clamp(14px, 4.4vw, 17px);
+  color: var(--tinta-suave);
+}
+
+.cierre-borroso {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 22%;
+  font-weight: 700;
+  font-size: min(72px, 9dvh);
+  line-height: 1.2;
+  color: rgba(174, 174, 174, 0.6);
+  filter: blur(9px);
+  user-select: none;
+}
+
+.cierre-logro {
+  margin: 0;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--teal);
+  text-align: center;
+}
+
+/* ---- Premio del nivel ---- */
+.cierre-premio {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: min(300px, 100%);
+  margin: 0 auto;
+  padding: 10px 14px;
+  border-radius: 20px;
+  background: #fff;
+}
+
+.cierre-premio.ganado {
+  background: var(--amarillo);
+  animation: cierre-premio-latido 1.6s ease-in-out 0.4s 2;
+}
+
+.cierre-premio-caja {
+  width: 64px;
+  height: 64px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 16px;
+  background: var(--crema);
+}
+
+
+.cierre-premio.pendiente .cierre-premio-arte { filter: brightness(0) opacity(0.25); }
+
+.cierre-premio-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cierre-premio-titulo {
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--tinta-suave);
+}
+
+.cierre-premio-nombre {
+  font-family: var(--fredoka);
+  font-weight: 600;
+  font-size: 22px;
+  line-height: 1.1;
+  color: var(--tinta);
+}
+
+@keyframes cierre-premio-latido {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* ---- Botones ---- */
+.cierre-botones {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cierre .cierre-volver {
+  height: 68px;
+  border-radius: 24px;
+  font-size: 21px;
+}
+
+.cierre-amigo {
+  width: 100%;
+  height: 60px;
+  border-radius: 22px;
+  background: #fff;
+  border: 3px solid var(--naranja);
+  color: var(--naranja);
+  font-weight: 700;
+  font-size: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cierre-premio.ganado { animation: none; }
+}

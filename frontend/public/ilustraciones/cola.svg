@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <ellipse cx="96" cy="178" rx="70" ry="8" fill="#000" opacity="0.08"/>
+  <!-- cola del perro, grande y moviéndose: es lo que se nombra -->
+  <path d="M140 108 Q176 92 170 40" stroke="#E08A2E" stroke-width="16" fill="none" stroke-linecap="round"/>
+  <path d="M172 36 q4 -6 -2 -10" stroke="#FFFFFF" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <g stroke="#E08A2E" stroke-width="4" stroke-linecap="round" opacity="0.7">
+    <path d="M186 44 q8 6 6 16"/>
+    <path d="M152 30 q-8 -4 -14 2"/>
+    <path d="M190 64 q6 6 2 14"/>
+  </g>
+  <!-- patas -->
+  <rect x="48" y="126" width="16" height="48" rx="7" fill="#C9772A"/>
+  <rect x="120" y="126" width="16" height="48" rx="7" fill="#C9772A"/>
+  <rect x="64" y="130" width="16" height="46" rx="7" fill="#D9853A"/>
+  <rect x="104" y="130" width="16" height="46" rx="7" fill="#D9853A"/>
+  <!-- cuerpo -->
+  <ellipse cx="94" cy="112" rx="56" ry="30" fill="#F2A541"/>
+  <ellipse cx="96" cy="120" rx="30" ry="12" fill="#FBD38D"/>
+  <!-- cabeza -->
+  <circle cx="44" cy="82" r="26" fill="#F2A541"/>
+  <ellipse cx="24" cy="92" rx="14" ry="10" fill="#FBD38D"/>
+  <circle cx="14" cy="88" r="5" fill="#2B1B10"/>
+  <path d="M52 62 Q70 58 66 92 Q56 84 52 62 Z" fill="#B5651D"/>
+  <circle cx="38" cy="76" r="4" fill="#2B1B10"/>
+  <path d="M20 100 Q28 106 36 100" stroke="#2B1B10" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+</svg>

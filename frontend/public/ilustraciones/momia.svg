@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <ellipse cx="100" cy="184" rx="52" ry="8" fill="#000" opacity="0.08"/>
+  <!-- brazos estirados hacia adelante -->
+  <rect x="34" y="84" width="46" height="20" rx="10" fill="#EFE6CF"/>
+  <rect x="120" y="84" width="46" height="20" rx="10" fill="#EFE6CF"/>
+  <!-- cuerpo -->
+  <rect x="68" y="76" width="64" height="104" rx="26" fill="#F3ECD8"/>
+  <!-- cabeza -->
+  <circle cx="100" cy="52" r="34" fill="#F3ECD8"/>
+  <!-- vendas -->
+  <g stroke="#D9CCAA" stroke-width="4" stroke-linecap="round" fill="none">
+    <path d="M70 40 L130 30"/>
+    <path d="M68 66 L132 58"/>
+    <path d="M70 96 L130 88"/>
+    <path d="M70 116 L130 124"/>
+    <path d="M70 142 L130 134"/>
+    <path d="M72 164 L128 170"/>
+    <path d="M40 90 L52 100 M54 88 L66 100 M146 88 L134 100 M160 90 L148 100"/>
+  </g>
+  <!-- ojos que asoman entre las vendas -->
+  <rect x="72" y="42" width="56" height="16" rx="8" fill="#5A4A3A"/>
+  <circle cx="88" cy="50" r="6" fill="#FFFFFF"/>
+  <circle cx="112" cy="50" r="6" fill="#FFFFFF"/>
+  <circle cx="89" cy="51" r="3" fill="#222"/>
+  <circle cx="113" cy="51" r="3" fill="#222"/>
+  <!-- venda suelta -->
+  <path d="M132 150 q14 6 10 22" stroke="#EFE6CF" stroke-width="7" fill="none" stroke-linecap="round"/>
+</svg>

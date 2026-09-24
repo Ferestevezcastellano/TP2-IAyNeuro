@@ -1,0 +1,121 @@
+.tarjeta-letra.tocable { cursor: pointer; transition: transform 0.08s ease; }
+.tarjeta-letra.tocable:active { transform: scale(0.98); }
+.letra-silaba { font-size: min(150px, 16dvh, 38vw); }
+
+.tarjeta-letra.con-silaba {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.letra-partes {
+  font-size: clamp(18px, 7vw, 28px);
+  font-weight: 600;
+  letter-spacing: 4px;
+  color: var(--tinta-suave);
+}
+
+.tarjeta-consigna { width: min(260px, 100%); margin: 4px auto 0; line-height: 1.2; }
+
+.tarjeta-ilustracion {
+  position: relative;
+  width: min(283px, 80vw);
+  height: min(332px, 36dvh);
+  flex: 0 1 auto;
+  margin: 0 auto;
+  border-radius: 32px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.tarjeta-emoji { font-size: min(150px, 22dvh, 38vw); line-height: 1; }
+.tarjeta-oracion {
+  font-weight: 700;
+  font-size: clamp(14px, 4.5vw, 18px);
+  color: var(--tinta-suave);
+  letter-spacing: 1px;
+  text-align: center;
+  padding: 0 16px;
+}
+
+.tarjeta-sonido { position: absolute; right: 14px; top: 14px; }
+.tarjeta-imagen { width: 100%; height: 100%; max-width: 200px; max-height: 200px; display: block; object-fit: contain; }
+
+.casillero.tocable { cursor: pointer; }
+.casillero.tocable:active { transform: scale(0.95); }
+
+/* ---- Voz ---- */
+.bloque-voz {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: clamp(6px, 1.5dvh, 12px);
+  opacity: 0.35;
+  transition: opacity 0.2s ease;
+}
+
+.bloque-voz.activo { opacity: 1; }
+.bloque-voz.compacto { flex-direction: row; justify-content: center; gap: 12px; }
+.bloque-voz.compacto .btn-mic { width: 44px; height: 44px; }
+.bloque-voz.compacto .t-instruccion { font-size: 13px; }
+
+.btn-mic {
+  width: clamp(56px, 9dvh, 76px);
+  height: clamp(56px, 9dvh, 76px);
+  border-radius: 50%;
+  background: var(--teal);
+  display: grid;
+  place-items: center;
+  transition: transform 0.08s ease;
+}
+
+.btn-mic:active { transform: scale(0.95); }
+
+.btn-mic.escuchando {
+  animation: late 0.9s ease-in-out infinite;
+}
+
+@keyframes late {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(47, 191, 174, 0.5); }
+  50% { box-shadow: 0 0 0 14px rgba(47, 191, 174, 0); }
+}
+
+/*
+ * La pista de sonido dentro de la tarjeta grande: mismo circulo celeste que el
+ * boton de la ilustracion, pero decorativo. Quien toca es la tarjeta entera.
+ */
+.tarjeta-letra.con-pista { position: relative; }
+
+.tarjeta-sonido.pista {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: var(--celeste);
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+/* Cuando el micrófono no se puede usar: el motivo y qué hacer, sin pasar solo de tarjeta. */
+.sin-microfono { display: flex; flex-direction: column; gap: 8px; }
+.sin-microfono-botones { display: flex; gap: 8px; }
+.btn-secundario {
+  flex: 1 1 0;
+  min-height: 44px;
+  padding: 0 10px;
+  border-radius: 14px;
+  background: #fff;
+  color: var(--tinta);
+  font-weight: 700;
+  font-size: 13px;
+}

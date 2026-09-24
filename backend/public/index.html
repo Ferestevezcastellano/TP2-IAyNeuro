@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AMI — consola de prueba</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>🦁</text></svg>">
+<style>
+  :root {
+    --fondo: #f4f1ea;
+    --panel: #ffffff;
+    --borde: #e0d9cc;
+    --texto: #2c2a26;
+    --suave: #6f6a60;
+    --acento: #e8622c;
+    --acento-claro: #fdf0e9;
+    --ok: #2e8b57;
+    --ok-claro: #e9f5ee;
+    --aviso: #b8860b;
+    --aviso-claro: #fbf4e2;
+    --error: #c0392b;
+    --trabado: #9a948a;
+    --radio: 14px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 0 16px 64px;
+    background: var(--fondo);
+    color: var(--texto);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+
+  .ancho { max-width: 880px; margin: 0 auto; }
+
+  header.barra {
+    display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+    padding: 20px 0 16px;
+  }
+  header.barra h1 { margin: 0; font-size: 20px; letter-spacing: .5px; }
+  header.barra .nota { color: var(--suave); font-size: 13px; }
+  header.barra .crece { flex: 1 1 auto; }
+
+  .aviso-herramienta {
+    background: var(--aviso-claro);
+    border: 1px solid #e8d9a8;
+    border-radius: var(--radio);
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #7a5c00;
+    margin-bottom: 16px;
+  }
+
+  .solapas { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .solapas button {
+    border: 1px solid var(--borde); background: var(--panel); color: var(--suave);
+    padding: 8px 16px; border-radius: 999px; cursor: pointer; font-size: 14px;
+  }
+  .solapas button[aria-selected="true"] {
+    background: var(--texto); color: #fff; border-color: var(--texto);
+  }
+
+  .panel {
+    background: var(--panel); border: 1px solid var(--borde);
+    border-radius: var(--radio); padding: 20px; margin-bottom: 16px;
+  }
+  .panel h2 { margin: 0 0 4px; font-size: 16px; }
+  .panel .sub { margin: 0 0 16px; color: var(--suave); font-size: 13px; }
+
+  label.campo { display: block; margin-bottom: 14px; font-size: 13px; color: var(--suave); }
+  label.campo input {
+    display: block; width: 100%; margin-top: 6px; padding: 10px 12px;
+    border: 1px solid var(--borde); border-radius: 10px; font-size: 16px;
+    font-family: inherit; background: #fff; color: var(--texto);
+  }
+
+  button.accion {
+    background: var(--acento); color: #fff; border: 0; cursor: pointer;
+    padding: 11px 20px; border-radius: 10px; font-size: 15px; font-family: inherit;
+  }
+  button.accion:disabled { background: var(--trabado); cursor: not-allowed; }
+  button.suave {
+    background: var(--panel); color: var(--texto); border: 1px solid var(--borde);
+    cursor: pointer; padding: 9px 16px; border-radius: 10px; font-size: 14px;
+    font-family: inherit;
+  }
+  button.suave:disabled { color: var(--trabado); cursor: not-allowed; }
+
+  .mascotas { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .mascotas button {
+    background: var(--panel); border: 2px solid var(--borde); border-radius: var(--radio);
+    padding: 20px 8px; cursor: pointer; font-family: inherit;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+  }
+  .mascotas button[aria-pressed="true"] { border-color: var(--acento); background: var(--acento-claro); }
+  .mascotas .cara { font-size: 44px; line-height: 1; }
+  .mascotas .nombre { font-size: 14px; letter-spacing: 1px; }
+
+  .perfil { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .perfil .avatar { font-size: 48px; line-height: 1; }
+  .perfil .puesto { font-size: 22px; }
+  .perfil .datos { flex: 1 1 200px; }
+  .perfil .datos strong { display: block; font-size: 15px; }
+  .perfil .datos span { color: var(--suave); font-size: 13px; }
+
+  ul.niveles { list-style: none; margin: 0; padding: 0; }
+  ul.niveles li {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 0; border-top: 1px solid var(--borde);
+  }
+  ul.niveles li:first-child { border-top: 0; }
+  ul.niveles .orden {
+    width: 34px; height: 34px; flex: 0 0 34px; border-radius: 50%;
+    display: grid; place-items: center; font-size: 14px;
+    background: #efece4; color: var(--suave);
+  }
+  ul.niveles li.abierto .orden { background: var(--acento); color: #fff; }
+  ul.niveles li.listo .orden { background: var(--ok); color: #fff; }
+  ul.niveles .cuerpo { flex: 1 1 auto; min-width: 0; }
+  ul.niveles .titulo { font-size: 15px; }
+  ul.niveles .detalle { color: var(--suave); font-size: 12px; }
+  ul.niveles li.trabado .titulo { color: var(--trabado); }
+
+  .estrellas { color: var(--aviso); letter-spacing: 2px; font-size: 13px; }
+
+  .barra-dominio { height: 6px; background: #efece4; border-radius: 999px; overflow: hidden; margin-top: 6px; }
+  .barra-dominio i { display: block; height: 100%; background: var(--ok); }
+  .barra-dominio i.corto { background: var(--aviso); }
+
+  .tarjeta { text-align: center; }
+  .tarjeta .consigna { font-size: 15px; letter-spacing: .5px; margin-bottom: 16px; }
+  .tarjeta .escena {
+    font-size: 72px; line-height: 1.1; margin-bottom: 4px;
+    background: var(--acento-claro); border-radius: var(--radio); padding: 18px;
+    cursor: pointer; border: 0; width: 100%; font-family: inherit;
+  }
+  .tarjeta .escena small { display: block; font-size: 13px; color: var(--suave); letter-spacing: 1px; }
+
+  .casillero { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 18px 0; min-height: 52px; }
+  .casillero .hueco {
+    min-width: 46px; height: 52px; padding: 0 10px; border-radius: 10px;
+    border: 2px dashed var(--borde); display: grid; place-items: center;
+    font-size: 20px; letter-spacing: 1px;
+  }
+  .casillero .hueco.lleno { border-style: solid; border-color: var(--texto); background: #fff; }
+  .casillero .hueco.mal { border-color: var(--error); color: var(--error); }
+
+  .botonera { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
+  .botonera button {
+    min-width: 62px; padding: 14px 16px; font-size: 20px; letter-spacing: 1px;
+    border: 1px solid var(--borde); background: var(--panel); border-radius: 12px;
+    cursor: pointer; font-family: inherit;
+  }
+  .botonera button.imagen { font-size: 40px; min-width: 96px; line-height: 1.1; }
+  .botonera button.imagen small { display: block; font-size: 11px; letter-spacing: 1px; color: var(--suave); }
+  .botonera button:disabled { opacity: .35; cursor: not-allowed; }
+  .botonera button.accion {
+    background: var(--acento); color: #fff; border: 0; font-size: 15px; letter-spacing: 0;
+  }
+  .botonera button.suave { font-size: 14px; letter-spacing: 0; min-width: 0; }
+
+  .mascota-dice {
+    border-radius: var(--radio); padding: 14px 16px; margin: 16px 0;
+    display: flex; gap: 12px; align-items: flex-start; text-align: left;
+  }
+  .mascota-dice.celebra { background: var(--ok-claro); }
+  .mascota-dice.guia { background: var(--aviso-claro); }
+  .mascota-dice.anima { background: var(--acento-claro); }
+  .mascota-dice .cara { font-size: 30px; line-height: 1; }
+  .mascota-dice p { margin: 0 0 4px; font-size: 14px; }
+  .mascota-dice p:last-child { margin-bottom: 0; }
+  .mascota-dice .etiqueta { font-size: 11px; color: var(--suave); letter-spacing: 1px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 9px 8px; border-top: 1px solid var(--borde); }
+  th { color: var(--suave); font-weight: 500; }
+  tr:first-child th, tr:first-child td { border-top: 0; }
+  td.num, th.num { text-align: right; }
+
+  .fila { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .fila select {
+    padding: 9px 12px; border: 1px solid var(--borde); border-radius: 10px;
+    font-size: 15px; font-family: inherit; background: #fff; color: var(--texto);
+  }
+
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chips button {
+    border: 1px solid var(--borde); background: var(--panel); border-radius: 999px;
+    padding: 8px 14px; cursor: pointer; font-size: 14px; font-family: inherit;
+    display: flex; gap: 6px; align-items: center;
+  }
+  .chips button[aria-pressed="true"] { border-color: var(--acento); background: var(--acento-claro); }
+  .chips button:disabled { opacity: .4; cursor: not-allowed; }
+
+  .error {
+    background: #fdecea; border: 1px solid #f5c6c0; color: var(--error);
+    border-radius: 10px; padding: 12px 14px; font-size: 13px; margin-bottom: 16px;
+  }
+
+  .vacio { color: var(--suave); font-size: 14px; }
+  .oculto { display: none !important; }
+
+  footer.pie { color: var(--suave); font-size: 12px; text-align: center; padding-top: 8px; }
+  footer.pie a { color: var(--suave); }
+
+  @media (max-width: 560px) {
+    .mascotas { grid-template-columns: repeat(2, 1fr); }
+    .tarjeta .escena { font-size: 56px; }
+  }
+</style>
+</head>
+<body>
+<div class="ancho">
+
+  <header class="barra">
+    <h1>AMI · consola de prueba</h1>
+    <span class="nota" id="estadoServidor">conectando…</span>
+    <span class="crece"></span>
+    <button class="suave" id="btnReiniciar">Empezar de cero</button>
+  </header>
+
+  <div class="aviso-herramienta">
+    Esto no es la app: es una herramienta para recorrer la API con botones en vez de copiar ids
+    a mano en Swagger. Las ilustraciones son emojis porque el banco de imágenes todavía no existe;
+    los fonemas son la voz del video "Los sonidos de las letras del abecedario" (ColorKids Play)
+    y las sílabas la de "Sílabas para niños con música" (FIESTIKIDS), los dos solo para la demo;
+    el resto lo lee la voz del navegador. El diseño real está en los mockups.
+    El contrato completo, en <a href="/docs">/docs</a>.
+  </div>
+
+  <div class="solapas" role="tablist">
+    <button role="tab" id="solapaAlumno" aria-selected="true">Alumno</button>
+    <button role="tab" id="solapaDocente" aria-selected="false">Docente</button>
+  </div>
+
+  <div id="errorGlobal" class="error oculto"></div>
+
+  <main id="vista"></main>
+
+  <footer class="pie">
+    Backend de AMI · el estado vive en memoria y se borra al reiniciar el servidor
+  </footer>
+
+</div>
+<script src="consola.js"></script>
+</body>
+</html>

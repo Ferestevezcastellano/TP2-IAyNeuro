@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- sombra -->
+  <ellipse cx="100" cy="176" rx="74" ry="9" fill="#000" opacity="0.08"/>
+  <!-- patas traseras -->
+  <rect x="42" y="96" width="14" height="70" rx="5" fill="#9A5B2E"/>
+  <rect x="144" y="96" width="14" height="70" rx="5" fill="#9A5B2E"/>
+  <!-- travesaño -->
+  <rect x="48" y="128" width="104" height="10" rx="5" fill="#B5703A"/>
+  <!-- patas delanteras -->
+  <rect x="30" y="92" width="16" height="80" rx="6" fill="#C47A3F"/>
+  <rect x="154" y="92" width="16" height="80" rx="6" fill="#C47A3F"/>
+  <!-- tabla: canto y superficie -->
+  <rect x="14" y="76" width="172" height="26" rx="10" fill="#B26A33"/>
+  <rect x="14" y="66" width="172" height="26" rx="10" fill="#E0A465"/>
+  <!-- veta -->
+  <path d="M40 79 Q100 72 160 79" stroke="#F1C48F" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <!-- mantelito y taza, para que se lea como mesa -->
+  <rect x="78" y="52" width="44" height="18" rx="6" fill="#FFBDA1"/>
+  <rect x="88" y="34" width="24" height="22" rx="6" fill="#FFFFFF" stroke="#B5D2F2" stroke-width="4"/>
+  <path d="M112 40 q10 0 10 8 t-10 8" stroke="#B5D2F2" stroke-width="4" fill="none"/>
+</svg>

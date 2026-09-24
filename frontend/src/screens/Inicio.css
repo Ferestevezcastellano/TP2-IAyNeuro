@@ -1,0 +1,140 @@
+.inicio {
+  width: 100%;
+  background: var(--crema);
+  display: flex;
+  flex-direction: column;
+}
+
+.inicio-cabecera {
+  min-height: 96px;
+  flex: 0 0 auto;
+  background: var(--teal);
+  display: flex;
+  align-items: center;
+  padding: calc(12px + env(safe-area-inset-top)) 20px 12px;
+  gap: 10px;
+}
+
+.inicio-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  background: #fff;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+}
+
+.inicio-hola {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  font-weight: 700;
+  font-size: clamp(17px, 5.5vw, 22px);
+  color: #fff;
+  letter-spacing: 0.5px;
+}
+
+.inicio-estrellas {
+  height: 34px;
+  min-width: 70px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--tinta);
+}
+
+.inicio-estrellas span { color: var(--amarillo); }
+
+.inicio-acciones {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
+  padding: clamp(12px, 2.5dvh, 20px) 20px 0;
+}
+
+.inicio-jugar,
+.inicio-repaso {
+  height: 48px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+}
+
+.inicio-jugar { flex: 172 1 0; background: var(--naranja); }
+.inicio-jugar:disabled { background: var(--beige-circulo); }
+.inicio-repaso { flex: 162 1 0; background: #fff; border: 2px solid var(--gris-borde); }
+.inicio-repaso:disabled { opacity: 0.45; }
+
+.niveles {
+  list-style: none;
+  margin: 0;
+  padding: clamp(12px, 2.5dvh, 20px) 20px calc(20px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.nivel-boton {
+  width: 100%;
+  height: clamp(50px, 7.5dvh, 58px);
+  flex: 0 0 auto;
+  border-radius: 20px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  gap: clamp(8px, 3vw, 14px);
+  padding: 0 clamp(10px, 4vw, 16px);
+  text-align: left;
+}
+
+.nivel.trabado .nivel-boton { background: var(--beige); }
+
+.nivel-numero {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 15px;
+  color: #fff;
+  background: var(--naranja);
+  flex: 0 0 auto;
+}
+
+.nivel.dominado .nivel-numero { background: var(--verde); }
+.nivel.trabado .nivel-numero { background: var(--beige-circulo); }
+
+.nivel-titulo {
+  flex: 1 1 auto;
+  /* Sin `min-width: 0` un titulo largo ("CONSOLIDACION") no se deja achicar y
+     empuja las estrellas fuera de la fila en pantallas de 280 px. */
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+  font-size: clamp(14px, 4.2vw, 16px);
+  color: var(--tinta);
+  letter-spacing: 0.5px;
+}
+
+.nivel.trabado .nivel-titulo { color: var(--gris-texto); }
+
+.nivel-estrellas {
+  flex: 0 0 auto;
+  font-weight: 700;
+  font-size: clamp(15px, 4.5vw, 18px);
+  letter-spacing: 1px;
+  color: var(--gris-estrella);
+}
+
+.nivel-estrellas.ganadas { color: var(--amarillo); }
+
+.nivel-candado { opacity: 0.8; }

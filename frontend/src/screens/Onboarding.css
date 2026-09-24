@@ -1,0 +1,77 @@
+.onboarding {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background: var(--crema);
+  padding-top: env(safe-area-inset-top);
+}
+
+/*
+ * Las cuatro celdas se reparten el alto disponible (con un minimo para que la
+ * mascota siga siendo tocable) y el pie queda siempre pegado abajo.
+ */
+.onboarding-grilla {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: repeat(2, minmax(130px, 1fr));
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.onboarding-celda {
+  position: relative;
+  overflow: hidden;
+  padding: 8px;
+  background: var(--crema-2);
+  border: 0.5px solid rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.15s ease;
+}
+
+.onboarding-celda:active { background: #ffd9a3; }
+
+.onboarding-celda.elegida {
+  background: #ffd08a;
+  box-shadow: inset 0 0 0 5px var(--naranja);
+}
+
+.onboarding-nombre {
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: var(--tinta);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.onboarding-celda.elegida .onboarding-nombre { opacity: 1; }
+
+.onboarding-pie {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: clamp(10px, 2dvh, 18px);
+  padding: 16px 24px calc(18px + env(safe-area-inset-bottom));
+}
+
+.onboarding-input {
+  width: 100%;
+  height: 52px;
+  border-radius: 16px;
+  border: 0;
+  background: #fff;
+  padding: 0 16px;
+  font-family: var(--nunito);
+  font-size: 14px;
+  letter-spacing: 1px;
+  color: var(--tinta);
+  text-transform: uppercase;
+}
+
+.onboarding-input::placeholder { color: var(--gris-placeholder); text-transform: none; letter-spacing: 0.5px; }
+.onboarding-input:focus { outline: 2px solid var(--naranja); }

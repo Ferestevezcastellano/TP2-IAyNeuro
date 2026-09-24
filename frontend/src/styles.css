@@ -1,0 +1,482 @@
+:root {
+  --crema: #fff8ec;
+  --crema-2: #ffe5bd;
+  --naranja: #ff8a4c;
+  --naranja-claro: #ffa875;
+  --naranja-fuerte: #f58b3c;
+  --teal: #2fbfae;
+  --verde: #4cd07d;
+  --amarillo: #fcd53f;
+  --amarillo-boton: #ffc93c;
+  --tinta: #2d2a4a;
+  --tinta-suave: #6b6584;
+  --gris-texto: #b9b2a0;
+  --gris-placeholder: #b9af9a;
+  --gris-borde: #e3e3e3;
+  --gris-estrella: #d8d8d8;
+  --beige: #f3eee1;
+  --beige-2: #efe7d8;
+  --beige-circulo: #e7dfcf;
+  --menta: #e4fbf0;
+  --menta-2: #cff3e6;
+  --celeste: #eaf6ff;
+  --lila: #8b7fe8;
+  --fredoka: 'Fredoka', 'Nunito', system-ui, sans-serif;
+  --nunito: 'Nunito', system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root { height: 100%; margin: 0; }
+
+body {
+  background: #efe6d6;
+  font-family: var(--fredoka);
+  color: var(--tinta);
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font-family: inherit;
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+  background: none;
+  color: inherit;
+  /* Sin esto el doble toque sobre una letra hace zoom en vez de sonar dos veces. */
+  touch-action: manipulation;
+}
+
+button:disabled { cursor: default; }
+
+/*
+ * El telefono: 390 de ancho como el mockup, centrado en pantallas grandes.
+ *
+ * En el celular ocupa el alto real de la ventana. `dvh` y no `vh` porque en
+ * Chrome y Safari de telefono la barra de direcciones aparece y desaparece al
+ * scrollear: con `vh` el alto se calcula con la barra escondida y la ultima
+ * fila de botones queda siempre tapada. La linea `vh` de arriba es el respaldo
+ * para navegadores viejos, que ignoran la de abajo.
+ */
+.telefono {
+  position: relative;
+  width: 100%;
+  max-width: 390px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0 auto;
+  background: var(--crema);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Cada pantalla ocupa el telefono entero y reparte el alto que haya. */
+.telefono > * {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+@media (min-width: 480px) {
+  html, body, #root { height: auto; }
+  body { padding: 24px 0; }
+  .telefono {
+    /* En una ventana baja el marco se achica en vez de salirse de la pantalla. */
+    height: min(844px, calc(100dvh - 48px));
+    min-height: 0;
+    border-radius: 36px;
+    box-shadow: 0 20px 60px rgba(60, 40, 20, 0.18);
+  }
+}
+
+.pantalla {
+  position: relative;
+  width: 100%;
+  padding: calc(16px + env(safe-area-inset-top)) 20px calc(16px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+}
+
+@media (min-height: 700px) {
+  .pantalla { padding-left: 24px; padding-right: 24px; gap: 16px; }
+}
+
+/* ---- Tipografía ---- */
+.t-instruccion {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--tinta-suave);
+  text-align: center;
+  letter-spacing: 0.2px;
+  margin: 0;
+}
+
+.t-instruccion.chica { font-size: 13px; }
+
+/* ---- Botones básicos ---- */
+.btn-volver {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  background: #fff;
+  font-family: var(--nunito);
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--tinta);
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+}
+
+.btn-principal {
+  width: 100%;
+  height: 54px;
+  border-radius: 20px;
+  background: var(--naranja);
+  color: #fff;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.3px;
+}
+
+.btn-principal:disabled { opacity: 0.5; }
+
+.btn-sonido {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: var(--celeste);
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+}
+
+/* ---- Barra superior de sesión ---- */
+.barra-sesion {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  height: 40px;
+}
+
+.progreso {
+  display: flex;
+  gap: 8px;
+  flex: 1 1 auto;
+  align-items: center;
+}
+
+.progreso i {
+  display: block;
+  flex: 1 1 0;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--beige-2);
+}
+
+.progreso i.hecha { background: var(--verde); }
+.progreso i.actual { background: var(--naranja); }
+
+/* ---- Tarjeta grande con la letra ----
+ *
+ * Las medidas del mockup (267 x 407, letra de 250) son el techo, no el valor
+ * fijo: en un telefono bajo la tarjeta se achica sola para que el microfono y
+ * el feedback sigan entrando sin scroll.
+ */
+.tarjeta-letra {
+  width: min(267px, 72vw);
+  height: min(407px, 42dvh);
+  flex: 0 1 auto;
+  margin: 0 auto;
+  border-radius: clamp(24px, 6vw, 40px);
+  background: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: min(250px, 26dvh, 62vw);
+  line-height: 1;
+  color: var(--naranja);
+  user-select: none;
+}
+
+.tarjeta-letra.teal { color: var(--teal); }
+.tarjeta-letra.silaba { font-size: min(150px, 16dvh, 38vw); }
+
+/* ---- Feedback de la mascota ---- */
+.feedback {
+  display: flex;
+  height: clamp(76px, 12dvh, 100px);
+  flex: 0 0 auto;
+  border-radius: 24px;
+  background: var(--menta);
+  overflow: hidden;
+  align-items: center;
+}
+
+.feedback.anima { background: #fff1e6; }
+.feedback.anima .feedback-mascota { background: #ffd9c2; }
+.feedback.guia { background: #fff8dc; }
+.feedback.guia .feedback-mascota { background: #ffedb0; }
+
+.feedback-mascota {
+  width: clamp(84px, 28vw, 110px);
+  height: 100%;
+  border-radius: 24px;
+  background: var(--menta-2);
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+}
+
+.feedback-cuerpo {
+  flex: 1 1 auto;
+  display: grid;
+  place-items: center;
+  padding: 0 12px;
+  text-align: center;
+}
+
+.feedback-estrellas {
+  font-weight: 700;
+  font-size: clamp(32px, 9vw, 45px);
+  line-height: 1;
+  color: var(--amarillo);
+  letter-spacing: 2px;
+}
+
+.feedback-texto {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--tinta-suave);
+  line-height: 1.25;
+}
+
+.feedback-texto strong { color: var(--tinta); font-weight: 700; display: block; margin-bottom: 2px; }
+
+/* ---- Casilleros y fichas de letras ---- */
+.casilleros {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(6px, 2vw, 10px);
+  flex: 0 0 auto;
+}
+
+.casillero {
+  width: clamp(36px, 11vw, 48px);
+  height: clamp(42px, 13vw, 56px);
+  border-radius: 14px;
+  background: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: clamp(18px, 5.5vw, 24px);
+  color: var(--verde);
+}
+
+.casillero.vacio { background: transparent; }
+.casillero.mal { color: var(--naranja); box-shadow: inset 0 0 0 3px var(--naranja); }
+.casillero.palabra { width: auto; min-width: 44px; padding: 0 10px; font-size: clamp(14px, 4vw, 18px); }
+
+.fichas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(7px, 2.5vw, 12px);
+  flex: 0 0 auto;
+}
+
+.ficha {
+  width: clamp(42px, 13vw, 56px);
+  height: clamp(42px, 13vw, 56px);
+  border-radius: 16px;
+  background: var(--amarillo-boton);
+  color: #fff;
+  font-weight: 700;
+  font-size: clamp(19px, 6vw, 26px);
+  display: grid;
+  place-items: center;
+  transition: transform 0.08s ease;
+}
+
+.ficha:active { transform: scale(0.94); }
+.ficha.usada { opacity: 0.35; }
+.ficha.palabra { width: auto; min-width: 52px; padding: 0 12px; font-size: clamp(14px, 4vw, 18px); }
+
+/* ---- Opciones de imagen (reconocimiento de sonido) ---- */
+.opciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(8px, 3vw, 12px);
+  flex: 0 0 auto;
+}
+
+.opcion {
+  width: min(104px, 27vw);
+  height: min(104px, 27vw);
+  border-radius: 18px;
+  background: #fff;
+  display: grid;
+  place-items: center;
+  font-size: min(64px, 17vw);
+  line-height: 1;
+  transition: background 0.15s ease, transform 0.08s ease;
+}
+
+.opcion:active { transform: scale(0.96); }
+.opcion.bien { background: var(--verde); }
+.opcion.mal { background: var(--naranja-claro); }
+.opcion small {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--tinta-suave);
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+.opcion.bien small, .opcion.mal small { color: #fff; }
+
+/* ---- Hoja inferior (instrucciones) ---- */
+.hoja {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: 88%;
+  height: min(600px, 86dvh);
+  border-radius: 40px 40px 0 0;
+  background: var(--naranja);
+  padding: 18px 20px calc(24px + env(safe-area-inset-bottom));
+  overflow-y: auto;
+  z-index: 5;
+}
+
+.hoja-imagen {
+  display: block;
+  width: min(244px, 70vw);
+  height: min(287px, 40dvh);
+  margin: 10px auto 0;
+  border-radius: 40px;
+  object-fit: cover;
+}
+
+.hoja-mascota {
+  width: min(244px, 70vw);
+  height: min(287px, 40dvh);
+  margin: 10px auto 0;
+  border-radius: 40px;
+  background: var(--crema-2);
+  display: grid;
+  place-items: center;
+  gap: 0;
+  text-align: center;
+  padding: 24px;
+}
+
+.hoja-mascota p {
+  margin: 0;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--tinta);
+}
+
+/* La salida de la hoja. Dice qué va a pasar al tocarla: volver a probar la
+   misma tarjeta, o seguir. Antes solo estaba la cruz y no quedaba claro. */
+.btn-hoja {
+  display: block;
+  width: min(244px, 70vw);
+  height: 54px;
+  margin: 18px auto 0;
+  border-radius: 20px;
+  background: var(--crema);
+  color: var(--naranja-fuerte);
+  font-family: var(--fredoka);
+  font-weight: 600;
+  font-size: 17px;
+  letter-spacing: 0.4px;
+}
+
+/* ---- Utilidades ---- */
+.espacio { flex: 1 1 auto; }
+.centro { text-align: center; }
+.aviso {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: #ffe1d5;
+  color: #a33f1a;
+  font-family: var(--nunito);
+  font-size: 13px;
+  text-align: center;
+}
+
+@keyframes aparece {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+.aparece { animation: aparece 0.25s ease both; }
+
+@keyframes sube {
+  from { transform: translateY(100%); }
+  to { transform: none; }
+}
+
+.hoja { animation: sube 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+
+/* ---- Hoja "mirá mi boca": una boca por sonido ---- */
+.hoja-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 4px auto 0;
+}
+.hoja-cabecera p {
+  margin: 0;
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.2;
+}
+.hoja-cabecera strong { font-size: 26px; letter-spacing: 1px; }
+
+.hoja-bocas {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 4px;
+  margin: 12px auto 0;
+  padding: 10px 8px;
+  border-radius: 28px;
+  background: var(--crema-2);
+  max-width: 360px;
+}
+.hoja-boca { display: flex; align-items: center; gap: 4px; flex: 1 1 0; min-width: 0; }
+.hoja-boca figure { margin: 0; flex: 1 1 auto; min-width: 0; text-align: center; }
+.hoja-boca svg { max-width: 100%; height: auto; }
+.hoja-boca figcaption {
+  font-family: var(--nunito);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--tinta);
+  line-height: 1.25;
+}
+.hoja-boca figcaption strong { display: block; font-size: 20px; margin-bottom: 2px; }
+.hoja-flecha { font-size: 22px; font-weight: 700; color: var(--naranja); }
+
+.hoja-escuchar {
+  display: flex;
+  gap: 8px;
+  max-width: 360px;
+  margin: 12px auto 0;
+}
+.hoja-escuchar .btn-secundario {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}

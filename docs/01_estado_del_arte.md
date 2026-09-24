@@ -5,7 +5,6 @@
 - Brecha socioeconómica de 76 puntos entre cuartiles; brecha estatal vs privada de 60 puntos.
 - Estimulación temprana (ingreso a nivel inicial hasta los 3 años) da una ventaja de 29 puntos a los 15 años.
 - Lectura clave: la falla que PISA detecta a los 15 años **no es un problema de razonamiento adolescente**, sino la consecuencia terminal de una decodificación no automatizada en primer grado. Esto justifica intervenir temprano, no después.
-- **Nota de estrategia**: la primera versión de AMI entra por escuelas privadas por razones de implementación (ver `03_propuesta_app.md` §1), pero el problema que estos números describen es del sistema completo, y es adonde apunta el escalamiento. Conviene tener la respuesta lista por si en el pitch señalan esa tensión.
 
 ## 2. Por qué la conciencia fonológica es la palanca correcta
 - Es "el predictor causal más robusto del éxito alfabetizador" en ortografías transparentes como el español (múltiples fuentes: Melby-Lervåg et al. 2012; Defior y Serrano 2011; Ferroni y D'Ambrosio 2022).
@@ -24,14 +23,14 @@
 - **Animalario / P.I.A.A. (Ferroni)** y **juego /eko/ (Ramírez, Celi y Zabala, 2025)**: materiales lúdicos (libro de historias + juego de cartas de descarte por sonido inicial/rima) para aula y hogar, de acceso abierto.
 
 ## 5. El vacío operativo (the gap) — de acá sale el "por qué hoy fracasa"
-1. **Brecha de feedback**: la conciencia fonológica requiere escuchar a cada chico pronunciar y corregirlo en el momento. Con 20 a 30 alumnos por aula y clases de 40 minutos, a cada uno le tocan uno o dos minutos de atención individual. La heterogeneidad de niveles agrava el problema pero no lo causa: aun en un aula pareja, un solo docente no puede dar feedback fonológico individualizado a todos en simultáneo. (Esta formulación reemplaza a la anterior, que se apoyaba en aulas heterogéneas de 25-30 alumnos; con el público inicial de escuelas privadas ese argumento ya no aplicaba.)
+1. **Brecha de feedback en aulas heterogéneas**: 25-30 alumnos con niveles muy dispares, un solo docente no puede dar feedback fonológico inmediato e individualizado a cada uno.
 2. **Sesgo de compensación visual en materiales analógicos**: en juegos de cartas físicos (como /eko/) los chicos suelen resolver por color o memorización de la imagen en vez de activar el procesamiento fonológico puro, si no hay un adulto mediando constantemente.
 3. **Ausencia de adaptabilidad dinámica**: un recurso impreso —incluido el propio cuadernillo oficial— no puede recalibrarse en tiempo real si un chico se traba con un sonido, ni registrar nada de lo que pasa.
 
 Estos tres puntos son literalmente la respuesta a "qué hace que la persona empiece y abandone" que pide la sección 1 del TP.
 
 ## 6. Recomendaciones pedagógicas que la app debe respetar
-- Intervenciones **breves (10-15 min), frecuentes (diarias/casi diarias), lúdicas**: la memoria de trabajo y la atención en edad preescolar/primer grado tienen capacidad limitada; sesiones largas son contraproducentes. De acá sale el tope de 15 minutos por nivel (`05_niveles.md`).
+- Intervenciones **breves (10-15 min), frecuentes (diarias/casi diarias), lúdicas**: la memoria de trabajo y la atención en edad preescolar/primer grado tienen capacidad limitada; sesiones largas son contraproducentes.
 - Progresión: de lo global a lo específico, alineada al nivel del grupo.
 - Multisensorialidad ayuda (gesto + sonido + trazo) pero para una app digital el equivalente es feedback audiovisual sincronizado, no solo visual.
 - Señales de riesgo de dislexia a vigilar (no diagnosticar): dificultad persistente para rimar/segmentar/aprender sonidos de letras, lentitud de acceso léxico.

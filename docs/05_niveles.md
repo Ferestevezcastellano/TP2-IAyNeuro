@@ -2,7 +2,7 @@
 
 ## Criterio
 
-La secuencia de niveles sigue el **orden curricular de "Yo amo aprender — Lengua, 1er grado" (Ministerio de Educación de CABA, edición 2026)** (https://drive.google.com/file/d/19O8Vm1VoM7NGH3XrboO0kZkDEpq8_59X/view?usp=sharing), el cuadernillo oficial que usan las escuelas de la Ciudad este año.
+La secuencia de niveles sigue el **orden curricular de "Yo amo aprender — Lengua, 1er grado" (Ministerio de Educación de CABA, edición 2026)**, el cuadernillo oficial que usan las escuelas de la Ciudad este año.
 
 Ese es el criterio, y es uno solo: **cada nivel de AMI corresponde a una unidad de sonidos y letras del cuadernillo, en el mismo orden.** La razón es directa — el diferencial de la app es sincronizarse con el avance curricular semanal del docente. Cualquier otro orden haría que un chico practicara en la app una letra distinta a la que la seño está dando en el pizarrón, que es exactamente lo que la app existe para evitar.
 

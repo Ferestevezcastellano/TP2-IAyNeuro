@@ -1,0 +1,11 @@
+<!-- Medalla. Cinta y disco, colgando bajo la cara. -->
+<svg width="150" height="150" viewBox="0 0 150 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- cinta -->
+  <path d="M60 108l12 18-9 6-14-20z" fill="#E0453A"/>
+  <path d="M90 108l-12 18 9 6 14-20z" fill="#F26A5E"/>
+  <!-- disco -->
+  <circle cx="75" cy="134" r="15" fill="#F2A81E"/>
+  <circle cx="75" cy="134" r="11" fill="#FCD53F"/>
+  <!-- estrella -->
+  <path d="M75 127l2.2 4.6 5 .7-3.6 3.6.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.6 5-.7z" fill="#F2A81E"/>
+</svg>
