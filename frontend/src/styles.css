@@ -346,7 +346,7 @@ button:disabled { cursor: default; }
   right: 0;
   bottom: 0;
   max-height: 88%;
-  height: min(440px, 62dvh);
+  height: min(600px, 86dvh);
   border-radius: 40px 40px 0 0;
   background: var(--naranja);
   padding: 18px 20px calc(24px + env(safe-area-inset-bottom));
@@ -426,3 +426,57 @@ button:disabled { cursor: default; }
 }
 
 .hoja { animation: sube 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+
+/* ---- Hoja "mirá mi boca": una boca por sonido ---- */
+.hoja-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 4px auto 0;
+}
+.hoja-cabecera p {
+  margin: 0;
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.2;
+}
+.hoja-cabecera strong { font-size: 26px; letter-spacing: 1px; }
+
+.hoja-bocas {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 4px;
+  margin: 12px auto 0;
+  padding: 10px 8px;
+  border-radius: 28px;
+  background: var(--crema-2);
+  max-width: 360px;
+}
+.hoja-boca { display: flex; align-items: center; gap: 4px; flex: 1 1 0; min-width: 0; }
+.hoja-boca figure { margin: 0; flex: 1 1 auto; min-width: 0; text-align: center; }
+.hoja-boca svg { max-width: 100%; height: auto; }
+.hoja-boca figcaption {
+  font-family: var(--nunito);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--tinta);
+  line-height: 1.25;
+}
+.hoja-boca figcaption strong { display: block; font-size: 20px; margin-bottom: 2px; }
+.hoja-flecha { font-size: 22px; font-weight: 700; color: var(--naranja); }
+
+.hoja-escuchar {
+  display: flex;
+  gap: 8px;
+  max-width: 360px;
+  margin: 12px auto 0;
+}
+.hoja-escuchar .btn-secundario {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}

@@ -160,10 +160,13 @@ const SIN_MICROFONO = new Set(['not-allowed', 'service-not-allowed', 'audio-capt
  * "manzana".
  */
 export type Escucha =
-  /** Lo que entendió el navegador. */
-  | { tipo: 'texto'; texto: string }
+  /**
+   * Lo que entendió el navegador. `grabacion` es la voz del chico para que se
+   * escuche, si se pudo grabar en paralelo (en algunos teléfonos no se puede).
+   */
+  | { tipo: 'texto'; texto: string; grabacion?: string }
   /** El audio grabado (WAV 16 kHz mono en base64), para que lo reconozca el servidor. */
-  | { tipo: 'audio'; audioBase64: string }
+  | { tipo: 'audio'; audioBase64: string; grabacion: string }
   /** Escuchó pero no entendió nada (silencio o se acabó el tiempo). */
   | { tipo: 'vacio' }
   /** No se puede escuchar: sin reconocimiento, sin permiso, sin https o sin red. */
@@ -221,7 +224,7 @@ function servidorReconoce(): Promise<boolean> {
  */
 export async function listen(): Promise<Escucha> {
   if (!reconocedorRoto) {
-    const escucha = await escucharNavegador();
+    const escucha = await escucharConGrabacion();
     if (escucha.tipo !== 'sin-microfono' || !PROBAR_GRABANDO.has(ultimoError)) return escucha;
     if (SIN_RECONOCEDOR.has(ultimoError)) reconocedorRoto = true;
   }
@@ -230,6 +233,131 @@ export async function listen(): Promise<Escucha> {
 }
 
 let ultimoError = '';
+
+/**
+ * El reconocedor del navegador nunca le da el audio a la app. Para que el chico
+ * pueda escucharse, se graba en paralelo mientras reconoce. En algunos
+ * teléfonos las dos cosas se pisan el micrófono: si pasa, se repite en el acto
+ * sin grabar y no se vuelve a intentar en ese dispositivo. El chico no se
+ * entera: pierde escucharse, no la tarjeta.
+ */
+async function escucharConGrabacion(): Promise<Escucha> {
+  const grabadora = await grabadoraParalela();
+  const inicio = performance.now();
+  const escucha = await escucharNavegador();
+  const grabacion = grabadora ? await grabadora.detener() : undefined;
+
+  const seCortoEnSeguida = escucha.tipo === 'vacio' && performance.now() - inicio < 1200;
+  const choque = ultimoError === 'audio-capture' || ultimoError === 'aborted' || seCortoEnSeguida;
+  if (grabadora && choque) {
+    console.warn('[AMI] grabar en paralelo choca con el reconocedor en este dispositivo: se deja de grabar.');
+    if (grabacion) URL.revokeObjectURL(grabacion);
+    noGrabarEnParalelo();
+    return escucharNavegador();
+  }
+
+  if (escucha.tipo === 'texto') return { ...escucha, grabacion };
+  if (grabacion) URL.revokeObjectURL(grabacion);
+  return escucha;
+}
+
+const CLAVE_PARALELO = 'ami.grabarEnParalelo';
+
+function grabarEnParalelo(): boolean {
+  try {
+    return localStorage.getItem(CLAVE_PARALELO) !== 'no';
+  } catch {
+    return true;
+  }
+}
+
+function noGrabarEnParalelo(): void {
+  try {
+    localStorage.setItem(CLAVE_PARALELO, 'no');
+  } catch {
+    // sin almacenamiento se vuelve a probar la próxima vez; no rompe nada
+  }
+}
+
+interface Grabadora {
+  /** Para y devuelve la dirección de la grabación, o nada si quedó muda. */
+  detener(): Promise<string | undefined>;
+}
+
+async function grabadoraParalela(): Promise<Grabadora | null> {
+  if (!grabarEnParalelo() || !navigator.mediaDevices || typeof MediaRecorder === 'undefined') return null;
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const grabadora = new MediaRecorder(stream);
+    const trozos: Blob[] = [];
+    grabadora.ondataavailable = (evento) => {
+      if (evento.data.size > 0) trozos.push(evento.data);
+    };
+
+    // Se mide el volumen: si el reconocedor se quedó con el micrófono, la
+    // grabación sale muda, y reproducir silencio sería peor que no reproducir.
+    const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    const ctx = new Ctor();
+    const analizador = ctx.createAnalyser();
+    ctx.createMediaStreamSource(stream).connect(analizador);
+    const muestras = new Float32Array(analizador.fftSize);
+    let pico = 0;
+    const medir = window.setInterval(() => {
+      analizador.getFloatTimeDomainData(muestras);
+      for (const x of muestras) pico = Math.max(pico, Math.abs(x));
+    }, 50);
+
+    grabadora.start();
+
+    return {
+      detener: () =>
+        new Promise<string | undefined>((resolve) => {
+          window.clearInterval(medir);
+          const cerrar = () => {
+            stream.getTracks().forEach((pista) => pista.stop());
+            void ctx.close().catch(() => undefined);
+            const hayAlgo = pico > 0.02 && trozos.length > 0;
+            resolve(hayAlgo ? URL.createObjectURL(new Blob(trozos, { type: grabadora.mimeType })) : undefined);
+          };
+          grabadora.onstop = cerrar;
+          try {
+            if (grabadora.state === 'inactive') cerrar();
+            else grabadora.stop();
+          } catch {
+            cerrar();
+          }
+        }),
+    };
+  } catch {
+    return null;
+  }
+}
+
+/** Reproduce la grabación del chico. Termina cuando termina de sonar (o a los 8 s). */
+export function reproducirGrabacion(url: string): Promise<void> {
+  cortar();
+  const audio = new Audio(url);
+  current = audio;
+  return new Promise<void>((resolve) => {
+    cerrarActual = resolve;
+    const listo = () => {
+      if (current === audio) {
+        current = null;
+        cerrarActual = null;
+      }
+      resolve();
+    };
+    audio.onended = listo;
+    audio.onerror = listo;
+    audio.play().catch(listo);
+    window.setTimeout(() => {
+      if (current === audio) {
+        audio.pause();
+        listo();
+      }
+    }, 8000);
+  });
+}
 
 function escucharNavegador(): Promise<Escucha> {
   if (!RecognizerCtor) return Promise.resolve({ tipo: 'sin-microfono', motivo: explicar('sin-reconocimiento') });
@@ -351,7 +479,16 @@ async function grabar(): Promise<Escucha> {
       // al final: por eso la última palabra la tiene el pico contra ese piso.
       const hablo = huboVoz || pico > umbral();
       console.debug('[AMI] grabación:', { hablo, pico: pico.toFixed(3), piso: piso.toFixed(3), ms: Math.round(performance.now() - inicio) });
-      resolve(hablo ? { tipo: 'audio', audioBase64: aWavBase64(trozos, ctx.sampleRate) } : VACIO);
+      if (!hablo) {
+        resolve(VACIO);
+        return;
+      }
+      const wav = aWav(trozos, ctx.sampleRate);
+      resolve({
+        tipo: 'audio',
+        audioBase64: aBase64(wav),
+        grabacion: URL.createObjectURL(new Blob([wav], { type: 'audio/wav' })),
+      });
     };
 
     proceso.onaudioprocess = (evento) => {
@@ -382,7 +519,7 @@ async function grabar(): Promise<Escucha> {
 }
 
 /** Junta los trozos, los baja a 16 kHz y arma un WAV PCM de 16 bits mono. */
-function aWavBase64(trozos: Float32Array[], frecuencia: number): string {
+function aWav(trozos: Float32Array[], frecuencia: number): ArrayBuffer {
   const total = trozos.reduce((n, t) => n + t.length, 0);
   const todo = new Float32Array(total);
   let desde = 0;
@@ -422,7 +559,10 @@ function aWavBase64(trozos: Float32Array[], frecuencia: number): string {
   texto(36, 'data');
   v.setUint32(40, pcm.byteLength, true);
   new Uint8Array(buffer, 44).set(new Uint8Array(pcm.buffer));
+  return buffer;
+}
 
+function aBase64(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
   let binario = '';
   for (let i = 0; i < bytes.length; i += 0x8000) binario += String.fromCharCode(...bytes.subarray(i, i + 0x8000));

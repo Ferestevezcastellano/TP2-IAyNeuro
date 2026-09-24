@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Card, EntradaVoz, Feedback, PetSpecies, Tile } from '../api';
-import { listen, play } from '../audio';
+import { listen, play, reproducirGrabacion } from '../audio';
+import { Boca, consejoDe, sonidosDe } from './Boca';
 import { Ilustracion } from './Ilustracion';
 import { BotonSonido, CajaFeedback } from './comunes';
 import { Mascota } from './Mascota';
@@ -62,6 +63,17 @@ export function Tarjeta({ card, species, onArmado, onVoz, onLista, repaso }: Pro
   /** El micrófono no se puede usar: por qué, para el adulto que está al lado. */
   const [sinMicrofono, setSinMicrofono] = useState<string | null>(null);
   const temporizador = useRef<number | null>(null);
+  /** La voz del chico en su último intento, para que se escuche. */
+  const [grabacion, setGrabacion] = useState<string | null>(null);
+  /** Se está reproduciendo su grabación, antes de decirle si estuvo bien. */
+  const [reproduciendo, setReproduciendo] = useState(false);
+  const grabacionActual = useRef<string | null>(null);
+
+  const guardarGrabacion = (url: string | null) => {
+    if (grabacionActual.current) URL.revokeObjectURL(grabacionActual.current);
+    grabacionActual.current = url;
+    setGrabacion(url);
+  };
 
   useEffect(() => {
     setArmado([]);
@@ -78,6 +90,8 @@ export function Tarjeta({ card, species, onArmado, onVoz, onLista, repaso }: Pro
     setVacios(0);
     setSinConexion(false);
     setSinMicrofono(null);
+    setReproduciendo(false);
+    guardarGrabacion(null);
     // La tarjeta aparece en silencio: el sonido sale cuando el chico toca el
     // boton, no solo. Que suene sin que nadie lo pida le saca el control de la
     // mano justo en el gesto que la app le esta pidiendo que haga.
@@ -161,9 +175,23 @@ export function Tarjeta({ card, species, onArmado, onVoz, onLista, repaso }: Pro
    * voz. Lo que NO se hace nunca es mandar la respuesta esperada como si la
    * hubiera dicho.
    */
-  const verificar = async (voz: EntradaVoz) => {
+  const verificar = async (voz: EntradaVoz, suVoz?: string) => {
     if (!onVoz) return;
-    const resultado = await onVoz(voz);
+    // El servidor evalúa mientras el chico se escucha: primero oye cómo sonó y
+    // recién después sabe si estuvo bien. Escucharse es parte de aprender a
+    // decirlo, no un paso de más.
+    const evaluando = onVoz(voz);
+    evaluando.catch(() => undefined);
+    if (suVoz) {
+      setReproduciendo(true);
+      try {
+        await reproducirGrabacion(suVoz);
+        await new Promise((r) => window.setTimeout(r, 300));
+      } finally {
+        setReproduciendo(false);
+      }
+    }
+    const resultado = await evaluando;
 
     setFeedback(resultado.feedback);
     setVozRechazada(!resultado.accepted);
@@ -215,7 +243,11 @@ export function Tarjeta({ card, species, onArmado, onVoz, onLista, repaso }: Pro
       }
 
       setVacios(0);
-      await verificar(escucha.tipo === 'texto' ? escucha.texto : { audioBase64: escucha.audioBase64 });
+      guardarGrabacion(escucha.grabacion ?? null);
+      await verificar(
+        escucha.tipo === 'texto' ? escucha.texto : { audioBase64: escucha.audioBase64 },
+        escucha.grabacion,
+      );
     } catch {
       // El servidor no contesto: se queda en la misma tarjeta con el microfono listo.
       setSinConexion(true);
@@ -265,10 +297,10 @@ export function Tarjeta({ card, species, onArmado, onVoz, onLista, repaso }: Pro
           <span className={esSilaba ? 'letra-silaba' : ''}>{unidad}</span>
         </button>
         <p className="t-instruccion">TOCÁ PARA ESCUCHAR EL SONIDO</p>
-        <BloqueVoz visible={conVoz} activo={vozPendiente} escuchando={escuchando} noSeEntendio={noSeEntendio} sinConexion={sinConexion} sinMicrofono={sinMicrofono} onHablar={hablar} onSeguir={seguirSinVoz} />
+        <BloqueVoz visible={conVoz} activo={vozPendiente} escuchando={escuchando} noSeEntendio={noSeEntendio} reproduciendo={reproduciendo} sinConexion={sinConexion} sinMicrofono={sinMicrofono} onHablar={hablar} onSeguir={seguirSinVoz} />
         <div className="espacio" />
         <CajaFeedback species={species} feedback={feedback} estrellas={conEstrellas} />
-        {instrucciones && <HojaInstrucciones species={species} letra={card.targetWord ?? card.targetPhoneme ?? ''} sonido={card.spokenAs} reintenta={puedeReintentar} onCerrar={cerrarInstrucciones} />}
+        {instrucciones && <HojaInstrucciones species={species} letra={card.targetPhoneme ?? card.targetWord ?? ''} sonido={card.spokenAs} reintenta={puedeReintentar} onCerrar={cerrarInstrucciones} onEscucharCorrecto={() => play(card)} onEscucharme={grabacion ? () => reproducirGrabacion(grabacion) : undefined} />}
       </>
     );
   }
@@ -303,12 +335,12 @@ export function Tarjeta({ card, species, onArmado, onVoz, onLista, repaso }: Pro
             );
           })}
         </div>
-        <BloqueVoz visible={conVoz} activo={vozPendiente} escuchando={escuchando} noSeEntendio={noSeEntendio} sinConexion={sinConexion} sinMicrofono={sinMicrofono} onHablar={hablar} onSeguir={seguirSinVoz} compacto />
+        <BloqueVoz visible={conVoz} activo={vozPendiente} escuchando={escuchando} noSeEntendio={noSeEntendio} reproduciendo={reproduciendo} sinConexion={sinConexion} sinMicrofono={sinMicrofono} onHablar={hablar} onSeguir={seguirSinVoz} compacto />
         <div className="espacio" />
         {feedback && (acierto || marcaError !== null) ? (
           <CajaFeedback species={species} feedback={feedback} estrellas={conEstrellas} />
         ) : null}
-        {instrucciones && <HojaInstrucciones species={species} letra={card.targetPhoneme ?? ''} sonido={card.spokenAs} reintenta={puedeReintentar} onCerrar={cerrarInstrucciones} />}
+        {instrucciones && <HojaInstrucciones species={species} letra={card.targetPhoneme ?? ''} sonido={card.spokenAs} reintenta={puedeReintentar} onCerrar={cerrarInstrucciones} onEscucharCorrecto={() => play(card)} onEscucharme={grabacion ? () => reproducirGrabacion(grabacion) : undefined} />}
       </>
     );
   }
@@ -360,10 +392,10 @@ export function Tarjeta({ card, species, onArmado, onVoz, onLista, repaso }: Pro
         })}
       </div>
 
-      <BloqueVoz visible={conVoz} activo={vozPendiente} escuchando={escuchando} noSeEntendio={noSeEntendio} sinConexion={sinConexion} sinMicrofono={sinMicrofono} onHablar={hablar} onSeguir={seguirSinVoz} compacto />
+      <BloqueVoz visible={conVoz} activo={vozPendiente} escuchando={escuchando} noSeEntendio={noSeEntendio} reproduciendo={reproduciendo} sinConexion={sinConexion} sinMicrofono={sinMicrofono} onHablar={hablar} onSeguir={seguirSinVoz} compacto />
       <div className="espacio" />
       <CajaFeedback species={species} feedback={feedback} estrellas={conEstrellas} />
-      {instrucciones && <HojaInstrucciones species={species} letra={objetivo} sonido={card.spokenAs} reintenta={puedeReintentar} onCerrar={cerrarInstrucciones} />}
+      {instrucciones && <HojaInstrucciones species={species} letra={objetivo} palabra sonido={card.spokenAs} reintenta={puedeReintentar} onCerrar={cerrarInstrucciones} onEscucharCorrecto={() => play(card)} onEscucharme={grabacion ? () => reproducirGrabacion(grabacion) : undefined} />}
     </>
   );
 }
@@ -376,6 +408,8 @@ interface BloqueVozProps {
   /** Escuchó pero no entendió nada. No es un error del chico: se le pide de nuevo. */
   noSeEntendio?: boolean;
   sinConexion?: boolean;
+  /** Suena la grabación del chico. */
+  reproduciendo?: boolean;
   /** Por qué no se puede usar el micrófono; si viene, se ofrece seguir sin decirlo. */
   sinMicrofono?: string | null;
   onHablar: () => void;
@@ -383,7 +417,7 @@ interface BloqueVozProps {
 }
 
 /** El micrófono y "AHORA DECILO VOS". Se ve apagado hasta que el armado esté bien. */
-function BloqueVoz({ visible, activo, escuchando, compacto, noSeEntendio, sinConexion, sinMicrofono, onHablar, onSeguir }: BloqueVozProps) {
+function BloqueVoz({ visible, activo, escuchando, compacto, noSeEntendio, reproduciendo, sinConexion, sinMicrofono, onHablar, onSeguir }: BloqueVozProps) {
   if (sinConexion) return <p className="aviso">NO SE PUDO CONECTAR. TOCÁ DE NUEVO.</p>;
   if (!visible) return null;
   if (sinMicrofono) {
@@ -399,11 +433,11 @@ function BloqueVoz({ visible, activo, escuchando, compacto, noSeEntendio, sinCon
   }
   return (
     <div className={`bloque-voz ${compacto ? 'compacto' : ''} ${activo ? 'activo' : ''}`}>
-      <button className={`btn-mic ${escuchando ? 'escuchando' : ''}`} onClick={onHablar} disabled={!activo || escuchando} aria-label="Decilo vos">
+      <button className={`btn-mic ${escuchando ? 'escuchando' : ''}`} onClick={onHablar} disabled={!activo || escuchando || reproduciendo} aria-label="Decilo vos">
         <img src="/icons/microphone.svg" width={24} height={24} alt="" />
       </button>
       <p className="t-instruccion">
-        {escuchando ? 'TE ESCUCHO...' : noSeEntendio ? 'NO TE ESCUCHE, PROBA DE NUEVO' : 'AHORA DECILO VOS'}
+        {reproduciendo ? 'ASÍ SONASTE...' : escuchando ? 'TE ESCUCHO...' : noSeEntendio ? 'NO TE ESCUCHE, PROBA DE NUEVO' : 'AHORA DECILO VOS'}
       </p>
     </div>
   );
@@ -411,34 +445,90 @@ function BloqueVoz({ visible, activo, escuchando, compacto, noSeEntendio, sinCon
 
 interface HojaProps {
   species: PetSpecies;
+  /** La letra, sílaba o palabra de la tarjeta. */
   letra: string;
+  /** Es una palabra u oración: se muestra cómo empieza, no cada sonido. */
+  palabra?: boolean;
   sonido: string;
   /** Al cerrar se vuelve a intentar en la misma tarjeta. */
   reintenta?: boolean;
   onCerrar: () => void;
+  onEscucharCorrecto: () => void;
+  /** Vuelve a reproducir lo que dijo el chico, si se pudo grabar. */
+  onEscucharme?: () => void;
 }
 
-/** 05 — La hoja naranja con la mascota mostrando cómo se hace el sonido. */
-function HojaInstrucciones({ species, letra, sonido, reintenta, onCerrar }: HojaProps) {
+/** La primera sílaba: los sonidos hasta la primera vocal, inclusive. */
+function primeraSilaba<T extends { clave: string }>(sonidos: T[]): T[] {
+  const vocal = sonidos.findIndex((s) => 'aeiou'.includes(s.clave));
+  return vocal < 0 ? sonidos.slice(0, 1) : sonidos.slice(0, vocal + 1);
+}
+
+/**
+ * 05 — La hoja naranja: cómo se pone la boca para decirlo bien. Una boca por
+ * sonido, en orden (la M y después la A para MA), con qué hacer en palabras.
+ * Al abrirse suena cómo se dice, para comparar con lo que acaba de escuchar de
+ * sí mismo.
+ */
+export function HojaInstrucciones({ species, letra, palabra, sonido, reintenta, onCerrar, onEscucharCorrecto, onEscucharme }: HojaProps) {
+  const texto = palabra ? letra.split(/\s+/)[0] ?? '' : letra;
+  const todos = sonidosDe(texto);
+  const bocas = palabra ? primeraSilaba(todos) : todos.slice(0, 3);
+
+  useEffect(() => {
+    const t = window.setTimeout(onEscucharCorrecto, 450);
+    return () => window.clearTimeout(t);
+    // Solo al abrir la hoja.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div className="hoja" role="dialog" aria-label="Cómo se hace el sonido">
       <button className="btn-volver" onClick={onCerrar} aria-label="Cerrar">
         <img src="/icons/xmark.svg" width={24} height={24} alt="" />
       </button>
-      {species === 'LION' ? (
-        <img className="hoja-imagen" src="/ilustraciones/instrucciones-lion.jpg" alt="El león hace el sonido" />
-      ) : (
-        <div className="hoja-mascota">
-          <Mascota species={species} size={120} />
-          <p>
-            MIRÁ MI BOCA Y DECÍ
-            <br />
-            <strong style={{ fontSize: 28 }}>{sonido.toUpperCase()}</strong>
-            <br />
-            COMO EN {letra}
-          </p>
-        </div>
-      )}
+      <div className="hoja-cabecera">
+        <Mascota species={species} size={56} />
+        <p>
+          {palabra ? (
+            <>
+              ASÍ EMPIEZA
+              <br />
+              <strong>{letra.toUpperCase()}</strong>
+            </>
+          ) : (
+            <>
+              MIRÁ MI BOCA Y DECÍ
+              <br />
+              <strong>{sonido.toUpperCase()}</strong>
+            </>
+          )}
+        </p>
+      </div>
+      <div className="hoja-bocas">
+        {bocas.map((s, i) => (
+          <div className="hoja-boca" key={`${s.clave}-${i}`}>
+            {i > 0 && <span className="hoja-flecha" aria-hidden>→</span>}
+            <figure>
+              <Boca clave={s.clave} size={bocas.length > 2 ? 110 : 160} />
+              <figcaption>
+                <strong>{s.escrito}</strong>
+                {consejoDe(s.clave)}
+              </figcaption>
+            </figure>
+          </div>
+        ))}
+      </div>
+      <div className="hoja-escuchar">
+        <button className="btn-secundario" onClick={onEscucharCorrecto}>
+          <img src="/icons/sound-high.svg" width={20} height={20} alt="" /> ASÍ SE DICE
+        </button>
+        {onEscucharme && (
+          <button className="btn-secundario" onClick={onEscucharme}>
+            <img src="/icons/microphone.svg" width={20} height={20} alt="" style={{ filter: 'invert(1)' }} /> ASÍ SONASTE
+          </button>
+        )}
+      </div>
       {/* El boton dice exactamente lo que va a pasar al tocarlo: si quedan
           intentos se vuelve a la misma tarjeta, y si no, se sigue. */}
       <button className="btn-hoja" onClick={onCerrar}>
