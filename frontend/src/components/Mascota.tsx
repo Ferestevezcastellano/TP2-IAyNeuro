@@ -47,18 +47,22 @@ const ENCUADRE: Record<string, [number, number, number]> = {
   'acc-mochila': [34, 88, 62],
 };
 
-/** Un accesorio solo, encuadrado para que se vea la pieza y no el aire alrededor. */
-export function PiezaAccesorio({ id, size, className }: { id: string; size: number; className?: string }) {
+/**
+ * Un accesorio solo, encuadrado para que se vea la pieza y no el aire
+ * alrededor. Sin `size` ocupa todo su contenedor, que tiene que ser cuadrado.
+ */
+export function PiezaAccesorio({ id, size, className }: { id: string; size?: number; className?: string }) {
   const [x, y, lado] = ENCUADRE[id] ?? [0, 0, 150];
-  const escala = size / lado;
+  const pct = (n: number) => `${(n / lado) * 100}%`;
+  const caja = size ?? '100%';
   return (
-    <span className={className} style={{ display: 'block', width: size, height: size, overflow: 'hidden', position: 'relative' }}>
+    <span className={className} style={{ display: 'block', width: caja, height: caja, overflow: 'hidden', position: 'relative' }}>
       <img
         src={ARCHIVO_ACCESORIO[id] ?? ''}
         alt=""
         aria-hidden
         draggable={false}
-        style={{ position: 'absolute', width: 150 * escala, height: 150 * escala, maxWidth: 'none', left: -x * escala, top: -y * escala }}
+        style={{ position: 'absolute', width: pct(150), height: pct(150), maxWidth: 'none', left: pct(-x), top: pct(-y) }}
       />
     </span>
   );

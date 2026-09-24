@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { api, type Accessory, type Level, type Pet, type PetSpecies } from '../api';
 import { celebrar } from '../audio';
 import { BotonVolver } from '../components/comunes';
-import { ARCHIVO_ACCESORIO, Mascota, NOMBRE_MASCOTA } from '../components/Mascota';
+import { Mascota, NOMBRE_MASCOTA, PiezaAccesorio } from '../components/Mascota';
 import './Personalizacion.css';
 
 interface Props {
@@ -192,7 +192,7 @@ export function Personalizacion({ species, estrellas, niveles, onVolver }: Props
                 }
               >
                 <span className="persona-item-caja">
-                  <img src={ARCHIVO_ACCESORIO[a.id] ?? ''} alt="" aria-hidden className="persona-item-arte" />
+                  <PiezaAccesorio id={a.id} className="persona-item-arte" />
                 </span>
 
                 {a.owned ? (

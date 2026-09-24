@@ -244,12 +244,11 @@
   overflow: hidden;
 }
 
-/* El arte del accesorio está dibujado en el lienzo de la mascota (150×150),
-   así que acá se lo acerca para que se vea la pieza y no el aire alrededor. */
+/* El arte está dibujado en el lienzo de la mascota (150×150); PiezaAccesorio
+   recorta la pieza. Un poco de aire para que no toque el borde de la ficha. */
 .persona-item-arte {
-  width: 190%;
-  height: 190%;
-  object-fit: contain;
+  width: 78% !important;
+  height: 78% !important;
 }
 
 .persona-item-nombre {
