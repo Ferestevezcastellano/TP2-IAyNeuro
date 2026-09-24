@@ -160,10 +160,7 @@ const SIN_MICROFONO = new Set(['not-allowed', 'service-not-allowed', 'audio-capt
  * "manzana".
  */
 export type Escucha =
-  /**
-   * Lo que entendió el navegador. `grabacion` es la voz del chico para que se
-   * escuche, si se pudo grabar en paralelo (en algunos teléfonos no se puede).
-   */
+  /** Lo que entendió el navegador (respaldo, sin grabación para escucharse). */
   | { tipo: 'texto'; texto: string; grabacion?: string }
   /** El audio grabado (WAV 16 kHz mono en base64), para que lo reconozca el servidor. */
   | { tipo: 'audio'; audioBase64: string; grabacion: string }
@@ -194,18 +191,12 @@ function explicar(error: string): string {
  */
 const SIN_RECONOCEDOR = new Set(['network', 'service-not-allowed', 'language-not-supported']);
 
-/**
- * Con `not-allowed` el reconocedor del navegador no tiene permiso, pero grabar
- * usa otro camino (getUserMedia) que a veces sí lo tiene: pasa en Chrome de
- * Android con la página marcada como segura a mano. Se prueba grabar, sin dar
- * por roto el reconocedor.
- */
-const PROBAR_GRABANDO = new Set([...SIN_RECONOCEDOR, 'not-allowed']);
-
 /** Una vez que el reconocimiento del navegador falló así, no se lo vuelve a probar. */
 let reconocedorRoto = !RecognizerCtor;
 
 let proveedorServidor: Promise<string> | null = null;
+// Se pregunta al cargar la app, para que al tocar el micrófono ya se sepa.
+queueMicrotask(() => void servidorReconoce());
 /** Si el servidor reconoce voz de verdad (Vosk) y no es el de utilería. */
 function servidorReconoce(): Promise<boolean> {
   proveedorServidor ??= api
@@ -218,120 +209,38 @@ function servidorReconoce(): Promise<boolean> {
 /**
  * Escucha el micrófono. Ver `Escucha`.
  *
- * Primero con el reconocimiento del navegador, que es el mejor (el de Google en
- * Chrome). Si ese no existe o no anda en esta máquina, graba el audio y lo
- * reconoce el servidor.
+ * Si el servidor reconoce voz (Vosk), se graba y reconoce él, en todos los
+ * dispositivos: así el chico siempre puede escucharse. En los teléfonos, el
+ * reconocedor de Google y una grabación en paralelo se pisaban el micrófono y
+ * Google no escuchaba nada. El del navegador queda solo como respaldo.
  */
 export async function listen(): Promise<Escucha> {
-  if (!reconocedorRoto) {
-    const escucha = await escucharConGrabacion();
-    if (escucha.tipo !== 'sin-microfono' || !PROBAR_GRABANDO.has(ultimoError)) return escucha;
-    if (SIN_RECONOCEDOR.has(ultimoError)) reconocedorRoto = true;
+  // Antes de cualquier espera, todavía dentro del toque: Safari solo deja
+  // prender el audio en ese instante.
+  const ctx = navigator.mediaDevices ? nuevoContexto() : null;
+  if (ctx) void ctx.resume().catch(() => undefined);
+
+  if (ctx && (await servidorReconoce())) return grabar(ctx);
+  if (ctx) void ctx.close().catch(() => undefined);
+
+  if (reconocedorRoto) {
+    return { tipo: 'sin-microfono', motivo: explicar(RecognizerCtor ? ultimoError || 'network' : 'sin-reconocimiento') };
   }
-  if (navigator.mediaDevices && (await servidorReconoce())) return grabar();
-  return { tipo: 'sin-microfono', motivo: explicar(RecognizerCtor ? ultimoError || 'network' : 'sin-reconocimiento') };
-}
-
-let ultimoError = '';
-
-/**
- * El reconocedor del navegador nunca le da el audio a la app. Para que el chico
- * pueda escucharse, se graba en paralelo mientras reconoce. En algunos
- * teléfonos las dos cosas se pisan el micrófono: si pasa, se repite en el acto
- * sin grabar y no se vuelve a intentar en ese dispositivo. El chico no se
- * entera: pierde escucharse, no la tarjeta.
- */
-async function escucharConGrabacion(): Promise<Escucha> {
-  const grabadora = await grabadoraParalela();
-  const inicio = performance.now();
   const escucha = await escucharNavegador();
-  const grabacion = grabadora ? await grabadora.detener() : undefined;
-
-  const seCortoEnSeguida = escucha.tipo === 'vacio' && performance.now() - inicio < 1200;
-  const choque = ultimoError === 'audio-capture' || ultimoError === 'aborted' || seCortoEnSeguida;
-  if (grabadora && choque) {
-    console.warn('[AMI] grabar en paralelo choca con el reconocedor en este dispositivo: se deja de grabar.');
-    if (grabacion) URL.revokeObjectURL(grabacion);
-    noGrabarEnParalelo();
-    return escucharNavegador();
-  }
-
-  if (escucha.tipo === 'texto') return { ...escucha, grabacion };
-  if (grabacion) URL.revokeObjectURL(grabacion);
+  if (escucha.tipo === 'sin-microfono' && SIN_RECONOCEDOR.has(ultimoError)) reconocedorRoto = true;
   return escucha;
 }
 
-const CLAVE_PARALELO = 'ami.grabarEnParalelo';
-
-function grabarEnParalelo(): boolean {
+function nuevoContexto(): AudioContext | null {
+  const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
   try {
-    return localStorage.getItem(CLAVE_PARALELO) !== 'no';
-  } catch {
-    return true;
-  }
-}
-
-function noGrabarEnParalelo(): void {
-  try {
-    localStorage.setItem(CLAVE_PARALELO, 'no');
-  } catch {
-    // sin almacenamiento se vuelve a probar la próxima vez; no rompe nada
-  }
-}
-
-interface Grabadora {
-  /** Para y devuelve la dirección de la grabación, o nada si quedó muda. */
-  detener(): Promise<string | undefined>;
-}
-
-async function grabadoraParalela(): Promise<Grabadora | null> {
-  if (!grabarEnParalelo() || !navigator.mediaDevices || typeof MediaRecorder === 'undefined') return null;
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const grabadora = new MediaRecorder(stream);
-    const trozos: Blob[] = [];
-    grabadora.ondataavailable = (evento) => {
-      if (evento.data.size > 0) trozos.push(evento.data);
-    };
-
-    // Se mide el volumen: si el reconocedor se quedó con el micrófono, la
-    // grabación sale muda, y reproducir silencio sería peor que no reproducir.
-    const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-    const ctx = new Ctor();
-    const analizador = ctx.createAnalyser();
-    ctx.createMediaStreamSource(stream).connect(analizador);
-    const muestras = new Float32Array(analizador.fftSize);
-    let pico = 0;
-    const medir = window.setInterval(() => {
-      analizador.getFloatTimeDomainData(muestras);
-      for (const x of muestras) pico = Math.max(pico, Math.abs(x));
-    }, 50);
-
-    grabadora.start();
-
-    return {
-      detener: () =>
-        new Promise<string | undefined>((resolve) => {
-          window.clearInterval(medir);
-          const cerrar = () => {
-            stream.getTracks().forEach((pista) => pista.stop());
-            void ctx.close().catch(() => undefined);
-            const hayAlgo = pico > 0.02 && trozos.length > 0;
-            resolve(hayAlgo ? URL.createObjectURL(new Blob(trozos, { type: grabadora.mimeType })) : undefined);
-          };
-          grabadora.onstop = cerrar;
-          try {
-            if (grabadora.state === 'inactive') cerrar();
-            else grabadora.stop();
-          } catch {
-            cerrar();
-          }
-        }),
-    };
+    return Ctor ? new Ctor() : null;
   } catch {
     return null;
   }
 }
+
+let ultimoError = '';
 
 /** Reproduce la grabación del chico. Termina cuando termina de sonar (o a los 8 s). */
 export function reproducirGrabacion(url: string): Promise<void> {
@@ -438,7 +347,7 @@ const SILENCIO_FINAL_MS = 900;
  * Graba hasta que el chico termina de hablar (o hasta el tope) y devuelve el
  * audio listo para el servidor. Si no habló nada, devuelve vacío.
  */
-async function grabar(): Promise<Escucha> {
+async function grabar(ctx: AudioContext): Promise<Escucha> {
   let stream: MediaStream;
   try {
     stream = await navigator.mediaDevices.getUserMedia({
@@ -447,11 +356,10 @@ async function grabar(): Promise<Escucha> {
   } catch (error) {
     const nombre = (error as { name?: string })?.name;
     console.warn('[AMI] micrófono:', nombre);
+    void ctx.close().catch(() => undefined);
     return { tipo: 'sin-microfono', motivo: explicar(nombre === 'NotAllowedError' ? 'not-allowed' : 'audio-capture') };
   }
 
-  const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-  const ctx = new Ctor();
   await ctx.resume().catch(() => undefined);
   const fuente = ctx.createMediaStreamSource(stream);
   const proceso = ctx.createScriptProcessor(4096, 1, 1);
