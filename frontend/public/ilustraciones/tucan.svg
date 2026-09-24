@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <ellipse cx="86" cy="186" rx="52" ry="7" fill="#000" opacity="0.08"/>
+  <!-- rama -->
+  <rect x="20" y="164" width="140" height="12" rx="6" fill="#8A5A2B"/>
+  <!-- cola -->
+  <path d="M54 150 L36 186 L60 182 L70 154 Z" fill="#1F1F1F"/>
+  <!-- cuerpo negro -->
+  <ellipse cx="76" cy="118" rx="36" ry="50" fill="#1F1F1F"/>
+  <!-- pecho blanco-amarillo -->
+  <path d="M92 76 Q118 96 108 128 Q98 108 80 100 Q84 84 92 76 Z" fill="#FFE27A"/>
+  <path d="M100 118 Q104 138 90 150" stroke="#E53935" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <!-- cabeza -->
+  <circle cx="92" cy="72" r="26" fill="#1F1F1F"/>
+  <!-- piel azul alrededor del ojo -->
+  <circle cx="102" cy="66" r="11" fill="#4FC3F7"/>
+  <circle cx="102" cy="66" r="5" fill="#FFFFFF"/>
+  <circle cx="103" cy="66" r="3" fill="#111"/>
+  <!-- pico enorme -->
+  <path d="M112 56 Q170 44 194 70 Q170 76 116 84 Z" fill="#FF9800"/>
+  <path d="M116 84 Q160 80 190 72 Q170 90 118 92 Z" fill="#F57C00"/>
+  <path d="M182 60 Q194 64 194 70 Q186 70 180 68 Z" fill="#E53935"/>
+  <path d="M112 56 Q118 70 116 84" stroke="#4CAF50" stroke-width="5" fill="none"/>
+  <!-- patas -->
+  <path d="M70 164 V170 M84 164 V170" stroke="#4FC3F7" stroke-width="5" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <ellipse cx="100" cy="170" rx="84" ry="10" fill="#000" opacity="0.08"/>
+  <!-- tabla de madera -->
+  <rect x="14" y="140" width="172" height="26" rx="10" fill="#C98A4B"/>
+  <rect x="14" y="134" width="172" height="20" rx="10" fill="#E0A465"/>
+  <!-- harina -->
+  <ellipse cx="96" cy="140" rx="70" ry="8" fill="#FFFFFF" opacity="0.85"/>
+  <!-- bollo de masa -->
+  <path d="M40 138 Q36 84 96 80 Q156 84 150 138 Z" fill="#F7E3B5"/>
+  <path d="M58 104 Q96 92 132 104" stroke="#EBCD8A" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <ellipse cx="80" cy="96" rx="14" ry="6" fill="#FFF4D8"/>
+  <!-- palote -->
+  <g transform="translate(-26 4) rotate(-18 150 70)">
+    <rect x="96" y="60" width="104" height="22" rx="11" fill="#D9A066"/>
+    <rect x="78" y="65" width="22" height="12" rx="6" fill="#B5703A"/>
+    <rect x="196" y="65" width="22" height="12" rx="6" fill="#B5703A"/>
+  </g>
+</svg>

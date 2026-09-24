@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- nieve -->
+  <ellipse cx="100" cy="168" rx="92" ry="14" fill="#E6F2FB"/>
+  <!-- cupula -->
+  <path d="M22 166 A78 78 0 0 1 178 166 Z" fill="#FFFFFF" stroke="#9CC3E6" stroke-width="4"/>
+  <!-- bloques de hielo -->
+  <g stroke="#B7D5EF" stroke-width="3" fill="none" stroke-linecap="round">
+    <path d="M30 140 H170"/>
+    <path d="M44 114 H156"/>
+    <path d="M66 92 H134"/>
+    <path d="M60 166 V140 M100 166 V140 M140 166 V140"/>
+    <path d="M80 140 V114 M120 140 V114 M60 140 V114 M144 140 V114"/>
+    <path d="M100 114 V92 M78 114 V92 M122 114 V92"/>
+  </g>
+  <!-- entrada -->
+  <path d="M120 166 V142 A20 20 0 0 1 160 142 V166 Z" fill="#FFFFFF" stroke="#9CC3E6" stroke-width="4"/>
+  <path d="M128 166 V146 A12 12 0 0 1 152 146 V166 Z" fill="#3F6E99"/>
+</svg>

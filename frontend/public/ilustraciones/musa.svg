@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <ellipse cx="100" cy="188" rx="56" ry="8" fill="#000" opacity="0.08"/>
+  <!-- túnica -->
+  <path d="M62 188 L74 104 Q100 94 126 104 L138 188 Z" fill="#FFFFFF" stroke="#C9D6E8" stroke-width="3"/>
+  <path d="M84 108 L78 188 M116 108 L122 188 M100 104 L100 188" stroke="#DCE5F1" stroke-width="3"/>
+  <path d="M74 106 L120 140" stroke="#E7B94A" stroke-width="6" stroke-linecap="round"/>
+  <!-- cuello y cara -->
+  <rect x="92" y="84" width="16" height="18" rx="6" fill="#F2C7A1"/>
+  <circle cx="100" cy="66" r="26" fill="#F2C7A1"/>
+  <!-- pelo recogido -->
+  <path d="M74 64 Q72 34 100 36 Q128 34 126 64 Q120 48 100 48 Q80 48 74 64 Z" fill="#7A4A28"/>
+  <circle cx="100" cy="32" r="12" fill="#7A4A28"/>
+  <!-- corona de laureles -->
+  <g fill="#6BA84F">
+    <ellipse cx="78" cy="50" rx="7" ry="4" transform="rotate(-40 78 50)"/>
+    <ellipse cx="88" cy="42" rx="7" ry="4" transform="rotate(-20 88 42)"/>
+    <ellipse cx="112" cy="42" rx="7" ry="4" transform="rotate(20 112 42)"/>
+    <ellipse cx="122" cy="50" rx="7" ry="4" transform="rotate(40 122 50)"/>
+  </g>
+  <!-- cara sonriente -->
+  <circle cx="91" cy="68" r="3" fill="#3A2A1A"/>
+  <circle cx="109" cy="68" r="3" fill="#3A2A1A"/>
+  <path d="M92 78 Q100 84 108 78" stroke="#B45A4A" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <!-- lira -->
+  <g transform="translate(128 96)">
+    <path d="M6 70 Q-6 30 10 8 M46 70 Q58 30 42 8" stroke="#E7B94A" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <rect x="4" y="66" width="44" height="10" rx="5" fill="#C99A2E"/>
+    <rect x="8" y="16" width="36" height="7" rx="3" fill="#C99A2E"/>
+    <path d="M18 23 V66 M26 23 V66 M34 23 V66" stroke="#8C6B1F" stroke-width="2"/>
+  </g>
+  <!-- mano sobre la lira -->
+  <circle cx="134" cy="136" r="8" fill="#F2C7A1"/>
+</svg>

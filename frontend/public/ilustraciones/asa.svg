@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <ellipse cx="92" cy="176" rx="62" ry="9" fill="#000" opacity="0.08"/>
+  <!-- asa, bien marcada: es lo que se nombra -->
+  <path d="M136 72 Q186 72 184 112 Q182 150 136 146" stroke="#F28C28" stroke-width="18" fill="none" stroke-linecap="round"/>
+  <!-- taza -->
+  <path d="M34 56 H144 V140 Q144 172 112 172 H66 Q34 172 34 140 Z" fill="#6FA8DC"/>
+  <rect x="30" y="48" width="118" height="16" rx="8" fill="#4F8CC4"/>
+  <!-- corazoncito -->
+  <path d="M89 112 q-14 -10 -14 -20 a8 8 0 0 1 14 -4 a8 8 0 0 1 14 4 q0 10 -14 20 z" fill="#FFFFFF" opacity="0.9"/>
+  <!-- flecha que señala el asa -->
+  <path d="M176 30 Q190 50 180 64" stroke="#333" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M170 58 L181 67 L188 54" stroke="#333" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
