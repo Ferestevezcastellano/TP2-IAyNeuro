@@ -149,6 +149,15 @@ export function verificarSonido(pcm: Buffer, esperado: string, transcripcionVosk
   else if (GOLPE_SORDO.has(c)) inicioBien = enInicio('zumbido') < 3 && enInicio('soplido') < 12;
   else inicioBien = true;
 
+  // Segundo juez para la consonante: si Vosk oyó la misma consonante, vale
+  // aunque el comienzo no se haya medido bien. Pasa sobre todo con la S: el
+  // soplido es suave, y en un micrófono de compu o de teléfono llega tan débil
+  // que queda por debajo del umbral de voz y el comienzo parece vacío. Vosk
+  // elige entre todas las sílabas, así que un "ma" dicho en lugar de "sa" sale
+  // "ma" y no lo salva.
+  const consonanteVosk = objetivoDe(transcripcionVosk)?.consonante;
+  const voskOyoLaConsonante = consonanteVosk !== undefined && mismoSonido(consonanteVosk, c);
+
   const grupo = (v: Vocal) => ('ei'.includes(v) ? 'anterior' : 'abierta');
   const vo = objetivo.vocal;
   const voskVocal = vocalesVosk[vocalesVosk.length - 1];
@@ -158,7 +167,19 @@ export function verificarSonido(pcm: Buffer, esperado: string, transcripcionVosk
     grupo(vocalFormantes) !== grupo(vo) &&
     grupo(voskVocal) !== grupo(vo);
 
-  return veredicto(inicioBien && fraccion('vocal') >= 0.3 && !vocalMal);
+  // Una E o una I dichas con voz aguda tienen el primer formante tan bajo que
+  // se miden como zumbido. Después de una consonante que no zumba (S, P, T…) y
+  // con Vosk oyendo esa consonante, ese zumbido es la vocal.
+  const vocalCerrada = 'ei'.includes(vo) && !ZUMBIDO.has(c) && voskOyoLaConsonante;
+  const conVocal = fraccion('vocal') + (vocalCerrada ? fraccion('zumbido') : 0) >= 0.3;
+
+  return veredicto((inicioBien || voskOyoLaConsonante) && conVocal && !vocalMal);
+}
+
+/** La Z y la S suenan igual en el Río de la Plata; la V y la B, también. */
+function mismoSonido(a: string, b: string): boolean {
+  const base = (x: string) => ({ z: 's', v: 'b' })[x] ?? x;
+  return base(a) === base(b);
 }
 
 function masVotada<T>(xs: T[]): T | undefined {

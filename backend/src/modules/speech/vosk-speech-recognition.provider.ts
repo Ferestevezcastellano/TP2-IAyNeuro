@@ -2,19 +2,13 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { SpeechRecognitionPort, SpeechTranscription } from '../../core/ports';
+import { PALABRAS, SILABAS, enGramatica } from './vocabulario';
 
 /** Bytes de cabecera de un WAV canonico, antes de las muestras. */
 const WAV_HEADER_BYTES = 44;
 
-const VOCALES = ['a', 'e', 'i', 'o', 'u'];
-const CONSONANTES = ['m', 'p', 's', 'l', 'n', 'd', 'f', 't', 'b', 'c', 'r', 'g', 'j', 'v', 'z', 'y', 'ch'];
-
-/**
- * Distractores del vocabulario: las vocales y todas las silabas directas. Con
- * solo la palabra esperada en el vocabulario, Vosk la "escucha" diga lo que
- * diga el chico; con los distractores, un "me" dicho en lugar de "ma" sale "me".
- */
-const DISTRACTORES = [...VOCALES, ...CONSONANTES.flatMap((c) => VOCALES.map((v) => c + v))];
+/** Cuantas hipotesis se piden al reconocer con el vocabulario completo. */
+const HIPOTESIS = 3;
 
 /**
  * Reconocimiento real, offline y sin costo, con Vosk.
@@ -85,31 +79,56 @@ export class VoskSpeechRecognitionProvider extends SpeechRecognitionPort impleme
 
     // Acotar el vocabulario sube muchisimo la precision con habla infantil, que
     // es justo donde el modelo generico falla. Va lo esperado, sin estirar
-    // ("aaa" es la palabra "a"), mas los distractores para que no lo fuerce.
+    // ("aaa" es la palabra "a"), mas competidores para que no lo fuerce.
     const esperadas = expected
       .toLowerCase()
       .split(/\s+/)
       .map((palabra) => palabra.replace(/(.)\1+/g, '$1'))
       .filter(Boolean);
-    const grammar = [...new Set([...esperadas, ...DISTRACTORES]), '[unk]'];
-    const recognizer = new this.vosk.Recognizer({ model: this.model, sampleRate, grammar });
+    const unaSola = esperadas.length === 1;
+    const sonido = unaSola && (esperadas[0].length === 1 || SILABAS.includes(esperadas[0]));
 
+    // Sonido, silaba o palabra: contra las silabas. Asi una palabra dicha
+    // despacio sale partida ("me sa") en vez de forzada a otra palabra entera.
+    let transcript = '';
+    let confidence = 0.6;
+    if (!esperadas.length || unaSola) {
+      const result = this.reconocer(audio, sampleRate, [...esperadas, ...SILABAS], 0);
+      transcript = this.limpiar(result.text);
+      // Si se esperaba una sola palabra y salio partida ("is la"), se junta.
+      if (unaSola) transcript = transcript.replace(/ /g, '');
+      if (typeof result.confidence === 'number') confidence = result.confidence;
+    }
+
+    // Palabra u oracion: ademas, contra todo el vocabulario de la app. Si el
+    // chico dijo otra palabra real, aca sale esa palabra y no la esperada.
+    let alternatives: string[] | undefined;
+    if (!sonido && esperadas.length) {
+      const deEsperadas = esperadas.flatMap(enGramatica);
+      const result = this.reconocer(audio, sampleRate, [...deEsperadas, ...PALABRAS, ...SILABAS], HIPOTESIS);
+      alternatives = (result.alternatives ?? []).map((alternativa: { text?: string }) => this.limpiar(alternativa.text));
+      if (!unaSola) transcript = alternatives?.[0] ?? '';
+    }
+
+    this.logger.debug(`Esperaba "${expected}", escuche "${transcript}"${alternatives ? ` (${alternatives.join(' | ')})` : ''}.`);
+    return { transcript, confidence, provider: this.name, alternatives };
+  }
+
+  /** Una pasada de Vosk con la gramatica dada. Con `alternativas` > 0 devuelve las N mejores. */
+  private reconocer(audio: Buffer, sampleRate: number, palabras: string[], alternativas: number): any {
+    const grammar = [...new Set(palabras), '[unk]'];
+    const recognizer = new this.vosk.Recognizer({ model: this.model, sampleRate, grammar });
     try {
+      if (alternativas) recognizer.setMaxAlternatives(alternativas);
       recognizer.acceptWaveform(this.stripWavHeader(audio));
-      const result = recognizer.finalResult();
-      let transcript = String(result.text ?? '').replace(/\[unk\]/g, '').replace(/\s+/g, ' ').trim();
-      // Con las silabas como distractores, una palabra dicha despacio puede
-      // salir partida ("is la"). Si se esperaba una sola palabra, se juntan.
-      if (esperadas.length === 1) transcript = transcript.replace(/ /g, '');
-      this.logger.debug(`Esperaba "${expected}", escuche "${transcript}".`);
-      return {
-        transcript,
-        confidence: typeof result.confidence === 'number' ? result.confidence : 0.6,
-        provider: this.name,
-      };
+      return recognizer.finalResult();
     } finally {
       recognizer.free();
     }
+  }
+
+  private limpiar(texto: unknown): string {
+    return String(texto ?? '').replace(/\[unk\]/g, '').replace(/\s+/g, ' ').trim();
   }
 
   private cargar(nombre: string): any {

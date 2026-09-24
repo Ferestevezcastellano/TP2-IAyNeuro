@@ -38,6 +38,7 @@ import {
   VOICE_SIMILARITY_THRESHOLD,
 } from '../../core/config/mastery.config';
 import { StudentService } from '../student/student.service';
+import { aceptaOracion, aceptaPalabra } from '../speech/juez-pronunciacion';
 import { sabeVerificar, verificarSonido } from '../speech/verificador-acustico';
 
 export interface SessionView {
@@ -250,6 +251,8 @@ export class PracticeService {
     let verified = true;
     /** Veredicto del analisis acustico, para sonidos sueltos y silabas grabados. */
     let acustico: boolean | null = null;
+    /** Hipotesis de Vosk con todo el vocabulario compitiendo (palabras y oraciones). */
+    let alternatives: string[] | undefined;
 
     if (input.unverified) {
       // El cliente avisa que no pudo escuchar. No se inventa una pronunciacion:
@@ -269,6 +272,7 @@ export class PracticeService {
       transcript = recognized.transcript;
       confidence = recognized.confidence;
       provider = recognized.provider;
+      alternatives = recognized.alternatives;
 
       // Un sonido suelto o una silaba no son palabras: el reconocedor no los
       // entiende ("mmm" le suena a "i"). Se juzgan por la huella acustica del
@@ -302,7 +306,7 @@ export class PracticeService {
     }
 
     // Sin verificar, el chico pasa igual: no es su error que el microfono no ande.
-    const accepted = acustico !== null ? acustico : verified ? similarity >= VOICE_SIMILARITY_THRESHOLD : true;
+    const accepted = acustico !== null ? acustico : verified ? this.aceptaTexto(card, transcript, alternatives, similarity) : true;
 
     const intentos = session.voiceChecks.filter((check) => check.cardId === cardId).length + 1;
     // Un rechazo NO saltea la tarjeta: se puede volver a intentar. Solo se
@@ -335,6 +339,19 @@ export class PracticeService {
       verified,
       feedback: this.feedback.forVoice(card, accepted, similarity),
     };
+  }
+
+  /**
+   * Juicio de una pronunciacion ya transcripta. Una oracion se compara palabra
+   * por palabra: por letras, "la nena sale" se parece demasiado a "la luna
+   * sale" y pasaba. Una palabra perdona las confusiones del reconocedor, salvo
+   * que haya oido otra palabra real.
+   */
+  private aceptaTexto(card: Card, transcript: string, alternatives: string[] | undefined, similarity: number): boolean {
+    const expected = card.voiceTarget ?? '';
+    if (card.kind === CardKind.SENTENCE_BUILDING) return aceptaOracion(expected, alternatives?.length ? alternatives : [transcript]);
+    if (card.kind === CardKind.WORD_BUILDING) return aceptaPalabra(expected, transcript, alternatives);
+    return similarity >= VOICE_SIMILARITY_THRESHOLD;
   }
 
   /** Cierra la sesion, actualiza el promedio movil y paga lo que corresponda. */

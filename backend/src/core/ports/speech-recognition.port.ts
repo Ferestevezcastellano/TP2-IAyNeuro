@@ -3,6 +3,13 @@ export interface SpeechTranscription {
   transcript: string;
   confidence: number;
   provider: string;
+  /**
+   * Las mejores hipotesis (la primera, la mas probable) de un reconocimiento
+   * con todo el vocabulario de la app compitiendo con lo esperado. Solo para
+   * palabras y oraciones, y solo si el adaptador las sabe dar: permiten ver si
+   * se dijo OTRA palabra real en vez de la pedida.
+   */
+  alternatives?: string[];
 }
 
 /**
