@@ -220,11 +220,7 @@ export async function listen(): Promise<Escucha> {
   const ctx = navigator.mediaDevices ? nuevoContexto() : null;
   if (ctx) void ctx.resume().catch(() => undefined);
 
-  if (ctx && (await servidorReconoce())) {
-    // Se graba sin cancelación de eco: si algo de la app sigue sonando, se corta.
-    cortar();
-    return grabar(ctx);
-  }
+  if (ctx && (await servidorReconoce())) return grabar(ctx);
   if (ctx) void ctx.close().catch(() => undefined);
 
   if (reconocedorRoto) {
@@ -354,12 +350,8 @@ const SILENCIO_FINAL_MS = 900;
 async function grabar(ctx: AudioContext): Promise<Escucha> {
   let stream: MediaStream;
   try {
-    // Sin supresión de ruido ni cancelación de eco: las dos toman el soplido de
-    // la S (y de la F o la J) por ruido y lo borran, y entonces un "sa" bien
-    // dicho llega como "a" y se rechaza. Cuando se graba no suena nada de la
-    // app, así que no hay eco que cancelar.
     stream = await navigator.mediaDevices.getUserMedia({
-      audio: { channelCount: 1, echoCancellation: false, noiseSuppression: false, autoGainControl: true },
+      audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
     });
   } catch (error) {
     const nombre = (error as { name?: string })?.name;
