@@ -59,6 +59,12 @@ export default function App() {
     setPantalla({ nombre: 'inicio' });
   };
 
+  const irAlAmigo = async () => {
+    // Refresca antes: el accesorio recién ganado y las estrellas nuevas tienen que estar.
+    await refrescar();
+    setPantalla({ nombre: 'personalizacion' });
+  };
+
   const salir = () => {
     setToken(null);
     setPerfil(null);
@@ -104,7 +110,9 @@ export default function App() {
           species={perfil.pet.species}
           resumen={pantalla.resumen}
           niveles={niveles}
+          accesorios={perfil.pet.accessories}
           onVolver={irAlInicio}
+          onAmigo={irAlAmigo}
         />
       )}
 

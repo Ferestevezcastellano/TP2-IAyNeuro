@@ -33,6 +33,38 @@ export const ARCHIVO_ACCESORIO: Record<string, string> = {
 };
 
 /**
+ * Dónde está dibujada cada pieza dentro del lienzo de 150×150, como un
+ * cuadrado [x, y, lado] que la contiene. Para mostrar el accesorio solo (sin
+ * mascota) se recorta ese cuadrado: con un zoom fijo al centro, las piezas que
+ * van abajo (bufanda, medalla, mochila) quedaban fuera del recorte.
+ */
+const ENCUADRE: Record<string, [number, number, number]> = {
+  'acc-gorro': [26, 0, 104],
+  'acc-anteojos': [20, 16, 110],
+  'acc-bufanda': [36, 94, 56],
+  'acc-capa': [20, 68, 110],
+  'acc-medalla': [40, 100, 50],
+  'acc-mochila': [34, 88, 62],
+};
+
+/** Un accesorio solo, encuadrado para que se vea la pieza y no el aire alrededor. */
+export function PiezaAccesorio({ id, size, className }: { id: string; size: number; className?: string }) {
+  const [x, y, lado] = ENCUADRE[id] ?? [0, 0, 150];
+  const escala = size / lado;
+  return (
+    <span className={className} style={{ display: 'block', width: size, height: size, overflow: 'hidden', position: 'relative' }}>
+      <img
+        src={ARCHIVO_ACCESORIO[id] ?? ''}
+        alt=""
+        aria-hidden
+        draggable={false}
+        style={{ position: 'absolute', width: 150 * escala, height: 150 * escala, maxWidth: 'none', left: -x * escala, top: -y * escala }}
+      />
+    </span>
+  );
+}
+
+/**
  * En qué orden se apilan. La capa y la mochila van DETRÁS de la mascota; el
  * resto, delante. Sin esto, la capa le taparía la cara.
  */

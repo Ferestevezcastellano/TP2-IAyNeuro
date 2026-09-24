@@ -98,6 +98,8 @@ export interface Level {
   status: LevelStatus;
   playable: boolean;
   lockedReason: string | null;
+  /** Accesorio que se gana al dominar el nivel. */
+  accessoryId: string;
   stars: number;
   masteryAverage: number;
   sessionsCompleted: number;
