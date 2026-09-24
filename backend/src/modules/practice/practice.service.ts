@@ -11,6 +11,7 @@ import {
   SessionOutcome,
   SessionStatus,
   Student,
+  VoiceSays,
 } from '../../core/domain';
 import {
   AccessoryRepository,
@@ -277,7 +278,7 @@ export class PracticeService {
       // Un sonido suelto o una silaba no son palabras: el reconocedor no los
       // entiende ("mmm" le suena a "i"). Se juzgan por la huella acustica del
       // audio, con lo que oyo Vosk como segundo juez para la vocal.
-      const esSonido = card.kind === CardKind.LETTER_INTRO || card.kind === CardKind.SOUND_RECOGNITION;
+      const esSonido = card.voiceSays === VoiceSays.SOUND || card.voiceSays === VoiceSays.SYLLABLE;
       if (esSonido && sabeVerificar(expected)) {
         const veredicto = verificarSonido(audio, expected, transcript);
         this.logger.debug(`Sonido "${expected}": ${veredicto.correcto ? 'bien' : 'mal'} · ${veredicto.detalle}`);
@@ -349,8 +350,8 @@ export class PracticeService {
    */
   private aceptaTexto(card: Card, transcript: string, alternatives: string[] | undefined, similarity: number): boolean {
     const expected = card.voiceTarget ?? '';
-    if (card.kind === CardKind.SENTENCE_BUILDING) return aceptaOracion(expected, alternatives?.length ? alternatives : [transcript]);
-    if (card.kind === CardKind.WORD_BUILDING) return aceptaPalabra(expected, transcript, alternatives);
+    if (card.voiceSays === VoiceSays.SENTENCE) return aceptaOracion(expected, alternatives?.length ? alternatives : [transcript]);
+    if (card.voiceSays === VoiceSays.WORD) return aceptaPalabra(expected, transcript, alternatives);
     return similarity >= VOICE_SIMILARITY_THRESHOLD;
   }
 

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Card, CardKind } from '../domain';
+import { Card, CardKind, VoiceSays } from '../domain';
 import { AssemblyResult } from './word-assembly.validator';
 
 /**
@@ -38,7 +38,7 @@ export class FeedbackService {
             ? `¡${unit.split('').join(' Y ')} JUNTAS SUENAN ${card.spokenAs.toUpperCase()}!`
             : `¡ESA ES LA ${unit}! SUENA ${card.spokenAs.toUpperCase()}.`,
         mePregunto: null,
-        sugiero: card.voiceTarget ? 'AHORA HACÉ VOS ESE SONIDO, BIEN LARGO.' : 'SEGUIMOS CON LA QUE VIENE.',
+        sugiero: card.voiceTarget ? this.voiceRequest(card) : 'SEGUIMOS CON LA QUE VIENE.',
       };
     }
 
@@ -47,9 +47,7 @@ export class FeedbackService {
         tone: FeedbackTone.CELEBRATE,
         valoro: attemptNumber === 1 ? `¡LO ARMASTE DE UNA! ${target}.` : `¡AHORA SI! ${target}.`,
         mePregunto: null,
-        sugiero: card.voiceTarget
-          ? 'AHORA DECILO EN VOZ ALTA PARA QUE TE ESCUCHE.'
-          : 'SEGUIMOS CON LA QUE VIENE.',
+        sugiero: card.voiceTarget ? this.voiceRequest(card) : 'SEGUIMOS CON LA QUE VIENE.',
       };
     }
 
@@ -77,6 +75,26 @@ export class FeedbackService {
       mePregunto: '¿CUÁL ES EL PRIMER SONIDO?',
       sugiero: this.hint(card),
     };
+  }
+
+  /**
+   * El pedido de voz, diciendo QUE hay que decir. "Decilo" a secas, despues de
+   * elegir un dibujo, dejaba al chico sin saber si iba la letra o la palabra.
+   */
+  voiceRequest(card: Card): string {
+    const label = card.voiceLabel ?? '';
+    switch (card.voiceSays) {
+      case VoiceSays.SOUND:
+        return `AHORA DECÍ VOS EL SONIDO DE LA ${label}, BIEN LARGO.`;
+      case VoiceSays.SYLLABLE:
+        return `AHORA DECÍ VOS ${label}.`;
+      case VoiceSays.WORD:
+        return `AHORA DECÍ VOS LA PALABRA ${label}.`;
+      case VoiceSays.SENTENCE:
+        return 'AHORA DECÍ VOS LA ORACIÓN ENTERA.';
+      default:
+        return 'AHORA DECILO EN VOZ ALTA PARA QUE TE ESCUCHE.';
+    }
   }
 
   /** Feedback de la verificacion por voz. */

@@ -1,5 +1,5 @@
 import { phonemeOf, spokenFormOf } from '../core/config/phonemes';
-import { Card, CardKind, CardTile, TileKind } from '../core/domain';
+import { Card, CardKind, CardTile, TileKind, VoiceSays } from '../core/domain';
 
 /** Clave simbolica del asset. El backend no sirve binarios. */
 function assetKey(prefix: string, value: string): string {
@@ -46,6 +46,14 @@ function stableShuffle<T>(items: T[], seed: string): T[] {
     [result[i], result[j]] = [result[j], result[i]];
   }
   return result;
+}
+
+/**
+ * Los campos de la verificacion por voz: que se compara, que clase de cosa es
+ * y como se escribe en pantalla. Van juntos o no va ninguno.
+ */
+function voice(enabled: boolean, target: string, says: VoiceSays, label: string): Pick<Card, 'voiceTarget' | 'voiceSays' | 'voiceLabel'> {
+  return enabled ? { voiceTarget: target, voiceSays: says, voiceLabel: label.toUpperCase() } : {};
 }
 
 /** Separa una palabra en unidades tocables, respetando los digrafos. */
@@ -99,7 +107,7 @@ export function buildLetterIntroCard(input: LetterIntroInput): Card {
     spokenAs: phoneme.spokenAs,
     tiles: [tile],
     solution: [tile.id],
-    voiceTarget: input.voiceCheck ? phoneme.spokenAs : undefined,
+    ...voice(input.voiceCheck, phoneme.spokenAs, VoiceSays.SOUND, phoneme.letter),
   };
 }
 
@@ -143,7 +151,7 @@ export function buildSyllableIntroCard(input: SyllableIntroInput): Card {
     spokenAs,
     tiles: [tile],
     solution: [tile.id],
-    voiceTarget: input.voiceCheck ? spokenAs : undefined,
+    ...voice(input.voiceCheck, spokenAs, VoiceSays.SYLLABLE, syllable),
   };
 }
 
@@ -178,7 +186,7 @@ export function buildWordCard(input: WordCardInput): Card {
     spokenAs: spokenFormOf(input.word),
     tiles: stableShuffle([...solutionTiles, ...distractorTiles], id),
     solution: solutionTiles.map((tile) => tile.id),
-    voiceTarget: input.voiceCheck ? input.word.toUpperCase() : undefined,
+    ...voice(input.voiceCheck, input.word.toUpperCase(), VoiceSays.WORD, input.word),
   };
 }
 
@@ -194,6 +202,12 @@ export interface SoundCardInput {
   options: string[];
   prompt?: string;
   voiceCheck: boolean;
+  /**
+   * Que se dice despues de elegir el dibujo: el sonido que se escucho o la
+   * palabra del dibujo. En los niveles de vocales se pide el sonido; a partir
+   * de las consonantes, la palabra entera.
+   */
+  voiceSays: VoiceSays.SOUND | VoiceSays.WORD;
 }
 
 /** Tarjeta de reconocimiento: suena un fonema, se elige el dibujo que lo lleva. */
@@ -231,7 +245,9 @@ export function buildSoundCard(input: SoundCardInput): Card {
     spokenAs: spokenFormOf(phoneme),
     tiles: stableShuffle([answerTile, ...optionTiles], id),
     solution: [answerTile.id],
-    voiceTarget: input.voiceCheck ? spokenFormOf(phoneme) : undefined,
+    ...(input.voiceSays === VoiceSays.WORD
+      ? voice(input.voiceCheck, input.answer.toUpperCase(), VoiceSays.WORD, input.answer)
+      : voice(input.voiceCheck, spokenFormOf(phoneme), phoneme.length > 1 ? VoiceSays.SYLLABLE : VoiceSays.SOUND, phoneme)),
   };
 }
 
@@ -279,6 +295,6 @@ export function buildSentenceCard(input: SentenceCardInput): Card {
     spokenAs: input.sentence.toLowerCase(),
     tiles: stableShuffle([...solutionTiles, ...distractorTiles], id),
     solution: solutionTiles.map((tile) => tile.id),
-    voiceTarget: input.voiceCheck ? input.sentence.toUpperCase() : undefined,
+    ...voice(input.voiceCheck, input.sentence.toUpperCase(), VoiceSays.SENTENCE, input.sentence),
   };
 }

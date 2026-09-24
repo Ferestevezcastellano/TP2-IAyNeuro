@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Card, CardKind, CardTile, TileKind } from '../../core/domain';
+import { Card, CardKind, CardTile, TileKind, VoiceSays } from '../../core/domain';
 
 export class CardTileDto {
   @ApiProperty({ example: 'level-03-m-s-w-mesa-t0' })
@@ -79,6 +79,15 @@ export class CardDto {
   @ApiPropertyOptional({ description: 'Que tiene que decir el chico. Solo si hay verificacion por voz.', example: 'MESA' })
   voiceTarget?: string;
 
+  @ApiPropertyOptional({
+    enum: VoiceSays,
+    description: 'Que clase de cosa hay que decir (sonido, silaba, palabra u oracion). Solo si hay verificacion por voz.',
+  })
+  voiceSays?: VoiceSays;
+
+  @ApiPropertyOptional({ description: 'Lo que hay que decir, escrito para mostrar en pantalla.', example: 'CASA' })
+  voiceLabel?: string;
+
   static from(card: Card): CardDto {
     return {
       id: card.id,
@@ -104,6 +113,8 @@ export class CardDto {
       expectedLength: card.solution.length,
       voiceCheckRequired: Boolean(card.voiceTarget),
       voiceTarget: card.voiceTarget,
+      voiceSays: card.voiceSays,
+      voiceLabel: card.voiceLabel,
     };
   }
 }

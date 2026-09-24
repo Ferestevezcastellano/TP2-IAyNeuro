@@ -119,3 +119,6 @@
   font-weight: 700;
   font-size: 13px;
 }
+
+/* Lo que hay que decir, destacado dentro de la consigna del micrófono. */
+.pedido-voz { font-size: 1.35em; color: var(--teal); white-space: nowrap; }

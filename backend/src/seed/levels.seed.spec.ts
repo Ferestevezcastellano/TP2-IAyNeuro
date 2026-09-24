@@ -1,4 +1,4 @@
-import { CardKind, TileKind } from '../core/domain';
+import { CardKind, LevelKind, TileKind, VoiceSays } from '../core/domain';
 import { SEEDED_ACCESSORIES } from './accessories.seed';
 import { SEEDED_LEVELS } from './levels.seed';
 
@@ -158,6 +158,27 @@ describe('Contenido semilla', () => {
     SEEDED_LEVELS.flatMap((item) => item.cards)
       .filter((card) => card.kind === CardKind.LETTER_INTRO)
       .forEach((card) => expect(card.voiceTarget).toBe(card.spokenAs));
+  });
+
+  /**
+   * Lo que se pide decir tiene que estar claro en pantalla. Al elegir un
+   * dibujo, en los niveles de vocales se dice el sonido; desde las
+   * consonantes, la palabra del dibujo.
+   */
+  it('toda verificacion por voz dice que hay que decir, y el reconocimiento sigue la regla por nivel', () => {
+    SEEDED_LEVELS.forEach(({ level, cards }) => {
+      cards
+        .filter((card) => card.voiceTarget)
+        .forEach((card) => {
+          expect(card.voiceSays).toBeDefined();
+          expect(card.voiceLabel).toBeTruthy();
+          if (card.kind === CardKind.SOUND_RECOGNITION) {
+            const esperado = level.kind === LevelKind.PHONEME_ISOLATION ? [VoiceSays.SOUND, VoiceSays.SYLLABLE] : [VoiceSays.WORD];
+            expect(esperado).toContain(card.voiceSays);
+          }
+          if (card.kind === CardKind.WORD_BUILDING) expect(card.voiceSays).toBe(VoiceSays.WORD);
+        });
+    });
   });
 
   /**

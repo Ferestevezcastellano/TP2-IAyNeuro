@@ -13,6 +13,9 @@ export type PetSpecies = 'LION' | 'POLAR_BEAR' | 'RHINOCEROS' | 'KOALA';
 
 export type CardKind = 'LETTER_INTRO' | 'SOUND_RECOGNITION' | 'WORD_BUILDING' | 'SENTENCE_BUILDING';
 
+/** Qué se pide decir en la verificación por voz. */
+export type VoiceSays = 'SOUND' | 'SYLLABLE' | 'WORD' | 'SENTENCE';
+
 export interface Tile {
   id: string;
   label: string;
@@ -39,6 +42,9 @@ export interface Card {
   expectedLength: number;
   voiceCheckRequired: boolean;
   voiceTarget?: string;
+  voiceSays?: VoiceSays;
+  /** Lo que hay que decir, escrito para la pantalla: "A", "MA", "CASA". */
+  voiceLabel?: string;
 }
 
 export interface Feedback {

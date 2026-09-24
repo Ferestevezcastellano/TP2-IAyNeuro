@@ -1,4 +1,4 @@
-import { Card, CardKind, CardTile, Level, LevelKind } from '../core/domain';
+import { Card, CardKind, CardTile, Level, LevelKind, VoiceSays } from '../core/domain';
 import { buildLetterIntroCard, buildSentenceCard, buildSoundCard, buildSyllableIntroCard, buildWordCard } from './card-builder';
 
 /**
@@ -78,6 +78,9 @@ function moveAnswerToSlot(tiles: CardTile[], answerId: string, slot: number): Ca
  * Una tarjeta de reconocimiento por cada respuesta, con dos dibujos de mas
  * tomados en rueda de la lista de distractores. La verificacion por voz va en
  * una de cada dos, para que la sesion no se haga larga.
+ *
+ * `says` es lo que se pide decir despues de elegir: en los niveles de vocales,
+ * el sonido; desde las consonantes, la palabra del dibujo.
  */
 function soundCards(
   levelId: string,
@@ -85,6 +88,7 @@ function soundCards(
   phoneme: string,
   answers: string[],
   distractors: string[],
+  says: VoiceSays.SOUND | VoiceSays.WORD,
   prompt?: string,
 ): Card[] {
   return answers.map((answer, index) =>
@@ -97,6 +101,7 @@ function soundCards(
       options: [distractors[index % distractors.length], distractors[(index + 1) % distractors.length]],
       prompt,
       voiceCheck: index % 2 === 0,
+      voiceSays: says,
     }),
   );
 }
@@ -135,9 +140,9 @@ export const SEEDED_LEVELS: SeededLevel[] = [
     },
     cards: numbered([
       buildLetterIntroCard({ levelId: L1, position: 0, group: GROUP.LETTER, letter: 'A', example: 'ÁRBOL', voiceCheck: true }),
-      ...soundCards(L1, 'A', 'A', A_WORDS, E_WORDS),
+      ...soundCards(L1, 'A', 'A', A_WORDS, E_WORDS, VoiceSays.SOUND),
       buildLetterIntroCard({ levelId: L1, position: 0, group: GROUP.LETTER, letter: 'E', example: 'ELEFANTE', voiceCheck: true }),
-      ...soundCards(L1, 'E', 'E', E_WORDS, A_WORDS),
+      ...soundCards(L1, 'E', 'E', E_WORDS, A_WORDS, VoiceSays.SOUND),
     ]),
   },
   {
@@ -162,17 +167,17 @@ export const SEEDED_LEVELS: SeededLevel[] = [
     },
     cards: numbered([
       buildLetterIntroCard({ levelId: L2, position: 0, group: GROUP.LETTER, letter: 'I', example: 'IGLÚ', voiceCheck: true }),
-      ...soundCards(L2, 'I', 'I', I_WORDS, [...O_WORDS, ...U_WORDS]),
+      ...soundCards(L2, 'I', 'I', I_WORDS, [...O_WORDS, ...U_WORDS], VoiceSays.SOUND),
       buildLetterIntroCard({ levelId: L2, position: 0, group: GROUP.LETTER, letter: 'O', example: 'OSO', voiceCheck: true }),
-      ...soundCards(L2, 'O', 'O', O_WORDS, [...U_WORDS, ...I_WORDS]),
+      ...soundCards(L2, 'O', 'O', O_WORDS, [...U_WORDS, ...I_WORDS], VoiceSays.SOUND),
       buildLetterIntroCard({ levelId: L2, position: 0, group: GROUP.LETTER, letter: 'U', example: 'UVA', voiceCheck: true }),
-      ...soundCards(L2, 'U', 'U', U_WORDS, [...I_WORDS, ...O_WORDS]),
+      ...soundCards(L2, 'U', 'U', U_WORDS, [...I_WORDS, ...O_WORDS], VoiceSays.SOUND),
       // Repaso mezclado de las cinco vocales, como la seccion "Las vocales" del cuadernillo.
-      buildSoundCard({ levelId: L2, position: 0, group: GROUP.VOWELS, phoneme: 'E', answer: 'ELEFANTE', options: ['IGLÚ', 'OSO', 'UVA'], prompt: '¿CUÁL EMPIEZA CON E? ESCUCHAMOS LAS CINCO VOCALES.', voiceCheck: false }),
-      buildSoundCard({ levelId: L2, position: 0, group: GROUP.VOWELS, phoneme: 'A', answer: 'ARAÑA', options: ['IGLÚ', 'UVA', 'OSO'], prompt: '¿CUÁL EMPIEZA CON A? ESCUCHAMOS LAS CINCO VOCALES.', voiceCheck: false }),
-      buildSoundCard({ levelId: L2, position: 0, group: GROUP.VOWELS, phoneme: 'I', answer: 'ISLA', options: ['ÁRBOL', 'ESTRELLA', 'OSO'], prompt: '¿CUÁL EMPIEZA CON I? ESCUCHAMOS LAS CINCO VOCALES.', voiceCheck: false }),
-      buildSoundCard({ levelId: L2, position: 0, group: GROUP.VOWELS, phoneme: 'O', answer: 'OVEJA', options: ['ABEJA', 'IMÁN', 'UVA'], prompt: '¿CUÁL EMPIEZA CON O? ESCUCHAMOS LAS CINCO VOCALES.', voiceCheck: false }),
-      buildSoundCard({ levelId: L2, position: 0, group: GROUP.VOWELS, phoneme: 'U', answer: 'UNO', options: ['ERIZO', 'OJO', 'ANILLO'], prompt: '¿CUÁL EMPIEZA CON U? ESCUCHAMOS LAS CINCO VOCALES.', voiceCheck: false }),
+      buildSoundCard({ levelId: L2, position: 0, group: GROUP.VOWELS, phoneme: 'E', answer: 'ELEFANTE', options: ['IGLÚ', 'OSO', 'UVA'], prompt: '¿CUÁL EMPIEZA CON E? ESCUCHAMOS LAS CINCO VOCALES.', voiceCheck: false, voiceSays: VoiceSays.SOUND }),
+      buildSoundCard({ levelId: L2, position: 0, group: GROUP.VOWELS, phoneme: 'A', answer: 'ARAÑA', options: ['IGLÚ', 'UVA', 'OSO'], prompt: '¿CUÁL EMPIEZA CON A? ESCUCHAMOS LAS CINCO VOCALES.', voiceCheck: false, voiceSays: VoiceSays.SOUND }),
+      buildSoundCard({ levelId: L2, position: 0, group: GROUP.VOWELS, phoneme: 'I', answer: 'ISLA', options: ['ÁRBOL', 'ESTRELLA', 'OSO'], prompt: '¿CUÁL EMPIEZA CON I? ESCUCHAMOS LAS CINCO VOCALES.', voiceCheck: false, voiceSays: VoiceSays.SOUND }),
+      buildSoundCard({ levelId: L2, position: 0, group: GROUP.VOWELS, phoneme: 'O', answer: 'OVEJA', options: ['ABEJA', 'IMÁN', 'UVA'], prompt: '¿CUÁL EMPIEZA CON O? ESCUCHAMOS LAS CINCO VOCALES.', voiceCheck: false, voiceSays: VoiceSays.SOUND }),
+      buildSoundCard({ levelId: L2, position: 0, group: GROUP.VOWELS, phoneme: 'U', answer: 'UNO', options: ['ERIZO', 'OJO', 'ANILLO'], prompt: '¿CUÁL EMPIEZA CON U? ESCUCHAMOS LAS CINCO VOCALES.', voiceCheck: false, voiceSays: VoiceSays.SOUND }),
     ]),
   },
   {
@@ -316,10 +321,10 @@ export const SEEDED_LEVELS: SeededLevel[] = [
     cards: numbered([
       buildLetterIntroCard({ levelId: L6, position: 0, group: GROUP.LETTER, letter: 'C', example: 'CASA', voiceCheck: true }),
       buildLetterIntroCard({ levelId: L6, position: 0, group: GROUP.LETTER, letter: 'T', example: 'TOMATE', voiceCheck: true }),
-      ...soundCards(L6, GROUP.SYLLABLE, 'CA', ['CASA'], ['TELA', 'MOTO']),
-      ...soundCards(L6, GROUP.SYLLABLE, 'CU', ['CUNA'], ['TOMATE', 'SOL']),
-      ...soundCards(L6, GROUP.SYLLABLE, 'TO', ['TOMATE'], ['CASA', 'LUNA']),
-      ...soundCards(L6, GROUP.SYLLABLE, 'TE', ['TELA'], ['CAMA', 'MONO']),
+      ...soundCards(L6, GROUP.SYLLABLE, 'CA', ['CASA'], ['TELA', 'MOTO'], VoiceSays.WORD),
+      ...soundCards(L6, GROUP.SYLLABLE, 'CU', ['CUNA'], ['TOMATE', 'SOL'], VoiceSays.WORD),
+      ...soundCards(L6, GROUP.SYLLABLE, 'TO', ['TOMATE'], ['CASA', 'LUNA'], VoiceSays.WORD),
+      ...soundCards(L6, GROUP.SYLLABLE, 'TE', ['TELA'], ['CAMA', 'MONO'], VoiceSays.WORD),
       buildWordCard({ levelId: L6, position: 0, group: GROUP.WORD, word: 'CASA', distractors: ['T', 'O'], voiceCheck: true }),
       buildWordCard({ levelId: L6, position: 0, group: GROUP.WORD, word: 'CAMA', distractors: ['N'], voiceCheck: false }),
       buildWordCard({ levelId: L6, position: 0, group: GROUP.WORD, word: 'TELA', distractors: ['C', 'I'], voiceCheck: false }),
