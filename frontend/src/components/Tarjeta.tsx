@@ -18,6 +18,8 @@ export interface ResultadoVoz {
   accepted: boolean;
   /** Si todavía quedan intentos para esta misma tarjeta. */
   canRetry: boolean;
+  /** En false, el servidor no oyó nada útil: se pide repetir, no es un error. */
+  heard?: boolean;
   feedback: Feedback;
 }
 
@@ -192,6 +194,11 @@ export function Tarjeta({ card, species, onArmado, onVoz, onLista, repaso }: Pro
       }
     }
     const resultado = await evaluando;
+
+    if (resultado.heard === false) {
+      setNoSeEntendio(true);
+      return;
+    }
 
     setFeedback(resultado.feedback);
     setVozRechazada(!resultado.accepted);

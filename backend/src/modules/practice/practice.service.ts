@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import {
   Accessory,
@@ -38,6 +38,7 @@ import {
   VOICE_SIMILARITY_THRESHOLD,
 } from '../../core/config/mastery.config';
 import { StudentService } from '../student/student.service';
+import { sabeVerificar, verificarSonido } from '../speech/verificador-acustico';
 
 export interface SessionView {
   session: PracticeSession;
@@ -58,6 +59,8 @@ export interface VoiceOutcome extends SessionView {
   accepted: boolean;
   /** Si todavia puede volver a intentar la pronunciacion de esta misma tarjeta. */
   canRetry: boolean;
+  /** Si hubo voz para juzgar. Si no, no cuenta como intento: se le pide que lo repita. */
+  heard: boolean;
   transcript: string;
   expected: string;
   similarity: number;
@@ -87,6 +90,8 @@ export interface SessionResult {
  */
 @Injectable()
 export class PracticeService {
+  private readonly logger = new Logger(PracticeService.name);
+
   constructor(
     private readonly sessions: SessionRepository,
     private readonly levels: LevelRepository,
@@ -243,6 +248,8 @@ export class PracticeService {
     let confidence: number;
     let provider: string;
     let verified = true;
+    /** Veredicto del analisis acustico, para sonidos sueltos y silabas grabados. */
+    let acustico: boolean | null = null;
 
     if (input.unverified) {
       // El cliente avisa que no pudo escuchar. No se inventa una pronunciacion:
@@ -257,26 +264,45 @@ export class PracticeService {
       confidence = 1;
       provider = 'client';
     } else if (input.audioBase64) {
-      const recognized = await this.speech.transcribe(Buffer.from(input.audioBase64, 'base64'), expected);
+      const audio = Buffer.from(input.audioBase64, 'base64');
+      const recognized = await this.speech.transcribe(audio, expected);
       transcript = recognized.transcript;
       confidence = recognized.confidence;
       provider = recognized.provider;
+
+      // Un sonido suelto o una silaba no son palabras: el reconocedor no los
+      // entiende ("mmm" le suena a "i"). Se juzgan por la huella acustica del
+      // audio, con lo que oyo Vosk como segundo juez para la vocal.
+      const esSonido = card.kind === CardKind.LETTER_INTRO || card.kind === CardKind.SOUND_RECOGNITION;
+      if (esSonido && sabeVerificar(expected)) {
+        const veredicto = verificarSonido(audio, expected, transcript);
+        this.logger.debug(`Sonido "${expected}": ${veredicto.correcto ? 'bien' : 'mal'} · ${veredicto.detalle}`);
+        if (!veredicto.escuchado) return this.noEscuchado(session, card, expected, provider);
+        acustico = veredicto.correcto;
+        provider = `${provider}+acustico`;
+      } else if (!transcript.trim()) {
+        // No se oyo ninguna palabra: no es un error del chico, es que no se escucho.
+        return this.noEscuchado(session, card, expected, provider);
+      }
     } else {
       throw new BadRequestException('Hace falta audioBase64 o transcript.');
     }
 
-    const similarity = verified ? this.phonetics.similarity(transcript, expected) : 0;
+    // Con el analisis acustico, el parecido es el suyo: 1 si esta bien; si esta
+    // mal, "parecido" para que el feedback sea de guia y no de ruido.
+    const similarity = acustico !== null ? (acustico ? 1 : 0.5) : verified ? this.phonetics.similarity(transcript, expected) : 0;
 
     // Un fonema aislado ("aaa", "mmm") esta fuera del alcance del reconocedor del
-    // navegador. Si el parecido queda muy bajo en una tarjeta de letra nueva, es
-    // casi seguro que fallo el reconocedor y no el chico: se registra sin
-    // verificar en vez de acusarlo de haberlo dicho mal.
-    if (verified && card.kind === CardKind.LETTER_INTRO && similarity < ISOLATED_PHONEME_FLOOR) {
+    // navegador (el respaldo, que manda texto). Si el parecido queda muy bajo en
+    // una tarjeta de letra nueva, es casi seguro que fallo el reconocedor y no el
+    // chico: se registra sin verificar. Con audio grabado ya no hace falta: lo
+    // juzga el analisis acustico, que si detecta el error.
+    if (acustico === null && provider === 'client' && verified && card.kind === CardKind.LETTER_INTRO && similarity < ISOLATED_PHONEME_FLOOR) {
       verified = false;
     }
 
     // Sin verificar, el chico pasa igual: no es su error que el microfono no ande.
-    const accepted = verified ? similarity >= VOICE_SIMILARITY_THRESHOLD : true;
+    const accepted = acustico !== null ? acustico : verified ? similarity >= VOICE_SIMILARITY_THRESHOLD : true;
 
     const intentos = session.voiceChecks.filter((check) => check.cardId === cardId).length + 1;
     // Un rechazo NO saltea la tarjeta: se puede volver a intentar. Solo se
@@ -300,6 +326,7 @@ export class PracticeService {
       card: await this.currentCard(saved),
       accepted,
       canRetry,
+      heard: true,
       transcript,
       expected,
       similarity: Number(similarity.toFixed(4)),
@@ -361,6 +388,27 @@ export class PracticeService {
       accessory: grant.accessoryUnlockedId ? accessory : null,
       nextLevel,
       feedback: this.feedback.forSessionEnd(score.accuracy, grant.progress.mastered, masteredNow, sessionsRemaining),
+    };
+  }
+
+  /**
+   * No se escucho nada util. No se registra como intento ni se juzga: se le
+   * pide que lo repita, igual que cuando el microfono del navegador no capta.
+   */
+  private async noEscuchado(session: PracticeSession, card: Card, expected: string, provider: string): Promise<VoiceOutcome> {
+    return {
+      session,
+      card,
+      accepted: false,
+      canRetry: true,
+      heard: false,
+      transcript: '',
+      expected,
+      similarity: 0,
+      confidence: 0,
+      provider,
+      verified: false,
+      feedback: this.feedback.forVoice(card, false, 0),
     };
   }
 

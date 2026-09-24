@@ -104,6 +104,7 @@ export class PracticeController {
       accepted: result.accepted,
       verified: result.verified,
       canRetry: result.canRetry,
+      heard: result.heard,
       transcript: result.transcript,
       expected: result.expected,
       similarity: result.similarity,

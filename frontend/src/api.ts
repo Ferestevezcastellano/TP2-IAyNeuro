@@ -76,6 +76,8 @@ export interface VoiceResult {
   accepted: boolean;
   /** Si todavía puede volver a intentar la pronunciación de esta misma tarjeta. */
   canRetry: boolean;
+  /** Si hubo voz para juzgar. En false no cuenta como intento: se pide repetir. */
+  heard?: boolean;
   /** Si la pronunciación se llegó a comparar de verdad contra lo esperado. */
   verified: boolean;
   transcript: string;

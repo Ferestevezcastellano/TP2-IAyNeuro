@@ -151,6 +151,13 @@ export class VoiceCheckResultDto {
   })
   canRetry!: boolean;
 
+  @ApiProperty({
+    description:
+      'Si hubo voz para juzgar. En false no se escucho nada util: no cuenta como intento y el chico lo vuelve a decir.',
+    example: true,
+  })
+  heard!: boolean;
+
   @ApiProperty({ description: 'Que reconocedor resolvio el audio.', example: 'stub' })
   provider!: string;
 
