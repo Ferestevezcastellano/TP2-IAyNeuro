@@ -427,17 +427,45 @@ export function Tarjeta({ card, species, onArmado, onVoz, onLista, repaso }: Pro
  * se muestra entera.
  */
 interface PedidoVoz {
-  /** "DECÍ LA PALABRA", "DECÍ EL SONIDO DE LA". */
+  /** "DECÍ LA PALABRA", "DECÍ LA LETRA", "DECÍ EL SONIDO DE LA". */
   que: string;
   /** Lo que hay que decir, escrito: "CASA", "A". Vacío en las oraciones, que ya están armadas en pantalla. */
   cual: string;
 }
 
+function esVocal(letra: string): boolean {
+  return /^[AEIOUÁÉÍÓÚ]$/.test(letra);
+}
+
+/**
+ * Qué se dice cuando la tarjeta no lo trae: un backend anterior a `voiceSays`
+ * no lo manda, y sin esto la pantalla quedaba en "DECILO VOS" a secas. Se
+ * deduce del tipo de tarjeta, igual que lo verificaba ese backend.
+ */
+function deducirPedido(card: Card): Pick<Card, 'voiceSays' | 'voiceLabel'> {
+  const fonema = card.targetPhoneme ?? '';
+  switch (card.kind) {
+    case 'LETTER_INTRO':
+    case 'SOUND_RECOGNITION':
+      return { voiceSays: fonema.length > 1 ? 'SYLLABLE' : 'SOUND', voiceLabel: fonema };
+    case 'WORD_BUILDING':
+      return { voiceSays: 'WORD', voiceLabel: card.targetWord ?? '' };
+    case 'SENTENCE_BUILDING':
+      return { voiceSays: 'SENTENCE', voiceLabel: '' };
+    default:
+      return {};
+  }
+}
+
 function pedidoDeVoz(card: Card): PedidoVoz {
-  const cual = card.voiceLabel ?? '';
-  switch (card.voiceSays) {
+  const { voiceSays, voiceLabel } = card.voiceSays ? card : deducirPedido(card);
+  const cual = voiceLabel ?? '';
+  switch (voiceSays) {
     case 'SOUND':
-      return { que: 'DECÍ EL SONIDO DE LA', cual };
+      // En una vocal el nombre y el sonido coinciden: se pide "la letra", que
+      // es como lo dice la maestra. En una consonante se pide el sonido
+      // ("mmm"), porque el nombre ("eme") no es lo que se practica.
+      return { que: esVocal(cual) ? 'DECÍ LA LETRA' : 'DECÍ EL SONIDO DE LA', cual };
     case 'SYLLABLE':
       return { que: 'DECÍ EL SONIDO', cual };
     case 'WORD':

@@ -85,7 +85,11 @@ export class FeedbackService {
     const label = card.voiceLabel ?? '';
     switch (card.voiceSays) {
       case VoiceSays.SOUND:
-        return `AHORA DECÍ VOS EL SONIDO DE LA ${label}, BIEN LARGO.`;
+        // En las vocales (niveles 1 y 2) se pide la letra; en las consonantes,
+        // el sonido, porque el nombre ("eme") no es lo que se practica.
+        return /^[AEIOUÁÉÍÓÚ]$/.test(label)
+          ? `AHORA DECÍ VOS LA LETRA ${label}, BIEN LARGA.`
+          : `AHORA DECÍ VOS EL SONIDO DE LA ${label}, BIEN LARGO.`;
       case VoiceSays.SYLLABLE:
         return `AHORA DECÍ VOS ${label}.`;
       case VoiceSays.WORD:
