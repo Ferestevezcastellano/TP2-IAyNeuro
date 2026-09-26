@@ -8,6 +8,12 @@
 
 ### En curso
 
+- **Refactorización del backend contra el `CLAUDE.md`** — sacar el juicio de voz y el cierre de
+  sesión de `PracticeService`, armar el vocabulario de Vosk desde los repositorios y quitar
+  duplicaciones. Sin cambios de comportamiento ni de contrato de API. Toca
+  `backend/src/modules/practice/`, `backend/src/modules/speech/`, `backend/src/core/ports/`,
+  `backend/src/core/config/phonemes.ts` y `backend/src/core/services/reward.service.ts`.
+
 ### Pendientes
 
 - **Persistencia real** — la capa de puertos está lista y los repositorios en memoria son
@@ -60,6 +66,24 @@
 - 2026-09-22 — Layout responsive de 280 px al escritorio, con el alto real de la ventana y el área segura del notch
 
 ## Bitácora de decisiones
+
+### 2026-09-26 — El juicio de voz y el cierre de sesión salen de `PracticeService`
+**Contexto:** una revisión del backend contra el `CLAUDE.md` del equipo encontró que
+`PracticeService` iba camino a ser una God Class (486 líneas, 15 dependencias) y que dependía
+directamente de las funciones de `speech/juez-pronunciacion.ts` y `speech/verificador-acustico.ts`,
+salteando el puerto de voz. Además, el vocabulario de Vosk se armaba importando los datos semilla,
+así que al pasar el contenido a una base quedaría desactualizado sin que nada falle.
+**Decisión:** un puerto `VerificadorDeVozPort` en `core/ports/` con su implementación en
+`modules/speech/`, que concentra la decisión de si el chico pronunció bien; un
+`CierreDeSesionService` en `modules/practice/` para el puntaje, el dominio y las recompensas; el
+juez de pronunciación como clase inyectable; el vocabulario de Vosk armado desde los repositorios
+en `onApplicationBootstrap`, después de que se cargue el contenido. Una sola definición de vocales
+y un solo umbral de similitud.
+**Alternativas descartadas:** Strategy con un juez por tipo de pedido (cuatro tipos fijos no lo
+justifican); inyectar la clase concreta del verificador sin puerto (más simple, pero `PracticeService`
+seguiría dependiendo de una implementación); un enum para el proveedor de voz (al mover la lógica,
+la comparación de texto desaparece sola).
+**Revisión post-implementación:** —
 
 ### 2026-09-23 — Los accesorios son capas SVG, no imágenes del animal vestido
 **Contexto:** los accesorios se dibujaban como un emoji flotando al lado de la mascota. Para
