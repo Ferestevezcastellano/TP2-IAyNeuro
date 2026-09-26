@@ -54,6 +54,7 @@
 
 ### Completadas
 
+- 2026-09-26 — Se saca `VerificadorDeVozPort`; el verificador de voz se inyecta como clase concreta
 - 2026-09-26 — Refactorización del backend contra el `CLAUDE.md`: voz y cierre de sesión fuera de `PracticeService`
 - 2026-09-23 — Accesorios como capas SVG superpuestas, en vez de emojis
 - 2026-09-23 — Personalización rehecha con escenario, reacción del personaje y siluetas de lo bloqueado
@@ -72,6 +73,23 @@
 - 2026-09-22 — Layout responsive de 280 px al escritorio, con el alto real de la ventana y el área segura del notch
 
 ## Bitácora de decisiones
+
+### 2026-09-26 — Se saca `VerificadorDeVozPort`: el verificador de voz se inyecta como clase concreta
+**Contexto:** el equipo reemplazó el `CLAUDE.md` por una versión que agrega una regla de desempate:
+cuando dos principios chocan, gana la opción más simple que resuelva el requerimiento actual.
+Revisando el PR #1 con esa regla, el puerto creado horas antes (ver la entrada siguiente) quedó
+como sobreingeniería: tiene una sola implementación, y el beneficio con el que se justificó —probar
+`PracticeService` sin audio— no se usa, porque sus tests usan el verificador real.
+**Decisión:** `PracticeService` recibe `VerificadorDeVoz` directamente; los tipos de entrada y
+veredicto pasan al archivo del servicio y se borra el puerto. Se conserva el resto de esa
+refactorización: el verificador sigue siendo una clase aparte, que es lo que resolvía la God Class.
+**Alternativas descartadas:** dejar el puerto (inversión de dependencias sin un segundo
+implementador ni un test que lo aproveche); volver a meter la lógica en `PracticeService` (el
+problema era el tamaño, no la abstracción). `SpeechRecognitionPort` no se toca: tiene dos
+implementaciones reales, el stub y Vosk, que se eligen al arrancar.
+**Revisión post-implementación:** salió tal cual. Los 115 tests siguen en verde sin tocar ninguno,
+el contrato OpenAPI sigue idéntico al de antes de la refactorización, y el recorrido por HTTP de
+los niveles 1 a 5 da el mismo resultado.
 
 ### 2026-09-26 — El juicio de voz y el cierre de sesión salen de `PracticeService`
 **Contexto:** una revisión del backend contra el `CLAUDE.md` del equipo encontró que

@@ -1,9 +1,10 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { Card, LevelStatus, PracticeSession, SessionMode, SessionStatus, Student } from '../../core/domain';
-import { CardRepository, SessionRepository, VerificadorDeVozPort, VoiceInput } from '../../core/ports';
+import { CardRepository, SessionRepository } from '../../core/ports';
 import { Feedback, FeedbackService, SessionDeckService, WordAssemblyValidator } from '../../core/services';
 import { MAX_VOICE_ATTEMPTS } from '../../core/config/mastery.config';
+import { VerificadorDeVoz, VoiceInput } from '../speech/verificador-de-voz.service';
 import { StudentService } from '../student/student.service';
 import { CierreDeSesionService, SessionResult } from './cierre-de-sesion.service';
 
@@ -41,7 +42,7 @@ export interface VoiceOutcome extends SessionView {
 /**
  * El flujo central de la app: abrir la sesion de un nivel, validar cada armado
  * y conducir la verificacion por voz tarjeta por tarjeta. Si el chico lo dijo
- * bien lo decide `VerificadorDeVozPort`, y el cierre lo liquida
+ * bien lo decide `VerificadorDeVoz`, y el cierre lo liquida
  * `CierreDeSesionService`.
  */
 @Injectable()
@@ -53,7 +54,7 @@ export class PracticeService {
     private readonly validator: WordAssemblyValidator,
     private readonly deck: SessionDeckService,
     private readonly feedback: FeedbackService,
-    private readonly verificador: VerificadorDeVozPort,
+    private readonly verificador: VerificadorDeVoz,
     private readonly cierre: CierreDeSesionService,
   ) {}
 

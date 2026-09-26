@@ -1,5 +1,5 @@
 import { Global, Module, Provider } from '@nestjs/common';
-import { SpeechRecognitionPort, VerificadorDeVozPort } from '../../core/ports';
+import { SpeechRecognitionPort } from '../../core/ports';
 import { JuezDePronunciacion } from './juez-pronunciacion';
 import { StubSpeechRecognitionProvider } from './stub-speech-recognition.provider';
 import { VerificadorDeVoz } from './verificador-de-voz.service';
@@ -7,8 +7,8 @@ import { VoskSpeechRecognitionProvider } from './vosk-speech-recognition.provide
 
 /**
  * Elige el reconocedor por variable de entorno. Es el unico lugar que sabe cual
- * esta activo: el resto del codigo depende de SpeechRecognitionPort, y quien
- * necesita saber si el chico lo dijo bien depende de VerificadorDeVozPort.
+ * esta activo: el resto del codigo depende de SpeechRecognitionPort. Quien
+ * necesita saber si el chico lo dijo bien usa VerificadorDeVoz.
  */
 const speechProvider: Provider = {
   provide: SpeechRecognitionPort,
@@ -17,7 +17,7 @@ const speechProvider: Provider = {
 
 @Global()
 @Module({
-  providers: [speechProvider, JuezDePronunciacion, { provide: VerificadorDeVozPort, useClass: VerificadorDeVoz }],
-  exports: [SpeechRecognitionPort, VerificadorDeVozPort],
+  providers: [speechProvider, JuezDePronunciacion, VerificadorDeVoz],
+  exports: [SpeechRecognitionPort, VerificadorDeVoz],
 })
 export class SpeechModule {}

@@ -1,10 +1,33 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Card, CardKind, VoiceSays } from '../../core/domain';
-import { SpeechRecognitionPort, VerificadorDeVozPort, VoiceInput, VoiceVerdict } from '../../core/ports';
+import { SpeechRecognitionPort } from '../../core/ports';
 import { PhoneticNormalizerService } from '../../core/services';
 import { ISOLATED_PHONEME_FLOOR, VOICE_SIMILARITY_THRESHOLD } from '../../core/config/mastery.config';
 import { JuezDePronunciacion } from './juez-pronunciacion';
 import { sabeVerificar, verificarSonido } from './verificador-acustico';
+
+/** Lo que manda el cliente para verificar cómo se dijo una tarjeta. */
+export interface VoiceInput {
+  /** Audio grabado, para que lo reconozca el servidor. */
+  audioBase64?: string;
+  /** Transcripción ya resuelta por el reconocedor del navegador. */
+  transcript?: string;
+  /** El cliente avisa que no pudo escuchar al chico. */
+  unverified?: boolean;
+}
+
+/** Veredicto sobre una pronunciación. */
+export interface VoiceVerdict {
+  /** Si hubo voz para juzgar. Si no, no cuenta como intento: se pide repetir. */
+  heard: boolean;
+  accepted: boolean;
+  /** Si la pronunciación se llegó a comparar de verdad contra lo esperado. */
+  verified: boolean;
+  transcript: string;
+  confidence: number;
+  similarity: number;
+  provider: string;
+}
 
 /**
  * Decide si el chico dijo bien lo que pedía la tarjeta, venga la voz como
@@ -15,18 +38,19 @@ import { sabeVerificar, verificarSonido } from './verificador-acustico';
  * casos la regla es la misma: decirle "así no se dice" a un chico que lo dijo
  * bien es el peor error que puede cometer esta app, así que ante la duda sobre
  * el instrumento el intento queda sin verificar en vez de rechazado.
+ *
+ * Se inyecta como clase concreta, sin puerto: tiene una sola implementación y
+ * nada la reemplaza. `SpeechRecognitionPort`, en cambio, sí tiene dos.
  */
 @Injectable()
-export class VerificadorDeVoz extends VerificadorDeVozPort {
+export class VerificadorDeVoz {
   private readonly logger = new Logger(VerificadorDeVoz.name);
 
   constructor(
     private readonly speech: SpeechRecognitionPort,
     private readonly phonetics: PhoneticNormalizerService,
     private readonly juez: JuezDePronunciacion,
-  ) {
-    super();
-  }
+  ) {}
 
   async verificar(card: Card, input: VoiceInput): Promise<VoiceVerdict> {
     const expected = card.voiceTarget ?? '';

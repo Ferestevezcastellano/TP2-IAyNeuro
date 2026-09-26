@@ -8,4 +8,3 @@ export * from './progress.repository';
 export * from './session.repository';
 export * from './speech-recognition.port';
 export * from './student.repository';
-export * from './verificador-de-voz.port';
