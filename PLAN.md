@@ -10,6 +10,17 @@
 
 ### Pendientes
 
+- **`CierreDeSesionService` quedó con 11 dependencias** — es una sola responsabilidad (liquidar la
+  sesión), pero coordina puntaje, dominio, recompensas y cinco repositorios. Si crece, conviene
+  que el pago de estrellas y accesorio lo resuelva un solo colaborador.
+- **`scripts/demo.sh` está roto desde el 21/9** — no sabe resolver las tarjetas `LETTER_INTRO` y se
+  traba en la primera. No lo rompió la refactorización del 26/9: falla en el script, antes de
+  llegar a la API. El recorrido por HTTP de los niveles 1 a 5 se verificó con un guion aparte que
+  quedó fuera del repo.
+- **Los tests de `PracticeService` arman la sesión a mano** — cubren la voz y el cierre, pero no
+  `start()` ni `attempt()`, porque el mazo se sortea.
+- **El vocabulario de Vosk se arma una vez al arrancar** — si el contenido cambiara con la app
+  andando, no se entera hasta reiniciar. Hoy el contenido no cambia en caliente.
 - **Persistencia real** — la capa de puertos está lista y los repositorios en memoria son
   reemplazables, pero mientras no exista una base, cada reinicio borra alumnos y progreso.
 - **Calibrar el mínimo de sesiones para dominar** — quedó en 1 por pedido del equipo (una sesión
@@ -43,6 +54,8 @@
 
 ### Completadas
 
+- 2026-09-26 — Se saca `VerificadorDeVozPort`; el verificador de voz se inyecta como clase concreta
+- 2026-09-26 — Refactorización del backend contra el `CLAUDE.md`: voz y cierre de sesión fuera de `PracticeService`
 - 2026-09-23 — Accesorios como capas SVG superpuestas, en vez de emojis
 - 2026-09-23 — Personalización rehecha con escenario, reacción del personaje y siluetas de lo bloqueado
 
@@ -60,6 +73,51 @@
 - 2026-09-22 — Layout responsive de 280 px al escritorio, con el alto real de la ventana y el área segura del notch
 
 ## Bitácora de decisiones
+
+### 2026-09-26 — Se saca `VerificadorDeVozPort`: el verificador de voz se inyecta como clase concreta
+**Contexto:** el equipo reemplazó el `CLAUDE.md` por una versión que agrega una regla de desempate:
+cuando dos principios chocan, gana la opción más simple que resuelva el requerimiento actual.
+Revisando el PR #1 con esa regla, el puerto creado horas antes (ver la entrada siguiente) quedó
+como sobreingeniería: tiene una sola implementación, y el beneficio con el que se justificó —probar
+`PracticeService` sin audio— no se usa, porque sus tests usan el verificador real.
+**Decisión:** `PracticeService` recibe `VerificadorDeVoz` directamente; los tipos de entrada y
+veredicto pasan al archivo del servicio y se borra el puerto. Se conserva el resto de esa
+refactorización: el verificador sigue siendo una clase aparte, que es lo que resolvía la God Class.
+**Alternativas descartadas:** dejar el puerto (inversión de dependencias sin un segundo
+implementador ni un test que lo aproveche); volver a meter la lógica en `PracticeService` (el
+problema era el tamaño, no la abstracción). `SpeechRecognitionPort` no se toca: tiene dos
+implementaciones reales, el stub y Vosk, que se eligen al arrancar.
+**Revisión post-implementación:** salió tal cual. Los 115 tests siguen en verde sin tocar ninguno,
+el contrato OpenAPI sigue idéntico al de antes de la refactorización, y el recorrido por HTTP de
+los niveles 1 a 5 da el mismo resultado.
+
+### 2026-09-26 — El juicio de voz y el cierre de sesión salen de `PracticeService`
+**Contexto:** una revisión del backend contra el `CLAUDE.md` del equipo encontró que
+`PracticeService` iba camino a ser una God Class (486 líneas, 15 dependencias) y que dependía
+directamente de las funciones de `speech/juez-pronunciacion.ts` y `speech/verificador-acustico.ts`,
+salteando el puerto de voz. Además, el vocabulario de Vosk se armaba importando los datos semilla,
+así que al pasar el contenido a una base quedaría desactualizado sin que nada falle.
+**Decisión:** un puerto `VerificadorDeVozPort` en `core/ports/` con su implementación en
+`modules/speech/`, que concentra la decisión de si el chico pronunció bien; un
+`CierreDeSesionService` en `modules/practice/` para el puntaje, el dominio y las recompensas; el
+juez de pronunciación como clase inyectable; el vocabulario de Vosk armado desde los repositorios
+en `onApplicationBootstrap`, después de que se cargue el contenido. Una sola definición de vocales
+y un solo umbral de similitud.
+**Alternativas descartadas:** Strategy con un juez por tipo de pedido (cuatro tipos fijos no lo
+justifican); inyectar la clase concreta del verificador sin puerto (más simple, pero `PracticeService`
+seguiría dependiendo de una implementación); un enum para el proveedor de voz (al mover la lógica,
+la comparación de texto desaparece sola).
+**Revisión post-implementación:** salió como estaba planeado, con tres diferencias. Primera:
+`CierreDeSesionService` quedó con 11 dependencias; `PracticeService` bajó a 302 líneas y 8
+dependencias, pero la coordinación del cierre sigue siendo grande, ahora en un lugar con una sola
+razón para cambiar. Segunda: para testear el verificador con audio hubo que sacar los generadores
+de audio sintético del test acústico a `audio-sintetico.testing.ts`, compartido por los dos tests.
+Tercera, no prevista y la más útil: como `PracticeService` no tenía tests, antes de mover nada se
+escribieron 10 tests de caracterización que fijan su comportamiento desde afuera, y pasaron igual
+antes y después. Además se comparó el contrato OpenAPI contra la versión anterior (idéntico: 23
+rutas, 33 esquemas), el vocabulario de Vosk contra el que se armaba antes (las mismas 109
+palabras), y se recorrieron los niveles 1 a 5 por HTTP en las dos versiones con el mismo resultado.
+115 tests en verde (eran 87).
 
 ### 2026-09-23 — Los accesorios son capas SVG, no imágenes del animal vestido
 **Contexto:** los accesorios se dibujaban como un emoji flotando al lado de la mascota. Para
