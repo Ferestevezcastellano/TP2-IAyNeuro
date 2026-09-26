@@ -43,8 +43,11 @@
 - **Tests de integración HTTP** — hoy los tests cubren la lógica de negocio y la integridad del
   contenido; el recorrido por HTTP se verifica con `scripts/demo.sh` y con un guion de Playwright
   que quedó fuera del repo, ninguno de los dos en CI.
-- **El frontend no tiene tests automatizados** — se recorrió con Playwright (onboarding, sesión completa
-  de nivel 1 y de nivel 3, repaso, personalización, cierre) pero el guion quedó fuera del repo.
+- **El frontend no tiene tests automatizados** — la reorganización del 26/9 se verificó con un
+  recorrido de Playwright que compara texto y capturas de 182 pantallas contra la versión anterior
+  (niveles 1 a 5, las tres ramas de la voz, repaso y compañero), pero el guion quedó fuera del repo.
+- **`deducirPedido` en `BloqueVoz.tsx` es un parche de compatibilidad** — existe porque Render
+  todavía publica un backend anterior a `voiceSays`. Cuando Render publique desde `main`, se borra.
 - **Ilustraciones de las palabras** — el frontend usa emojis donde el mockup tiene imágenes
   generadas; la hoja de instrucciones solo tiene imagen para el león. Los accesorios ya no:
   son SVG propios en `frontend/public/accesorios/`.
@@ -54,6 +57,7 @@
 
 ### Completadas
 
+- 2026-09-26 — Reorganización del frontend contra el `CLAUDE.md`: `Tarjeta.tsx` sin el flujo de voz, `audio.ts` partido en dos y una sola tabla de accesorios
 - 2026-09-26 — Se saca `VerificadorDeVozPort`; el verificador de voz se inyecta como clase concreta
 - 2026-09-26 — Refactorización del backend contra el `CLAUDE.md`: voz y cierre de sesión fuera de `PracticeService`
 - 2026-09-23 — Accesorios como capas SVG superpuestas, en vez de emojis
@@ -73,6 +77,30 @@
 - 2026-09-22 — Layout responsive de 280 px al escritorio, con el alto real de la ventana y el área segura del notch
 
 ## Bitácora de decisiones
+
+### 2026-09-26 — El frontend se reparte por responsabilidad, sin abstracciones nuevas
+**Contexto:** la primera revisión del frontend contra el `CLAUDE.md` encontró una God Class
+(`Tarjeta.tsx`: 630 líneas, 18 estados, cinco responsabilidades), un módulo de baja cohesión
+(`audio.ts`: reproducir, festejar, reconocer, grabar y consultar el servidor, con seis variables
+globales mutables) y los datos de cada accesorio repartidos en tres tablas a mano.
+**Decisión:** mover código a donde corresponde, sin capas nuevas. El flujo de voz de la tarjeta
+pasa a un hook `useVerificacionVoz`; `BloqueVoz` y `HojaInstrucciones` a sus propios archivos;
+`audio.ts` se parte en `sonido.ts` y `escucha.ts`; los accesorios pasan a una tabla única.
+Antes de tocar nada, un recorrido con Playwright sobre la app real que registre cómo se ve cada
+pantalla, para comparar antes y después: el frontend no tiene tests.
+**Alternativas descartadas:** un componente por tipo de tarjeta (tres tipos fijos: más archivos sin
+más flexibilidad); una capa de servicios de audio con interfaces (una sola implementación por
+navegador); mover los datos de los accesorios al backend (cambia el contrato de la API para algo
+que hoy son seis piezas fijas).
+**Revisión post-implementación:** `Tarjeta.tsx` bajó de 630 a 273 líneas y de 18 estados a 6; los 11
+de la voz viven en `useVerificacionVoz`, que la tarjeta solo usa para avisar cuándo pedir la voz.
+`audio.ts` quedó en `sonido.ts` (reproducir y festejar) y `escucha.ts` (reconocer y grabar), sin
+cambiar una línea de lógica. Los accesorios pasaron de cinco estructuras en dos archivos
+(`ARCHIVO_ACCESORIO`, `ENCUADRE`, `CAPA_DE_ATRAS` y `ORDEN_ADELANTE` en `Mascota.tsx`, `POR_ID` en
+`Personalizacion.tsx`) a una fila por accesorio en `frontend/src/accesorios.ts`, con su dibujo,
+encuadre, categoría y plano de apilado. El recorrido de caracterización dio lo mismo antes y
+después: 182 pantallas, 0 diferencias de texto, 0 errores de JavaScript, y en capturas solo el
+ruido de 10 píxeles que ya aparecía entre dos corridas de la versión anterior.
 
 ### 2026-09-26 — Se saca `VerificadorDeVozPort`: el verificador de voz se inyecta como clase concreta
 **Contexto:** el equipo reemplazó el `CLAUDE.md` por una versión que agrega una regla de desempate:
