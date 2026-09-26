@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { api, type Accessory, type Level, type Pet, type PetSpecies } from '../api';
-import { celebrar } from '../audio';
+import { celebrar } from '../sonido';
 import { BotonVolver } from '../components/comunes';
 import { Mascota, NOMBRE_MASCOTA, PiezaAccesorio } from '../components/Mascota';
 import './Personalizacion.css';

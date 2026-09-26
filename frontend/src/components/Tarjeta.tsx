@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Card, EntradaVoz, Feedback, PetSpecies, Tile } from '../api';
-import { listen, play, reproducirGrabacion } from '../audio';
+import { listen } from '../escucha';
+import { play, reproducirGrabacion } from '../sonido';
 import { Boca, consejoDe, sonidosDe } from './Boca';
 import { Ilustracion } from './Ilustracion';
 import { BotonSonido, CajaFeedback } from './comunes';
