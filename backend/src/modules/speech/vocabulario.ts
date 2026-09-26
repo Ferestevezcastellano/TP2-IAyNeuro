@@ -1,3 +1,4 @@
+import { VOCALES } from '../../core/config/phonemes';
 import { SEEDED_LEVELS } from '../../seed/levels.seed';
 
 /**
@@ -10,7 +11,6 @@ import { SEEDED_LEVELS } from '../../seed/levels.seed';
  * sale tal cual ("la nena sale" en vez de "la luna sale").
  */
 
-const VOCALES = ['a', 'e', 'i', 'o', 'u'];
 const CONSONANTES = ['m', 'p', 's', 'l', 'n', 'd', 'f', 't', 'b', 'c', 'r', 'g', 'j', 'v', 'z', 'y', 'ch'];
 
 /**

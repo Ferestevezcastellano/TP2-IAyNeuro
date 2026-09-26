@@ -1,3 +1,5 @@
+import { VOCALES } from '../../core/config/phonemes';
+
 /**
  * Verifica un sonido suelto ("mmm", "sss", "aaa") o una sílaba ("ma") mirando
  * el audio en sí, sin transcribirlo.
@@ -50,7 +52,6 @@ interface Objetivo {
   vocal?: Vocal;
 }
 
-const VOCALES = 'aeiou';
 const ZUMBIDO = new Set(['m', 'n', 'ñ', 'l']);
 const SOPLIDO = new Set(['s', 'f', 'j', 'z']);
 const GOLPE_SORDO = new Set(['p', 't', 'k']);
