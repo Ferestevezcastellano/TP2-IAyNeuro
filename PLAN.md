@@ -8,14 +8,19 @@
 
 ### En curso
 
-- **Refactorización del backend contra el `CLAUDE.md`** — sacar el juicio de voz y el cierre de
-  sesión de `PracticeService`, armar el vocabulario de Vosk desde los repositorios y quitar
-  duplicaciones. Sin cambios de comportamiento ni de contrato de API. Toca
-  `backend/src/modules/practice/`, `backend/src/modules/speech/`, `backend/src/core/ports/`,
-  `backend/src/core/config/phonemes.ts` y `backend/src/core/services/reward.service.ts`.
-
 ### Pendientes
 
+- **`CierreDeSesionService` quedó con 11 dependencias** — es una sola responsabilidad (liquidar la
+  sesión), pero coordina puntaje, dominio, recompensas y cinco repositorios. Si crece, conviene
+  que el pago de estrellas y accesorio lo resuelva un solo colaborador.
+- **`scripts/demo.sh` está roto desde el 21/9** — no sabe resolver las tarjetas `LETTER_INTRO` y se
+  traba en la primera. No lo rompió la refactorización del 26/9: falla en el script, antes de
+  llegar a la API. El recorrido por HTTP de los niveles 1 a 5 se verificó con un guion aparte que
+  quedó fuera del repo.
+- **Los tests de `PracticeService` arman la sesión a mano** — cubren la voz y el cierre, pero no
+  `start()` ni `attempt()`, porque el mazo se sortea.
+- **El vocabulario de Vosk se arma una vez al arrancar** — si el contenido cambiara con la app
+  andando, no se entera hasta reiniciar. Hoy el contenido no cambia en caliente.
 - **Persistencia real** — la capa de puertos está lista y los repositorios en memoria son
   reemplazables, pero mientras no exista una base, cada reinicio borra alumnos y progreso.
 - **Calibrar el mínimo de sesiones para dominar** — quedó en 1 por pedido del equipo (una sesión
@@ -49,6 +54,7 @@
 
 ### Completadas
 
+- 2026-09-26 — Refactorización del backend contra el `CLAUDE.md`: voz y cierre de sesión fuera de `PracticeService`
 - 2026-09-23 — Accesorios como capas SVG superpuestas, en vez de emojis
 - 2026-09-23 — Personalización rehecha con escenario, reacción del personaje y siluetas de lo bloqueado
 
@@ -83,7 +89,17 @@ y un solo umbral de similitud.
 justifican); inyectar la clase concreta del verificador sin puerto (más simple, pero `PracticeService`
 seguiría dependiendo de una implementación); un enum para el proveedor de voz (al mover la lógica,
 la comparación de texto desaparece sola).
-**Revisión post-implementación:** —
+**Revisión post-implementación:** salió como estaba planeado, con tres diferencias. Primera:
+`CierreDeSesionService` quedó con 11 dependencias; `PracticeService` bajó a 302 líneas y 8
+dependencias, pero la coordinación del cierre sigue siendo grande, ahora en un lugar con una sola
+razón para cambiar. Segunda: para testear el verificador con audio hubo que sacar los generadores
+de audio sintético del test acústico a `audio-sintetico.testing.ts`, compartido por los dos tests.
+Tercera, no prevista y la más útil: como `PracticeService` no tenía tests, antes de mover nada se
+escribieron 10 tests de caracterización que fijan su comportamiento desde afuera, y pasaron igual
+antes y después. Además se comparó el contrato OpenAPI contra la versión anterior (idéntico: 23
+rutas, 33 esquemas), el vocabulario de Vosk contra el que se armaba antes (las mismas 109
+palabras), y se recorrieron los niveles 1 a 5 por HTTP en las dos versiones con el mismo resultado.
+115 tests en verde (eran 87).
 
 ### 2026-09-23 — Los accesorios son capas SVG, no imágenes del animal vestido
 **Contexto:** los accesorios se dibujaban como un emoji flotando al lado de la mascota. Para
