@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { randomUUID } from 'node:crypto';
 import { CommonModule } from '../../common/common.module';
@@ -21,13 +21,14 @@ import { PracticeModule } from './practice.module';
 import { PracticeService } from './practice.service';
 
 /**
- * Fija el comportamiento de la verificación por voz y del cierre de sesión tal
- * como los ve quien usa `PracticeService`. Existe para poder reorganizar lo que
- * hay adentro sin cambiar lo que pasa afuera: estos casos tienen que dar lo
- * mismo antes y después.
+ * Fija el comportamiento de `PracticeService` tal como lo ve quien lo usa:
+ * abrir una sesión, armar tarjetas, verificar la voz y cerrar. Existe para
+ * poder reorganizar lo que hay adentro sin cambiar lo que pasa afuera.
  *
- * Arma la app con el contenido semilla y el reconocedor de utilería, y crea las
- * sesiones a mano con la tarjeta ya armada, porque el mazo real se sortea.
+ * Arma la app con el contenido semilla y el reconocedor de utilería. El mazo
+ * real se sortea, así que los casos de `start()` afirman lo que se cumple con
+ * cualquier sorteo, y los de `attempt()` y la voz arman la sesión a mano con la
+ * tarjeta que necesitan.
  */
 describe('PracticeService', () => {
   let app: TestingModule;
@@ -94,6 +95,144 @@ describe('PracticeService', () => {
       startedAt: new Date(),
     });
   }
+
+  /** Sesión abierta sobre estas tarjetas, sin nada armado todavía. */
+  async function sesionNueva(student: Student, queue: Card[]): Promise<PracticeSession> {
+    const level = await levels.findById(queue[0].levelId);
+    return sessions.save({
+      id: randomUUID(),
+      studentId: student.id,
+      levelId: queue[0].levelId,
+      levelOrder: level!.order,
+      mode: SessionMode.LEVEL,
+      status: SessionStatus.IN_PROGRESS,
+      cardQueue: queue.map((c) => c.id),
+      currentCardIndex: 0,
+      attempts: [],
+      voiceChecks: [],
+      startedAt: new Date(),
+    });
+  }
+
+  /** Un botón que no dice lo que va primero: un armado equivocado seguro. */
+  function botonEquivocado(card: Card): string {
+    const primero = card.tiles.find((t) => t.id === card.solution[0])!.label;
+    return card.tiles.find((t) => t.label !== primero)!.id;
+  }
+
+  describe('start', () => {
+    it('sin nivel pedido abre el actual, con la letra nueva primero y el mazo de la receta', async () => {
+      const student = await alumno();
+      const { session, card } = await practice.start(student);
+
+      const level = (await levels.findById(session.levelId))!;
+      expect(level.order).toBe(1);
+      expect(card!.kind).toBe(CardKind.LETTER_INTRO);
+      expect(session.cardQueue[0]).toBe(card!.id);
+
+      const pool = await cards.findByLevelId(level.id);
+      const esperadas = level.sessionDraw.reduce(
+        (total, { group, count }) => total + Math.min(count, pool.filter((c) => c.group === group).length),
+        0,
+      );
+      expect(session.cardQueue).toHaveLength(esperadas);
+      expect(new Set(session.cardQueue).size).toBe(esperadas);
+
+      const mazo = await Promise.all(session.cardQueue.map((id) => cards.findById(id)));
+      expect(mazo.every((c) => c!.levelId === level.id)).toBe(true);
+      const posiciones = mazo.map((c) => c!.position);
+      expect(posiciones).toEqual([...posiciones].sort((a, b) => a - b));
+    });
+
+    it('no deja entrar a un nivel que todavía no se ganó', async () => {
+      const segundo = (await levels.findAll()).find((l) => l.order === 2)!;
+      await expect(practice.start(await alumno(), segundo.id)).rejects.toBeInstanceOf(ForbiddenException);
+    });
+
+    it('no deja entrar a un nivel que la seño todavía no habilitó', async () => {
+      const ultimo = (await levels.findAll()).sort((a, b) => b.order - a.order)[0];
+      await expect(practice.start(await alumno(), ultimo.id)).rejects.toThrow(/habilitado por la docente/);
+    });
+
+    it('un nivel que no existe no se abre', async () => {
+      await expect(practice.start(await alumno(), 'nivel-inventado')).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it('abrir otra sesión deja abandonada la que estaba sin cerrar', async () => {
+      const student = await alumno();
+      const primera = await practice.start(student);
+      const segunda = await practice.start(student);
+
+      expect(segunda.session.id).not.toBe(primera.session.id);
+      expect((await sessions.findById(primera.session.id))!.status).toBe(SessionStatus.ABANDONED);
+    });
+  });
+
+  describe('attempt', () => {
+    const sinVoz = () =>
+      tarjeta((c) => !c.voiceTarget && new Set(c.tiles.map((t) => t.label)).size > 1);
+    const conVoz = () =>
+      tarjeta((c) => Boolean(c.voiceTarget) && new Set(c.tiles.map((t) => t.label)).size > 1);
+
+    it('un armado equivocado no avanza, marca dónde está el error y cuenta el intento', async () => {
+      const student = await alumno();
+      const card = await sinVoz();
+      const session = await sesionNueva(student, [card, await conVoz()]);
+
+      const primero = await practice.attempt(student, session.id, card.id, [botonEquivocado(card)]);
+      expect(primero.correct).toBe(false);
+      expect(primero.firstWrongIndex).toBe(0);
+      expect(primero.attemptNumber).toBe(1);
+      expect(primero.card!.id).toBe(card.id);
+      expect(primero.feedback.valoro).toBeTruthy();
+
+      const segundo = await practice.attempt(student, session.id, card.id, [botonEquivocado(card)]);
+      expect(segundo.attemptNumber).toBe(2);
+    });
+
+    it('bien armada y sin voz, pasa a la tarjeta siguiente', async () => {
+      const student = await alumno();
+      const card = await sinVoz();
+      const siguiente = await conVoz();
+      const session = await sesionNueva(student, [card, siguiente]);
+
+      const resultado = await practice.attempt(student, session.id, card.id, card.solution);
+      expect(resultado.correct).toBe(true);
+      expect(resultado.voiceCheckRequired).toBe(false);
+      expect(resultado.card!.id).toBe(siguiente.id);
+    });
+
+    it('bien armada y con voz, se queda esperando que la diga', async () => {
+      const student = await alumno();
+      const card = await conVoz();
+      const session = await sesionNueva(student, [card, await sinVoz()]);
+
+      const resultado = await practice.attempt(student, session.id, card.id, card.solution);
+      expect(resultado.correct).toBe(true);
+      expect(resultado.voiceCheckRequired).toBe(true);
+      expect(resultado.card!.id).toBe(card.id);
+    });
+
+    it('no se puede responder una tarjeta que no es la actual', async () => {
+      const student = await alumno();
+      const actual = await sinVoz();
+      const otra = await conVoz();
+      const session = await sesionNueva(student, [actual, otra]);
+
+      await expect(practice.attempt(student, session.id, otra.id, otra.solution)).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+    });
+
+    it('la sesión de otro alumno no se puede tocar', async () => {
+      const card = await sinVoz();
+      const session = await sesionNueva(await alumno(), [card]);
+
+      await expect(practice.attempt(await alumno(), session.id, card.id, card.solution)).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+    });
+  });
 
   describe('voiceCheck', () => {
     it('no deja decir la palabra antes de armarla', async () => {
