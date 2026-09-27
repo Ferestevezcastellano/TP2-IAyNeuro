@@ -275,6 +275,20 @@ describe('PracticeService', () => {
       expect(tercero.session.currentCardIndex).toBe(1);
     });
 
+    it('rearmar la tarjeta después de un rechazo no la pasa sin decirla', async () => {
+      const student = await alumno();
+      const card = await palabra();
+      const siguiente = await oracion();
+      const sesion = await sesionArmada(student, card, [siguiente]);
+
+      await practice.voiceCheck(student, sesion.id, card.id, { transcript: 'PANTALON' });
+      const rearmada = await practice.attempt(student, sesion.id, card.id, card.solution);
+
+      expect(rearmada.correct).toBe(true);
+      expect(rearmada.voiceCheckRequired).toBe(true);
+      expect(rearmada.card!.id).toBe(card.id);
+    });
+
     it('cuando el cliente no pudo escuchar, avanza sin verificar', async () => {
       const student = await alumno();
       const card = await palabra();

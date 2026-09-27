@@ -36,12 +36,6 @@
   `multipart/form-data`.
 - **Nada corre en CI** — los tests del backend, `npm run demo` y los recorridos de `e2e/` se corren
   a mano. El repo no tiene CI; los recorridos tardan unos minutos y necesitan un Chromium.
-- **Rearmar una tarjeta después de un rechazo de voz la pasa sin decirla** — `attempt()` pide la voz
-  solo si la tarjeta no tiene ninguna verificación registrada, y un rechazo cuenta como
-  verificación. La app no rearma (deja el micrófono listo), pero la API lo permite, y la consola de
-  prueba cae justo ahí: tras "Simular que se equivoca" esconde el micrófono, obliga a rearmar y la
-  tarjeta avanza sin voz. Lo registró el recorrido de la consola (`e2e/linea-base/consola.json`,
-  pasos 9 a 12).
 - **Un fonema que el navegador no entiende se festeja como si se hubiera oído** — en la
   presentación de la letra, "eae" en lugar de "aaa" queda sin verificar (a propósito, decisión del
   23/9), pero la mascota contesta "¡TE ESCUCHÉ PERFECTO! DIJISTE AAA". Es mentirle al chico en
@@ -54,6 +48,7 @@
 
 ### Completadas
 
+- 2026-09-27 — Rearmar una tarjeta después de un rechazo de voz ya no la pasa sin decirla
 - 2026-09-27 — Recorridos de punta a punta en `e2e/` (app y consola), `demo.sh` arreglado y tests de `start()` y `attempt()`
 - 2026-09-26 — Reorganización del frontend contra el `CLAUDE.md`: `Tarjeta.tsx` sin el flujo de voz, `audio.ts` partido en dos y una sola tabla de accesorios
 - 2026-09-26 — Se saca `VerificadorDeVozPort`; el verificador de voz se inyecta como clase concreta
@@ -95,9 +90,11 @@ probaron dos a propósito: un texto cambiado en el compañero (fallan las 10 pan
 aparece) y el bug viejo de la consola que mandaba `sesion.id` en lugar de `sessionId` (el
 recorrido corta y muestra el mensaje del cartel rojo). Un cambio respecto del plan: el recorrido
 de la consola corta ante el primer error en lugar de seguir, porque todo lo que viene después
-depende de ese paso. De paso, el recorrido de la consola encontró dos problemas que quedaron en
-Pendientes: rearmar una tarjeta después de un rechazo de voz la pasa sin decirla, y un fonema que
-no se verificó se festeja como si se hubiera oído.
+depende de ese paso. De paso, el recorrido de la consola encontró dos problemas: rearmar una
+tarjeta después de un rechazo de voz la pasaba sin decirla (`attempt()` tomaba el rechazo como voz
+resuelta; se arregló el mismo día y la línea base de la consola se actualizó con la tarjeta que
+ahora vuelve a pedir la voz), y un fonema que no se verificó se festeja como si se hubiera oído,
+que quedó en Pendientes para decidir en equipo.
 
 ### 2026-09-26 — El frontend se reparte por responsabilidad, sin abstracciones nuevas
 **Contexto:** la primera revisión del frontend contra el `CLAUDE.md` encontró una God Class

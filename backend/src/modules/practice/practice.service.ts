@@ -145,8 +145,11 @@ export class PracticeService {
     };
 
     // Con verificacion por voz pendiente la tarjeta no avanza todavia: el cierre
-    // del circuito ver-tocar-escuchar-decir es el pico de la sesion.
-    const voiceCheckRequired = result.correct && Boolean(card.voiceTarget) && !this.hasVoiceCheck(updated, cardId);
+    // del circuito ver-tocar-escuchar-decir es el pico de la sesion. Mientras la
+    // tarjeta es la actual, la voz nunca esta resuelta (al aceptarla o agotar
+    // los intentos, avanza), asi que rearmarla despues de un rechazo vuelve a
+    // pedirla en lugar de saltearla.
+    const voiceCheckRequired = result.correct && Boolean(card.voiceTarget);
     if (result.correct && !voiceCheckRequired) {
       updated.currentCardIndex = session.currentCardIndex + 1;
     }
@@ -253,10 +256,6 @@ export class PracticeService {
       verified: false,
       feedback: this.feedback.forVoice(card, false, 0),
     };
-  }
-
-  private hasVoiceCheck(session: PracticeSession, cardId: string): boolean {
-    return session.voiceChecks.some((check) => check.cardId === cardId);
   }
 
   private isSolved(session: PracticeSession, cardId: string): boolean {
