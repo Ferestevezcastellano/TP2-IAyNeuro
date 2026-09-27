@@ -13,12 +13,6 @@
 - **`CierreDeSesionService` quedó con 11 dependencias** — es una sola responsabilidad (liquidar la
   sesión), pero coordina puntaje, dominio, recompensas y cinco repositorios. Si crece, conviene
   que el pago de estrellas y accesorio lo resuelva un solo colaborador.
-- **`scripts/demo.sh` está roto desde el 21/9** — no sabe resolver las tarjetas `LETTER_INTRO` y se
-  traba en la primera. No lo rompió la refactorización del 26/9: falla en el script, antes de
-  llegar a la API. El recorrido por HTTP de los niveles 1 a 5 se verificó con un guion aparte que
-  quedó fuera del repo.
-- **Los tests de `PracticeService` arman la sesión a mano** — cubren la voz y el cierre, pero no
-  `start()` ni `attempt()`, porque el mazo se sortea.
 - **El vocabulario de Vosk se arma una vez al arrancar** — si el contenido cambiara con la app
   andando, no se entera hasta reiniciar. Hoy el contenido no cambia en caliente.
 - **Persistencia real** — la capa de puertos está lista y los repositorios en memoria son
@@ -40,23 +34,27 @@
   de sílabas y caen a la voz sintética también.
 - **Audio en base64 dentro del JSON** — límite de 10 MB por request. Para volumen real conviene
   `multipart/form-data`.
-- **Tests de integración HTTP** — hoy los tests cubren la lógica de negocio y la integridad del
-  contenido; el recorrido por HTTP se verifica con `scripts/demo.sh` y con un guion de Playwright
-  que quedó fuera del repo, ninguno de los dos en CI.
-- **El frontend no tiene tests automatizados** — la reorganización del 26/9 se verificó con un
-  recorrido de Playwright que compara texto y capturas de 182 pantallas contra la versión anterior
-  (niveles 1 a 5, las tres ramas de la voz, repaso y compañero), pero el guion quedó fuera del repo.
+- **Nada corre en CI** — los tests del backend, `npm run demo` y los recorridos de `e2e/` se corren
+  a mano. El repo no tiene CI; los recorridos tardan unos minutos y necesitan un Chromium.
+- **Rearmar una tarjeta después de un rechazo de voz la pasa sin decirla** — `attempt()` pide la voz
+  solo si la tarjeta no tiene ninguna verificación registrada, y un rechazo cuenta como
+  verificación. La app no rearma (deja el micrófono listo), pero la API lo permite, y la consola de
+  prueba cae justo ahí: tras "Simular que se equivoca" esconde el micrófono, obliga a rearmar y la
+  tarjeta avanza sin voz. Lo registró el recorrido de la consola (`e2e/linea-base/consola.json`,
+  pasos 9 a 12).
+- **Un fonema que el navegador no entiende se festeja como si se hubiera oído** — en la
+  presentación de la letra, "eae" en lugar de "aaa" queda sin verificar (a propósito, decisión del
+  23/9), pero la mascota contesta "¡TE ESCUCHÉ PERFECTO! DIJISTE AAA". Es mentirle al chico en
+  la dirección amable; conviene decidir en equipo si el mensaje tiene que ser otro.
 - **`deducirPedido` en `BloqueVoz.tsx` es un parche de compatibilidad** — existe porque Render
   todavía publica un backend anterior a `voiceSays`. Cuando Render publique desde `main`, se borra.
 - **Ilustraciones de las palabras** — el frontend usa emojis donde el mockup tiene imágenes
   generadas; la hoja de instrucciones solo tiene imagen para el león. Los accesorios ya no:
   son SVG propios en `frontend/public/accesorios/`.
-- **La consola de prueba no tiene tests** — se verificó a mano con Playwright, pero nada impide
-  que un cambio en un DTO la rompa en silencio. El bug de `sesion.id` contra `sessionId` apareció
-  justamente así.
 
 ### Completadas
 
+- 2026-09-27 — Recorridos de punta a punta en `e2e/` (app y consola), `demo.sh` arreglado y tests de `start()` y `attempt()`
 - 2026-09-26 — Reorganización del frontend contra el `CLAUDE.md`: `Tarjeta.tsx` sin el flujo de voz, `audio.ts` partido en dos y una sola tabla de accesorios
 - 2026-09-26 — Se saca `VerificadorDeVozPort`; el verificador de voz se inyecta como clase concreta
 - 2026-09-26 — Refactorización del backend contra el `CLAUDE.md`: voz y cierre de sesión fuera de `PracticeService`
@@ -77,6 +75,29 @@
 - 2026-09-22 — Layout responsive de 280 px al escritorio, con el alto real de la ventana y el área segura del notch
 
 ## Bitácora de decisiones
+
+### 2026-09-27 — Los recorridos de Playwright se comparan contra una línea base de texto
+**Contexto:** el frontend y la consola del backend no tienen tests. La reorganización del 26/9 se
+verificó con un recorrido de Playwright que comparaba dos versiones, pero vivía fuera del repo.
+**Decisión:** una carpeta `e2e/` con su propio `package.json`, para no sumarle Playwright al frontend
+ni al backend. Un comando levanta el backend con `Math.random` sembrado (el mazo sale siempre igual)
+y el frontend, corre los dos recorridos y compara el texto de cada pantalla contra
+`e2e/linea-base/traza.json`. Otro comando reescribe la línea base cuando un cambio es a propósito.
+Las capturas quedan fuera de git.
+**Alternativas descartadas:** tests de componentes con Testing Library (no hay ninguno y armar el
+entorno es más trabajo que el recorrido, que además cubre la app entera contra el backend real);
+guardar las capturas en git (182 imágenes que cambian con cualquier ajuste de estilo); correrlo en
+CI (el repo no tiene CI).
+**Revisión post-implementación:** salió como estaba planeado, con la app en 182 pantallas y la
+consola en 31. La línea base del frontend coincide con la corrida de antes de la reorganización
+del 26/9, y dos corridas seguidas dan idéntico. Para confirmar que detectan roturas de verdad se
+probaron dos a propósito: un texto cambiado en el compañero (fallan las 10 pantallas donde
+aparece) y el bug viejo de la consola que mandaba `sesion.id` en lugar de `sessionId` (el
+recorrido corta y muestra el mensaje del cartel rojo). Un cambio respecto del plan: el recorrido
+de la consola corta ante el primer error en lugar de seguir, porque todo lo que viene después
+depende de ese paso. De paso, el recorrido de la consola encontró dos problemas que quedaron en
+Pendientes: rearmar una tarjeta después de un rechazo de voz la pasa sin decirla, y un fonema que
+no se verificó se festeja como si se hubiera oído.
 
 ### 2026-09-26 — El frontend se reparte por responsabilidad, sin abstracciones nuevas
 **Contexto:** la primera revisión del frontend contra el `CLAUDE.md` encontró una God Class

@@ -70,9 +70,24 @@ cd frontend && npm run build                        # deja la app lista en front
 ## 6. Comprobar que todo está bien
 
 ```bash
-cd backend && npm test    # 67 tests de la lógica de negocio y del contenido
+cd backend && npm test    # 125 tests de la lógica de negocio y del contenido
 cd frontend && npm run build   # si compila, el código tipa bien
 ```
+
+Con el backend levantado, `cd backend && npm run demo` recorre la API de punta a punta desde la terminal (necesita `jq`). Juega el nivel 1 hasta dominarlo, viste a la mascota, repasa y entra como docente. La clase queda modificada en memoria: para volver a correrla, reiniciar el backend.
+
+### Recorridos de pantalla (`e2e/`)
+
+El frontend y la consola de prueba no tienen tests de componentes. En su lugar, `e2e/` los recorre con un navegador de punta a punta y compara el texto de cada pantalla contra una línea base guardada en `e2e/linea-base/`:
+
+```bash
+cd e2e && npm install && npx playwright install chromium   # la primera vez
+npm run recorrido
+```
+
+El comando compila y levanta el backend en el puerto 3100 con el azar fijo (así el mazo sale siempre igual) y el frontend en el 5180, juega los niveles 1 a 5 en la app y una sesión en la consola, y apaga todo al terminar. Tarda unos minutos. Falla si alguna pantalla cambió o si la página tuvo un error, y muestra qué pantalla y qué texto.
+
+Si el cambio es a propósito (un texto nuevo, contenido nuevo), `npm run recorrido:actualizar` reescribe la línea base, que se commitea junto con el cambio. Las capturas de cada corrida quedan en `e2e/salida/`, fuera de git; para comparar dos corridas también en las imágenes, `node comparar.cjs <carpeta-a> <carpeta-b>`. Con un Chromium ya instalado aparte, `AMI_CHROMIUM=/ruta/al/chrome npm run recorrido` evita bajarlo.
 
 ## 7. Panel de la docente
 
