@@ -1,6 +1,12 @@
 /**
  * Parametros de la regla de dominio. Estan juntos y aparte a proposito: son la
  * perilla que el equipo pedagogico va a querer mover sin leer codigo.
+ *
+ * `MasteryConfig` se registra en `CoreModule` y la recibe inyectada todo el que
+ * la usa (dominio, recompensas, feedback y el catalogo que se la informa al
+ * cliente), asi el umbral es uno solo. El resto de este archivo son constantes
+ * tecnicas de puntaje y de voz: se importan directo porque no son perillas
+ * pedagogicas y ningun test las cambia.
  */
 export interface MasteryConfig {
   /** Cuantas sesiones entran en el promedio movil. */
@@ -13,7 +19,7 @@ export interface MasteryConfig {
   starsPerMasteredLevel: number;
 }
 
-/** Token de DI para poder inyectar otros parametros en los tests. */
+/** Token de DI de `MasteryConfig`. Los tests lo reemplazan para probar otra regla. */
 export const MASTERY_CONFIG_TOKEN = Symbol('MASTERY_CONFIG');
 
 /**

@@ -1,0 +1,730 @@
+[
+  {
+    "paso": "001-onboarding",
+    "texto": "LEÓN KOALA OSO POLAR RINOCERONTE ¡EMPEZAR A JUGAR!"
+  },
+  {
+    "paso": "002-inicio",
+    "texto": "HOLA ★ 0 1 A · E ★★★ 2 I · O · U 3 M · S 4 L · N 5 CONSOLIDACIÓN 6 C · T"
+  },
+  {
+    "paso": "003-n1-t1-inicial",
+    "texto": "← A TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ LA LETRA"
+  },
+  {
+    "paso": "004-n1-t1-armada",
+    "texto": "← A TOCÁ PARA ESCUCHAR EL SONIDO AHORA DECÍ LA LETRA A ¡ESA ES LA A! SUENA AAA. AHORA DECÍ VOS LA LETRA A, BIEN LARGA."
+  },
+  {
+    "paso": "005-voz-1",
+    "texto": "← A TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ LA LETRA ★★★"
+  },
+  {
+    "paso": "006-n1-t2-inicial",
+    "texto": "← SELECCIONÁ LA IMAGEN QUE EMPIEZA CON A A 🐝 🦔 🪞"
+  },
+  {
+    "paso": "007-n1-t2-armada",
+    "texto": "← SELECCIONÁ LA IMAGEN QUE EMPIEZA CON A A 🐝 🦔 🪞 ★★★"
+  },
+  {
+    "paso": "008-n1-t3-inicial",
+    "texto": "← SELECCIONÁ LA IMAGEN QUE EMPIEZA CON A A 🦔 💍 🔌 DESPUÉS DECÍ LA LETRA"
+  },
+  {
+    "paso": "009-n1-t3-armada",
+    "texto": "← SELECCIONÁ LA IMAGEN QUE EMPIEZA CON A A 🦔 💍 🔌 AHORA DECÍ LA LETRA A ¡LO ARMASTE DE UNA! A. AHORA DECÍ VOS LA LETRA A, BIEN LARGA."
+  },
+  {
+    "paso": "010-voz-1",
+    "texto": "← SELECCIONÁ LA IMAGEN QUE EMPIEZA CON A A 🦔 💍 🔌 AHORA DECÍ LA LETRA A GRACIAS POR PROBAR CON TU VOZ. ¿SE ESCUCHÓ BIEN O HABÍA MUCHO RUIDO? MIRÁ MI BOCA Y DECÍ AAA A ABRÍ LA BOCA BIEN GRANDE ASÍ SE DICE ASÍ SONASTE PROBAR DE NUEVO"
+  },
+  {
+    "paso": "011-hoja-probar-de-nuevo",
+    "texto": "← SELECCIONÁ LA IMAGEN QUE EMPIEZA CON A A 🦔 💍 🔌 AHORA DECÍ LA LETRA A GRACIAS POR PROBAR CON TU VOZ. ¿SE ESCUCHÓ BIEN O HABÍA MUCHO RUIDO?"
+  },
+  {
+    "paso": "012-voz-2",
+    "texto": "← SELECCIONÁ LA IMAGEN QUE EMPIEZA CON A A 🦔 💍 🔌 NO TE ESCUCHE, PROBA DE NUEVO GRACIAS POR PROBAR CON TU VOZ. ¿SE ESCUCHÓ BIEN O HABÍA MUCHO RUIDO?"
+  },
+  {
+    "paso": "013-voz-3",
+    "texto": "← SELECCIONÁ LA IMAGEN QUE EMPIEZA CON A A 🦔 💍 🔌 DESPUÉS DECÍ LA LETRA ★★★"
+  },
+  {
+    "paso": "014-n1-t4-inicial",
+    "texto": "← E TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ LA LETRA"
+  },
+  {
+    "paso": "015-n1-t4-armada",
+    "texto": "← E TOCÁ PARA ESCUCHAR EL SONIDO AHORA DECÍ LA LETRA E ¡ESA ES LA E! SUENA EEE. AHORA DECÍ VOS LA LETRA E, BIEN LARGA."
+  },
+  {
+    "paso": "016-voz-1",
+    "texto": "← E TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ LA LETRA ★★★"
+  },
+  {
+    "paso": "017-n1-t5-inicial",
+    "texto": "← SELECCIONÁ LA IMAGEN QUE EMPIEZA CON E E 🐘 🕷️ 🌳 DESPUÉS DECÍ LA LETRA"
+  },
+  {
+    "paso": "018-n1-t5-armada",
+    "texto": "← SELECCIONÁ LA IMAGEN QUE EMPIEZA CON E E 🐘 🕷️ 🌳 AHORA DECÍ LA LETRA E ¡LO ARMASTE DE UNA! E. AHORA DECÍ VOS LA LETRA E, BIEN LARGA."
+  },
+  {
+    "paso": "019-voz-1",
+    "texto": "← SELECCIONÁ LA IMAGEN QUE EMPIEZA CON E E 🐘 🕷️ 🌳 DESPUÉS DECÍ LA LETRA ★★★"
+  },
+  {
+    "paso": "020-n1-t6-inicial",
+    "texto": "← SELECCIONÁ LA IMAGEN QUE EMPIEZA CON E E 🪞 💍 🐝"
+  },
+  {
+    "paso": "021-n1-t6-armada",
+    "texto": "← SELECCIONÁ LA IMAGEN QUE EMPIEZA CON E E 🪞 💍 🐝 ★★★"
+  },
+  {
+    "paso": "022-n1-cierre",
+    "texto": "← ★★★ HOY PRACTICASTE A E MAÑANA... I ¡DOMINASTE EL NIVEL! GANASTE 3 ESTRELLAS. ¡GANASTE UN PREMIO! GORRO ROJO VOLVER MAÑANA PROBÁRSELO A MI AMIGO"
+  },
+  {
+    "paso": "023-n1-inicio",
+    "texto": "HOLA ★ 3 1 A · E ★★★ 2 I · O · U ★★★ 3 M · S 4 L · N 5 CONSOLIDACIÓN 6 C · T"
+  },
+  {
+    "paso": "024-n2-t1-inicial",
+    "texto": "← I TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ LA LETRA"
+  },
+  {
+    "paso": "025-n2-t1-armada",
+    "texto": "← I TOCÁ PARA ESCUCHAR EL SONIDO AHORA DECÍ LA LETRA I ¡ESA ES LA I! SUENA III. AHORA DECÍ VOS LA LETRA I, BIEN LARGA."
+  },
+  {
+    "paso": "026-voz-1",
+    "texto": "← I TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ LA LETRA ★★★"
+  },
+  {
+    "paso": "027-n2-t2-inicial",
+    "texto": "← SELECCIONÁ LA IMAGEN QUE EMPIEZA CON I I 👂 🐑 🏝️ DESPUÉS DECÍ LA LETRA"
+  },
+  {
+    "paso": "028-n2-t2-armada",
+    "texto": "← SELECCIONÁ LA IMAGEN QUE EMPIEZA CON I I 👂 🐑 🏝️ AHORA DECÍ LA LETRA I ¡LO ARMASTE DE UNA! I. AHORA DECÍ VOS LA LETRA I, BIEN LARGA."
+  },
+  {
+    "paso": "029-voz-1",
+    "texto": "← SELECCIONÁ LA IMAGEN QUE EMPIEZA CON I I 👂 🐑 🏝️ DESPUÉS DECÍ LA LETRA ★★★"
+  },
+  {
+    "paso": "030-n2-t3-inicial",
+    "texto": "← O TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ LA LETRA"
+  },
+  {
+    "paso": "031-n2-t3-armada",
+    "texto": "← O TOCÁ PARA ESCUCHAR EL SONIDO AHORA DECÍ LA LETRA O ¡ESA ES LA O! SUENA OOO. AHORA DECÍ VOS LA LETRA O, BIEN LARGA."
+  },
+  {
+    "paso": "032-voz-1",
+    "texto": "← O TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ LA LETRA ★★★"
+  },
+  {
+    "paso": "033-n2-t4-inicial",
+    "texto": "← SELECCIONÁ LA IMAGEN QUE EMPIEZA CON O O 🐑 🦄 1️⃣ DESPUÉS DECÍ LA LETRA"
+  },
+  {
+    "paso": "034-n2-t4-armada",
+    "texto": "← SELECCIONÁ LA IMAGEN QUE EMPIEZA CON O O 🐑 🦄 1️⃣ AHORA DECÍ LA LETRA O ¡LO ARMASTE DE UNA! O. AHORA DECÍ VOS LA LETRA O, BIEN LARGA."
+  },
+  {
+    "paso": "035-voz-1",
+    "texto": "← SELECCIONÁ LA IMAGEN QUE EMPIEZA CON O O 🐑 🦄 1️⃣ DESPUÉS DECÍ LA LETRA ★★★"
+  },
+  {
+    "paso": "036-n2-t5-inicial",
+    "texto": "← U TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ LA LETRA"
+  },
+  {
+    "paso": "037-n2-t5-armada",
+    "texto": "← U TOCÁ PARA ESCUCHAR EL SONIDO AHORA DECÍ LA LETRA U ¡ESA ES LA U! SUENA UUU. AHORA DECÍ VOS LA LETRA U, BIEN LARGA."
+  },
+  {
+    "paso": "038-voz-1",
+    "texto": "← U TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ LA LETRA ★★★"
+  },
+  {
+    "paso": "039-n2-t6-inicial",
+    "texto": "← SELECCIONÁ LA IMAGEN QUE EMPIEZA CON U U 🧲 🍇 DESPUÉS DECÍ LA LETRA"
+  },
+  {
+    "paso": "040-n2-t6-armada",
+    "texto": "← SELECCIONÁ LA IMAGEN QUE EMPIEZA CON U U 🧲 🍇 AHORA DECÍ LA LETRA U ¡LO ARMASTE DE UNA! U. AHORA DECÍ VOS LA LETRA U, BIEN LARGA."
+  },
+  {
+    "paso": "041-voz-1",
+    "texto": "← SELECCIONÁ LA IMAGEN QUE EMPIEZA CON U U 🧲 🍇 DESPUÉS DECÍ LA LETRA ★★★"
+  },
+  {
+    "paso": "042-n2-t7-inicial",
+    "texto": "← SELECCIONÁ LA IMAGEN QUE EMPIEZA CON I I 🌳 ⭐ 🏝️ 🐻"
+  },
+  {
+    "paso": "043-n2-t7-armada",
+    "texto": "← SELECCIONÁ LA IMAGEN QUE EMPIEZA CON I I 🌳 ⭐ 🏝️ 🐻 ★★★"
+  },
+  {
+    "paso": "044-n2-t8-inicial",
+    "texto": "← SELECCIONÁ LA IMAGEN QUE EMPIEZA CON O O 🧲 🐝 🍇 🐑"
+  },
+  {
+    "paso": "045-n2-t8-armada",
+    "texto": "← SELECCIONÁ LA IMAGEN QUE EMPIEZA CON O O 🧲 🐝 🍇 🐑 ★★★"
+  },
+  {
+    "paso": "046-n2-cierre",
+    "texto": "← ★★★ HOY PRACTICASTE I O U MAÑANA... M ¡DOMINASTE EL NIVEL! GANASTE 3 ESTRELLAS. ¡GANASTE UN PREMIO! ANTEOJOS VOLVER MAÑANA PROBÁRSELO A MI AMIGO"
+  },
+  {
+    "paso": "047-n2-inicio",
+    "texto": "HOLA ★ 6 1 A · E ★★★ 2 I · O · U ★★★ 3 M · S ★★★ 4 L · N 5 CONSOLIDACIÓN 6 C · T"
+  },
+  {
+    "paso": "048-n3-t1-inicial",
+    "texto": "← M TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO"
+  },
+  {
+    "paso": "049-n3-t1-armada",
+    "texto": "← M TOCÁ PARA ESCUCHAR EL SONIDO AHORA DECÍ EL SONIDO DE LA M ¡ESA ES LA M! SUENA MMM. AHORA DECÍ VOS EL SONIDO DE LA M, BIEN LARGO."
+  },
+  {
+    "paso": "050-voz-1",
+    "texto": "← M TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO ★★★"
+  },
+  {
+    "paso": "051-n3-t2-inicial",
+    "texto": "← M + A MA TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO"
+  },
+  {
+    "paso": "052-n3-t2-armada",
+    "texto": "← M + A MA TOCÁ PARA ESCUCHAR EL SONIDO AHORA DECÍ EL SONIDO MA ¡M Y A JUNTAS SUENAN MA! AHORA DECÍ VOS MA."
+  },
+  {
+    "paso": "053-voz-1",
+    "texto": "← M + A MA TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO ★★★"
+  },
+  {
+    "paso": "054-n3-t3-inicial",
+    "texto": "← M + E ME TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO"
+  },
+  {
+    "paso": "055-n3-t3-armada",
+    "texto": "← M + E ME TOCÁ PARA ESCUCHAR EL SONIDO AHORA DECÍ EL SONIDO ME ¡M Y E JUNTAS SUENAN ME! AHORA DECÍ VOS ME."
+  },
+  {
+    "paso": "056-voz-1",
+    "texto": "← M + E ME TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO ★★★"
+  },
+  {
+    "paso": "057-n3-t4-inicial",
+    "texto": "← M + I MI TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO"
+  },
+  {
+    "paso": "058-n3-t4-armada",
+    "texto": "← M + I MI TOCÁ PARA ESCUCHAR EL SONIDO AHORA DECÍ EL SONIDO MI ¡M Y I JUNTAS SUENAN MI! AHORA DECÍ VOS MI."
+  },
+  {
+    "paso": "059-voz-1",
+    "texto": "← M + I MI TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO ★★★"
+  },
+  {
+    "paso": "060-n3-t5-inicial",
+    "texto": "← M + O MO TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO"
+  },
+  {
+    "paso": "061-n3-t5-armada",
+    "texto": "← M + O MO TOCÁ PARA ESCUCHAR EL SONIDO AHORA DECÍ EL SONIDO MO ¡M Y O JUNTAS SUENAN MO! AHORA DECÍ VOS MO."
+  },
+  {
+    "paso": "062-voz-1",
+    "texto": "← M + O MO TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO ★★★"
+  },
+  {
+    "paso": "063-n3-t6-inicial",
+    "texto": "← M + U MU TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO"
+  },
+  {
+    "paso": "064-n3-t6-armada",
+    "texto": "← M + U MU TOCÁ PARA ESCUCHAR EL SONIDO AHORA DECÍ EL SONIDO MU ¡M Y U JUNTAS SUENAN MU! AHORA DECÍ VOS MU."
+  },
+  {
+    "paso": "065-voz-1",
+    "texto": "← M + U MU TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO ★★★"
+  },
+  {
+    "paso": "066-n3-t7-inicial",
+    "texto": "← TOCÁ LAS LETRAS EN ORDEN I E A M O M DESPUÉS DECÍ LA PALABRA"
+  },
+  {
+    "paso": "067-n3-t7-armada",
+    "texto": "← M I M O TOCÁ LAS LETRAS EN ORDEN I E A M O M AHORA DECÍ LA PALABRA MIMO ¡LO ARMASTE DE UNA! MIMO. AHORA DECÍ VOS LA PALABRA MIMO."
+  },
+  {
+    "paso": "068-voz-1",
+    "texto": "← M I M O TOCÁ LAS LETRAS EN ORDEN I E A M O M AHORA DECÍ LA PALABRA MIMO GRACIAS POR PROBAR CON TU VOZ. ¿SE ESCUCHÓ BIEN O HABÍA MUCHO RUIDO? ASÍ EMPIEZA MIMO M CERRÁ LOS LABIOS Y HACÉ MMM → I SONREÍ BIEN ANCHO ASÍ SE DICE ASÍ SONASTE PROBAR DE NUEVO"
+  },
+  {
+    "paso": "069-hoja-probar-de-nuevo",
+    "texto": "← M I M O TOCÁ LAS LETRAS EN ORDEN I E A M O M AHORA DECÍ LA PALABRA MIMO GRACIAS POR PROBAR CON TU VOZ. ¿SE ESCUCHÓ BIEN O HABÍA MUCHO RUIDO?"
+  },
+  {
+    "paso": "070-voz-2",
+    "texto": "← M I M O TOCÁ LAS LETRAS EN ORDEN I E A M O M NO TE ESCUCHE, PROBA DE NUEVO GRACIAS POR PROBAR CON TU VOZ. ¿SE ESCUCHÓ BIEN O HABÍA MUCHO RUIDO?"
+  },
+  {
+    "paso": "071-voz-3",
+    "texto": "← M I M O TOCÁ LAS LETRAS EN ORDEN I E A M O M DESPUÉS DECÍ LA PALABRA ★★★"
+  },
+  {
+    "paso": "072-n3-t8-inicial",
+    "texto": "← TOCÁ LAS LETRAS EN ORDEN O A U I E M M"
+  },
+  {
+    "paso": "073-n3-t8-armada",
+    "texto": "← M O M I A TOCÁ LAS LETRAS EN ORDEN O A U I E M M ★★★"
+  },
+  {
+    "paso": "074-n3-t9-inicial",
+    "texto": "← S TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO"
+  },
+  {
+    "paso": "075-n3-t9-armada",
+    "texto": "← S TOCÁ PARA ESCUCHAR EL SONIDO AHORA DECÍ EL SONIDO DE LA S ¡ESA ES LA S! SUENA SSS. AHORA DECÍ VOS EL SONIDO DE LA S, BIEN LARGO."
+  },
+  {
+    "paso": "076-voz-1",
+    "texto": "← S TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO ★★★"
+  },
+  {
+    "paso": "077-n3-t10-inicial",
+    "texto": "← S + A SA TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO"
+  },
+  {
+    "paso": "078-n3-t10-armada",
+    "texto": "← S + A SA TOCÁ PARA ESCUCHAR EL SONIDO AHORA DECÍ EL SONIDO SA ¡S Y A JUNTAS SUENAN SA! AHORA DECÍ VOS SA."
+  },
+  {
+    "paso": "079-voz-1",
+    "texto": "← S + A SA TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO ★★★"
+  },
+  {
+    "paso": "080-n3-t11-inicial",
+    "texto": "← S + E SE TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO"
+  },
+  {
+    "paso": "081-n3-t11-armada",
+    "texto": "← S + E SE TOCÁ PARA ESCUCHAR EL SONIDO AHORA DECÍ EL SONIDO SE ¡S Y E JUNTAS SUENAN SE! AHORA DECÍ VOS SE."
+  },
+  {
+    "paso": "082-voz-1",
+    "texto": "← S + E SE TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO ★★★"
+  },
+  {
+    "paso": "083-n3-t12-inicial",
+    "texto": "← S + I SI TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO"
+  },
+  {
+    "paso": "084-n3-t12-armada",
+    "texto": "← S + I SI TOCÁ PARA ESCUCHAR EL SONIDO AHORA DECÍ EL SONIDO SI ¡S Y I JUNTAS SUENAN SI! AHORA DECÍ VOS SI."
+  },
+  {
+    "paso": "085-voz-1",
+    "texto": "← S + I SI TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO ★★★"
+  },
+  {
+    "paso": "086-n3-t13-inicial",
+    "texto": "← S + O SO TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO"
+  },
+  {
+    "paso": "087-n3-t13-armada",
+    "texto": "← S + O SO TOCÁ PARA ESCUCHAR EL SONIDO AHORA DECÍ EL SONIDO SO ¡S Y O JUNTAS SUENAN SO! AHORA DECÍ VOS SO."
+  },
+  {
+    "paso": "088-voz-1",
+    "texto": "← S + O SO TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO ★★★"
+  },
+  {
+    "paso": "089-n3-t14-inicial",
+    "texto": "← S + U SU TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO"
+  },
+  {
+    "paso": "090-n3-t14-armada",
+    "texto": "← S + U SU TOCÁ PARA ESCUCHAR EL SONIDO AHORA DECÍ EL SONIDO SU ¡S Y U JUNTAS SUENAN SU! AHORA DECÍ VOS SU."
+  },
+  {
+    "paso": "091-voz-1",
+    "texto": "← S + U SU TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO ★★★"
+  },
+  {
+    "paso": "092-n3-t15-inicial",
+    "texto": "← TOCÁ LAS LETRAS EN ORDEN A A M U S"
+  },
+  {
+    "paso": "093-n3-t15-armada",
+    "texto": "← M A S A TOCÁ LAS LETRAS EN ORDEN A A M U S ★★★"
+  },
+  {
+    "paso": "094-n3-t16-inicial",
+    "texto": "← ➕ TOCÁ LAS LETRAS EN ORDEN M A I S U"
+  },
+  {
+    "paso": "095-n3-t16-armada",
+    "texto": "← ➕ S U M A TOCÁ LAS LETRAS EN ORDEN M A I S U ★★★"
+  },
+  {
+    "paso": "096-n3-cierre",
+    "texto": "← ★★★ HOY PRACTICASTE M S MAÑANA... L ¡DOMINASTE EL NIVEL! GANASTE 3 ESTRELLAS. ¡GANASTE UN PREMIO! BUFANDA VOLVER MAÑANA PROBÁRSELO A MI AMIGO"
+  },
+  {
+    "paso": "097-n3-inicio",
+    "texto": "HOLA ★ 9 1 A · E ★★★ 2 I · O · U ★★★ 3 M · S ★★★ 4 L · N ★★★ 5 CONSOLIDACIÓN 6 C · T"
+  },
+  {
+    "paso": "098-n4-t1-inicial",
+    "texto": "← L TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO"
+  },
+  {
+    "paso": "099-n4-t1-armada",
+    "texto": "← L TOCÁ PARA ESCUCHAR EL SONIDO AHORA DECÍ EL SONIDO DE LA L ¡ESA ES LA L! SUENA LLL. AHORA DECÍ VOS EL SONIDO DE LA L, BIEN LARGO."
+  },
+  {
+    "paso": "100-voz-1",
+    "texto": "← L TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO ★★★"
+  },
+  {
+    "paso": "101-n4-t2-inicial",
+    "texto": "← L + A LA TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO"
+  },
+  {
+    "paso": "102-n4-t2-armada",
+    "texto": "← L + A LA TOCÁ PARA ESCUCHAR EL SONIDO AHORA DECÍ EL SONIDO LA ¡L Y A JUNTAS SUENAN LA! AHORA DECÍ VOS LA."
+  },
+  {
+    "paso": "103-voz-1",
+    "texto": "← L + A LA TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO ★★★"
+  },
+  {
+    "paso": "104-n4-t3-inicial",
+    "texto": "← L + E LE TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO"
+  },
+  {
+    "paso": "105-n4-t3-armada",
+    "texto": "← L + E LE TOCÁ PARA ESCUCHAR EL SONIDO AHORA DECÍ EL SONIDO LE ¡L Y E JUNTAS SUENAN LE! AHORA DECÍ VOS LE."
+  },
+  {
+    "paso": "106-voz-1",
+    "texto": "← L + E LE TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO ★★★"
+  },
+  {
+    "paso": "107-n4-t4-inicial",
+    "texto": "← L + I LI TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO"
+  },
+  {
+    "paso": "108-n4-t4-armada",
+    "texto": "← L + I LI TOCÁ PARA ESCUCHAR EL SONIDO AHORA DECÍ EL SONIDO LI ¡L Y I JUNTAS SUENAN LI! AHORA DECÍ VOS LI."
+  },
+  {
+    "paso": "109-voz-1",
+    "texto": "← L + I LI TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO ★★★"
+  },
+  {
+    "paso": "110-n4-t5-inicial",
+    "texto": "← L + O LO TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO"
+  },
+  {
+    "paso": "111-n4-t5-armada",
+    "texto": "← L + O LO TOCÁ PARA ESCUCHAR EL SONIDO AHORA DECÍ EL SONIDO LO ¡L Y O JUNTAS SUENAN LO! AHORA DECÍ VOS LO."
+  },
+  {
+    "paso": "112-voz-1",
+    "texto": "← L + O LO TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO ★★★"
+  },
+  {
+    "paso": "113-n4-t6-inicial",
+    "texto": "← L + U LU TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO"
+  },
+  {
+    "paso": "114-n4-t6-armada",
+    "texto": "← L + U LU TOCÁ PARA ESCUCHAR EL SONIDO AHORA DECÍ EL SONIDO LU ¡L Y U JUNTAS SUENAN LU! AHORA DECÍ VOS LU."
+  },
+  {
+    "paso": "115-voz-1",
+    "texto": "← L + U LU TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO ★★★"
+  },
+  {
+    "paso": "116-n4-t7-inicial",
+    "texto": "← TOCÁ LAS LETRAS EN ORDEN L S I O A M"
+  },
+  {
+    "paso": "117-n4-t7-armada",
+    "texto": "← L I M A TOCÁ LAS LETRAS EN ORDEN L S I O A M ★★★"
+  },
+  {
+    "paso": "118-n4-t8-inicial",
+    "texto": "← 🏝️ TOCÁ LAS LETRAS EN ORDEN L E I M A S"
+  },
+  {
+    "paso": "119-n4-t8-armada",
+    "texto": "← 🏝️ I S L A TOCÁ LAS LETRAS EN ORDEN L E I M A S ★★★"
+  },
+  {
+    "paso": "120-n4-t9-inicial",
+    "texto": "← N TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO"
+  },
+  {
+    "paso": "121-n4-t9-armada",
+    "texto": "← N TOCÁ PARA ESCUCHAR EL SONIDO AHORA DECÍ EL SONIDO DE LA N ¡ESA ES LA N! SUENA NNN. AHORA DECÍ VOS EL SONIDO DE LA N, BIEN LARGO."
+  },
+  {
+    "paso": "122-voz-1",
+    "texto": "← N TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO ★★★"
+  },
+  {
+    "paso": "123-n4-t10-inicial",
+    "texto": "← N + A NA TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO"
+  },
+  {
+    "paso": "124-n4-t10-armada",
+    "texto": "← N + A NA TOCÁ PARA ESCUCHAR EL SONIDO AHORA DECÍ EL SONIDO NA ¡N Y A JUNTAS SUENAN NA! AHORA DECÍ VOS NA."
+  },
+  {
+    "paso": "125-voz-1",
+    "texto": "← N + A NA TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO ★★★"
+  },
+  {
+    "paso": "126-n4-t11-inicial",
+    "texto": "← N + E NE TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO"
+  },
+  {
+    "paso": "127-n4-t11-armada",
+    "texto": "← N + E NE TOCÁ PARA ESCUCHAR EL SONIDO AHORA DECÍ EL SONIDO NE ¡N Y E JUNTAS SUENAN NE! AHORA DECÍ VOS NE."
+  },
+  {
+    "paso": "128-voz-1",
+    "texto": "← N + E NE TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO ★★★"
+  },
+  {
+    "paso": "129-n4-t12-inicial",
+    "texto": "← N + I NI TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO"
+  },
+  {
+    "paso": "130-n4-t12-armada",
+    "texto": "← N + I NI TOCÁ PARA ESCUCHAR EL SONIDO AHORA DECÍ EL SONIDO NI ¡N Y I JUNTAS SUENAN NI! AHORA DECÍ VOS NI."
+  },
+  {
+    "paso": "131-voz-1",
+    "texto": "← N + I NI TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO ★★★"
+  },
+  {
+    "paso": "132-n4-t13-inicial",
+    "texto": "← N + O NO TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO"
+  },
+  {
+    "paso": "133-n4-t13-armada",
+    "texto": "← N + O NO TOCÁ PARA ESCUCHAR EL SONIDO AHORA DECÍ EL SONIDO NO ¡N Y O JUNTAS SUENAN NO! AHORA DECÍ VOS NO."
+  },
+  {
+    "paso": "134-voz-1",
+    "texto": "← N + O NO TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO ★★★"
+  },
+  {
+    "paso": "135-n4-t14-inicial",
+    "texto": "← N + U NU TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO"
+  },
+  {
+    "paso": "136-n4-t14-armada",
+    "texto": "← N + U NU TOCÁ PARA ESCUCHAR EL SONIDO AHORA DECÍ EL SONIDO NU ¡N Y U JUNTAS SUENAN NU! AHORA DECÍ VOS NU."
+  },
+  {
+    "paso": "137-voz-1",
+    "texto": "← N + U NU TOCÁ PARA ESCUCHAR EL SONIDO DESPUÉS DECÍ EL SONIDO ★★★"
+  },
+  {
+    "paso": "138-n4-t15-inicial",
+    "texto": "← 👧 TOCÁ LAS LETRAS EN ORDEN U A L E N N"
+  },
+  {
+    "paso": "139-n4-t15-armada",
+    "texto": "← 👧 N E N A TOCÁ LAS LETRAS EN ORDEN U A L E N N ★★★"
+  },
+  {
+    "paso": "140-n4-t16-inicial",
+    "texto": "← 1️⃣ TOCÁ LAS LETRAS EN ORDEN U A O N M DESPUÉS DECÍ LA PALABRA"
+  },
+  {
+    "paso": "141-n4-t16-armada",
+    "texto": "← 1️⃣ U N O TOCÁ LAS LETRAS EN ORDEN U A O N M AHORA DECÍ LA PALABRA UNO ¡LO ARMASTE DE UNA! UNO. AHORA DECÍ VOS LA PALABRA UNO."
+  },
+  {
+    "paso": "142-voz-1",
+    "texto": "← 1️⃣ U N O TOCÁ LAS LETRAS EN ORDEN U A O N M DESPUÉS DECÍ LA PALABRA ★★★"
+  },
+  {
+    "paso": "143-n4-t17-inicial",
+    "texto": "← 💬 LA LUNA SALE TOCÁ LAS PALABRAS EN ORDEN LA SALE LUNA SOL DESPUÉS DECÍ LA ORACIÓN ENTERA"
+  },
+  {
+    "paso": "144-n4-t17-armada",
+    "texto": "← 💬 LA LUNA SALE LA LUNA SALE TOCÁ LAS PALABRAS EN ORDEN LA SALE LUNA SOL AHORA DECÍ LA ORACIÓN ENTERA ¡LO ARMASTE DE UNA! LA LUNA SALE. AHORA DECÍ VOS LA ORACIÓN ENTERA."
+  },
+  {
+    "paso": "145-voz-1",
+    "texto": "← 💬 LA LUNA SALE LA LUNA SALE TOCÁ LAS PALABRAS EN ORDEN LA SALE LUNA SOL AHORA DECÍ LA ORACIÓN ENTERA GRACIAS POR PROBAR CON TU VOZ. ¿SE ESCUCHÓ BIEN O HABÍA MUCHO RUIDO? ASÍ EMPIEZA LA LUNA SALE L LA LENGUA ARRIBA, DETRÁS DE LOS DIENTES → A ABRÍ LA BOCA BIEN GRANDE ASÍ SE DICE ASÍ SONASTE PROBAR DE NUEVO"
+  },
+  {
+    "paso": "146-hoja-probar-de-nuevo",
+    "texto": "← 💬 LA LUNA SALE LA LUNA SALE TOCÁ LAS PALABRAS EN ORDEN LA SALE LUNA SOL AHORA DECÍ LA ORACIÓN ENTERA GRACIAS POR PROBAR CON TU VOZ. ¿SE ESCUCHÓ BIEN O HABÍA MUCHO RUIDO?"
+  },
+  {
+    "paso": "147-voz-2",
+    "texto": "← 💬 LA LUNA SALE LA LUNA SALE TOCÁ LAS PALABRAS EN ORDEN LA SALE LUNA SOL NO TE ESCUCHE, PROBA DE NUEVO GRACIAS POR PROBAR CON TU VOZ. ¿SE ESCUCHÓ BIEN O HABÍA MUCHO RUIDO?"
+  },
+  {
+    "paso": "148-voz-3",
+    "texto": "← 💬 LA LUNA SALE LA LUNA SALE TOCÁ LAS PALABRAS EN ORDEN LA SALE LUNA SOL DESPUÉS DECÍ LA ORACIÓN ENTERA ★★★"
+  },
+  {
+    "paso": "149-n4-cierre",
+    "texto": "← ★★★ HOY PRACTICASTE L N MAÑANA... ? ¡DOMINASTE EL NIVEL! GANASTE 3 ESTRELLAS. ¡GANASTE UN PREMIO! CAPA VOLVER MAÑANA PROBÁRSELO A MI AMIGO"
+  },
+  {
+    "paso": "150-n4-inicio",
+    "texto": "HOLA ★ 12 1 A · E ★★★ 2 I · O · U ★★★ 3 M · S ★★★ 4 L · N ★★★ 5 CONSOLIDACIÓN ★★★ 6 C · T"
+  },
+  {
+    "paso": "151-n5-t1-inicial",
+    "texto": "← 🧶 TOCÁ LAS LETRAS EN ORDEN I L N A M A"
+  },
+  {
+    "paso": "152-n5-t1-armada",
+    "texto": "← 🧶 L A N A TOCÁ LAS LETRAS EN ORDEN I L N A M A ★★★"
+  },
+  {
+    "paso": "153-n5-t2-inicial",
+    "texto": "← 🐒 TOCÁ LAS LETRAS EN ORDEN O E M O N S"
+  },
+  {
+    "paso": "154-n5-t2-armada",
+    "texto": "← 🐒 M O N O TOCÁ LAS LETRAS EN ORDEN O E M O N S ★★★"
+  },
+  {
+    "paso": "155-n5-t3-inicial",
+    "texto": "← 🌙 TOCÁ LAS LETRAS EN ORDEN A L E U M N DESPUÉS DECÍ LA PALABRA"
+  },
+  {
+    "paso": "156-n5-t3-armada",
+    "texto": "← 🌙 L U N A TOCÁ LAS LETRAS EN ORDEN A L E U M N AHORA DECÍ LA PALABRA LUNA ¡LO ARMASTE DE UNA! LUNA. AHORA DECÍ VOS LA PALABRA LUNA."
+  },
+  {
+    "paso": "157-voz-1",
+    "texto": "← 🌙 L U N A TOCÁ LAS LETRAS EN ORDEN A L E U M N DESPUÉS DECÍ LA PALABRA ★★★"
+  },
+  {
+    "paso": "158-n5-t4-inicial",
+    "texto": "← 🍯 TOCÁ LAS LETRAS EN ORDEN O E N I L M DESPUÉS DECÍ LA PALABRA"
+  },
+  {
+    "paso": "159-n5-t4-armada",
+    "texto": "← 🍯 M I E L TOCÁ LAS LETRAS EN ORDEN O E N I L M AHORA DECÍ LA PALABRA MIEL ¡LO ARMASTE DE UNA! MIEL. AHORA DECÍ VOS LA PALABRA MIEL."
+  },
+  {
+    "paso": "160-voz-1",
+    "texto": "← 🍯 M I E L TOCÁ LAS LETRAS EN ORDEN O E N I L M DESPUÉS DECÍ LA PALABRA ★★★"
+  },
+  {
+    "paso": "161-n5-t5-inicial",
+    "texto": "← 💬 EL SOL ILUMINA LA SALA TOCÁ LAS PALABRAS EN ORDEN ILUMINA SALA EL LA SOL LUNA DESPUÉS DECÍ LA ORACIÓN ENTERA"
+  },
+  {
+    "paso": "162-n5-t5-armada",
+    "texto": "← 💬 EL SOL ILUMINA LA SALA EL SOL ILUMINA LA SALA TOCÁ LAS PALABRAS EN ORDEN ILUMINA SALA EL LA SOL LUNA AHORA DECÍ LA ORACIÓN ENTERA ¡LO ARMASTE DE UNA! EL SOL ILUMINA LA SALA. AHORA DECÍ VOS LA ORACIÓN ENTERA."
+  },
+  {
+    "paso": "163-voz-1",
+    "texto": "← 💬 EL SOL ILUMINA LA SALA EL SOL ILUMINA LA SALA TOCÁ LAS PALABRAS EN ORDEN ILUMINA SALA EL LA SOL LUNA DESPUÉS DECÍ LA ORACIÓN ENTERA ★★★"
+  },
+  {
+    "paso": "164-n5-t6-inicial",
+    "texto": "← 💬 LA LUNA SALE SOLA TOCÁ LAS PALABRAS EN ORDEN MANO LUNA LA SALE SOL SOLA DESPUÉS DECÍ LA ORACIÓN ENTERA"
+  },
+  {
+    "paso": "165-n5-t6-armada",
+    "texto": "← 💬 LA LUNA SALE SOLA LA LUNA SALE SOLA TOCÁ LAS PALABRAS EN ORDEN MANO LUNA LA SALE SOL SOLA AHORA DECÍ LA ORACIÓN ENTERA ¡LO ARMASTE DE UNA! LA LUNA SALE SOLA. AHORA DECÍ VOS LA ORACIÓN ENTERA."
+  },
+  {
+    "paso": "166-voz-1",
+    "texto": "← 💬 LA LUNA SALE SOLA LA LUNA SALE SOLA TOCÁ LAS PALABRAS EN ORDEN MANO LUNA LA SALE SOL SOLA DESPUÉS DECÍ LA ORACIÓN ENTERA ★★★"
+  },
+  {
+    "paso": "167-n5-cierre",
+    "texto": "← ★★★ HOY PRACTICASTE S L N MAÑANA... S ¡DOMINASTE EL NIVEL! GANASTE 3 ESTRELLAS. ¡GANASTE UN PREMIO! MEDALLA VOLVER MAÑANA PROBÁRSELO A MI AMIGO"
+  },
+  {
+    "paso": "168-n5-inicio",
+    "texto": "HOLA ★ 15 1 A · E ★★★ 2 I · O · U ★★★ 3 M · S ★★★ 4 L · N ★★★ 5 CONSOLIDACIÓN ★★★ 6 C · T"
+  },
+  {
+    "paso": "169-repaso",
+    "texto": "← SELECCIONÁ LA IMAGEN QUE EMPIEZA CON E E ✈️ 🐝 ⭐"
+  },
+  {
+    "paso": "170-repaso-t1",
+    "texto": "← SELECCIONÁ LA IMAGEN QUE EMPIEZA CON E E ✈️ 🐝 ⭐ ★★★"
+  },
+  {
+    "paso": "171-repaso-t2",
+    "texto": "← 🏝️ I S L A TOCÁ LAS LETRAS EN ORDEN A I L S N E ★★★"
+  },
+  {
+    "paso": "172-repaso-t3",
+    "texto": "← SELECCIONÁ LA IMAGEN QUE EMPIEZA CON E E 🐘 🕷️ 🌳 ★★★"
+  },
+  {
+    "paso": "173-companero",
+    "texto": "← TU COMPAÑERO ★ 15 LEÓN · 5 de 6 GORROS ANTEOJOS ROPA 1 ESPECIALES GORRO ROJO LISTO"
+  },
+  {
+    "paso": "174-companero-tab1",
+    "texto": "← TU COMPAÑERO ★ 15 LEÓN · 5 de 6 GORROS ANTEOJOS ROPA 1 ESPECIALES GORRO ROJO LISTO"
+  },
+  {
+    "paso": "175-companero-tab1-item1",
+    "texto": "← TU COMPAÑERO ★ 15 LEÓN · 5 de 6 GORROS ANTEOJOS ROPA 1 ESPECIALES GORRO ROJO ✓ LISTO"
+  },
+  {
+    "paso": "176-companero-tab2",
+    "texto": "← TU COMPAÑERO ★ 15 LEÓN · 5 de 6 GORROS ANTEOJOS ROPA 1 ESPECIALES ANTEOJOS LISTO"
+  },
+  {
+    "paso": "177-companero-tab2-item1",
+    "texto": "← TU COMPAÑERO ★ 15 LEÓN · 5 de 6 GORROS ANTEOJOS ROPA 1 ESPECIALES ANTEOJOS ✓ LISTO"
+  },
+  {
+    "paso": "178-companero-tab3",
+    "texto": "← TU COMPAÑERO ★ 15 LEÓN · 5 de 6 GORROS ANTEOJOS ROPA 1 ESPECIALES BUFANDA CAPA C T LISTO"
+  },
+  {
+    "paso": "179-companero-tab3-item1",
+    "texto": "← TU COMPAÑERO ★ 15 LEÓN · 5 de 6 GORROS ANTEOJOS ROPA 1 ESPECIALES BUFANDA ✓ CAPA C T LISTO"
+  },
+  {
+    "paso": "180-companero-tab3-item2",
+    "texto": "← TU COMPAÑERO ★ 15 LEÓN · 5 de 6 GORROS ANTEOJOS ROPA 1 ESPECIALES BUFANDA ✓ CAPA ✓ C T LISTO"
+  },
+  {
+    "paso": "181-companero-tab4",
+    "texto": "← TU COMPAÑERO ★ 15 LEÓN · 5 de 6 GORROS ANTEOJOS ROPA 1 ESPECIALES MEDALLA LISTO"
+  },
+  {
+    "paso": "182-companero-tab4-item1",
+    "texto": "← TU COMPAÑERO ★ 15 LEÓN · 5 de 6 GORROS ANTEOJOS ROPA 1 ESPECIALES MEDALLA ✓ LISTO"
+  }
+]

@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { phonemeOf } from '../../core/config/phonemes';
 import { Card, LevelStatus, Student } from '../../core/domain';
 import { CardRepository } from '../../core/ports';
-import { Feedback, FeedbackService, WordAssemblyValidator } from '../../core/services';
+import { barajar, Feedback, FeedbackService, WordAssemblyValidator } from '../../core/services';
 import { AssemblyResult } from '../../core/services/word-assembly.validator';
 import { StudentService } from '../student/student.service';
 
@@ -50,8 +50,12 @@ export class ReviewService {
       );
   }
 
-  /** Tarjetas de niveles dominados, barajadas. */
-  async cardsFor(student: Student, limit: number): Promise<{ cards: Card[]; available: number }> {
+  /** Tarjetas de niveles dominados, barajadas. El generador se recibe para que un test fije el orden. */
+  async cardsFor(
+    student: Student,
+    limit: number,
+    random: () => number = Math.random,
+  ): Promise<{ cards: Card[]; available: number }> {
     const context = await this.students.context(student);
     const masteredLevelIds = context.accesses
       .filter((access) => access.status === LevelStatus.MASTERED)
@@ -62,7 +66,7 @@ export class ReviewService {
     }
 
     const all = await this.cards.findByLevelIds(masteredLevelIds);
-    const shuffled = [...all].sort(() => Math.random() - 0.5);
+    const shuffled = barajar(all, random);
 
     return { cards: shuffled.slice(0, limit), available: all.length };
   }

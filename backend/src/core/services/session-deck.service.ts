@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Card, Level } from '../domain';
+import { barajar } from './barajar';
 
 /**
  * Arma el mazo de una sesion sorteando tarjetas del banco del nivel segun la
@@ -16,7 +17,7 @@ export class SessionDeckService {
     const chosen: Card[] = [];
 
     for (const { group, count } of level.sessionDraw) {
-      const bag = this.shuffle(
+      const bag = barajar(
         pool.filter((card) => card.group === group),
         random,
       );
@@ -24,14 +25,5 @@ export class SessionDeckService {
     }
 
     return chosen.sort((a, b) => a.position - b.position);
-  }
-
-  private shuffle<T>(items: T[], random: () => number): T[] {
-    const result = [...items];
-    for (let i = result.length - 1; i > 0; i -= 1) {
-      const j = Math.floor(random() * (i + 1));
-      [result[i], result[j]] = [result[j], result[i]];
-    }
-    return result;
   }
 }

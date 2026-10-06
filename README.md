@@ -41,6 +41,7 @@ Códigos de clase cargados: `PRIMERO-A` y `PRIMERO-B`. No hace falta base de dat
 |---|---|
 | `backend/` | API en NestJS: niveles, sesiones, dominio, voz, panel docente (ver su README) |
 | `frontend/` | La app, replicando los mockups de Figma (ver su README) |
+| `e2e/` | Recorridos de punta a punta de la app y de la consola, comparados contra una línea base (ver `COMO_CORRERLO.md`) |
 | `00_tp_brief.md` | Checklist de la consigna (no va en el informe final) |
 | `01_estado_del_arte.md` | Diagnóstico PISA, evidencia sobre conciencia fonológica, intervenciones previas en Argentina, estado del arte de apps de referencia |
 | `02_cuatro_pilares.md` | Los 4 pilares del aprendizaje aplicados a la app (qué dice el pilar / feature concreta / cómo se mide) |

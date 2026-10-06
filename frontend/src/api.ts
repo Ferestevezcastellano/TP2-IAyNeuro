@@ -153,6 +153,15 @@ export interface SessionSummary {
   feedback: Feedback;
 }
 
+/** La regla de dominio del servidor. El cliente la lee y no la repite. */
+export interface MasteryRules {
+  windowSize: number;
+  minSessions: number;
+  /** Precisión que cuenta como sesión bien hecha, entre 0 y 1. */
+  threshold: number;
+  starsPerMasteredLevel: number;
+}
+
 export interface ReviewSound {
   letter: string;
   audioKey: string;
@@ -228,6 +237,7 @@ export const api = {
     request<{ studentToken: string }>('POST', '/onboarding/students', { classCode, petSpecies }),
   profile: () => request<Profile>('GET', '/me'),
   levels: () => request<Level[]>('GET', '/me/levels'),
+  masteryRules: () => request<MasteryRules>('GET', '/catalog/mastery-rules'),
   pet: () => request<Pet>('GET', '/me/pet'),
   equip: (equippedAccessoryIds: string[]) => request<Pet>('PATCH', '/me/pet', { equippedAccessoryIds }),
   startSession: (levelId?: string) => request<SessionState>('POST', '/practice/sessions', levelId ? { levelId } : {}),

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { api, type Accessory, type Level, type Pet, type PetSpecies } from '../api';
-import { celebrar } from '../audio';
+import { ACCESORIOS, type Categoria } from '../accesorios';
+import { celebrar } from '../sonido';
 import { BotonVolver } from '../components/comunes';
 import { Mascota, NOMBRE_MASCOTA, PiezaAccesorio } from '../components/Mascota';
 import './Personalizacion.css';
@@ -12,8 +13,6 @@ interface Props {
   onVolver: () => void;
 }
 
-type Categoria = 'GORROS' | 'ANTEOJOS' | 'ROPA' | 'ESPECIALES';
-
 const CATEGORIAS: Categoria[] = ['GORROS', 'ANTEOJOS', 'ROPA', 'ESPECIALES'];
 
 const ICONO_CATEGORIA: Record<Categoria, string> = {
@@ -23,18 +22,9 @@ const ICONO_CATEGORIA: Record<Categoria, string> = {
   ESPECIALES: '/accesorios/medalla.svg',
 };
 
-const POR_ID: Record<string, Categoria> = {
-  'acc-gorro': 'GORROS',
-  'acc-anteojos': 'ANTEOJOS',
-  'acc-bufanda': 'ROPA',
-  'acc-capa': 'ROPA',
-  'acc-mochila': 'ROPA',
-  'acc-medalla': 'ESPECIALES',
-};
-
 const POR_SLOT: Record<string, Categoria> = { HEAD: 'GORROS', FACE: 'ANTEOJOS', NECK: 'ROPA', BODY: 'ROPA' };
 
-const categoriaDe = (a: Accessory): Categoria => POR_ID[a.id] ?? POR_SLOT[a.slot] ?? 'ESPECIALES';
+const categoriaDe = (a: Accessory): Categoria => ACCESORIOS[a.id]?.categoria ?? POR_SLOT[a.slot] ?? 'ESPECIALES';
 
 /**
  * 08 — El compañero.

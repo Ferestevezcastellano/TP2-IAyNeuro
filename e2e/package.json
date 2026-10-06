@@ -1,0 +1,13 @@
+{
+  "name": "ami-e2e",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Recorridos de punta a punta del frontend y de la consola del backend, comparados contra una línea base",
+  "scripts": {
+    "recorrido": "node correr.cjs",
+    "recorrido:actualizar": "node correr.cjs --actualizar"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0"
+  }
+}

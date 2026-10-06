@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { api, ApiError, getToken, setToken, type Level, type Profile, type SessionSummary } from './api';
+import { api, ApiError, getToken, setToken, type Level, type MasteryRules, type Profile, type SessionSummary } from './api';
 import { Carga } from './screens/Carga';
 import { Onboarding } from './screens/Onboarding';
 import { Inicio } from './screens/Inicio';
@@ -21,11 +21,13 @@ export default function App() {
   const [pantalla, setPantalla] = useState<Pantalla>({ nombre: 'carga' });
   const [perfil, setPerfil] = useState<Profile | null>(null);
   const [niveles, setNiveles] = useState<Level[]>([]);
+  const [reglas, setReglas] = useState<MasteryRules | null>(null);
 
   const refrescar = useCallback(async () => {
-    const [p, n] = await Promise.all([api.profile(), api.levels()]);
+    const [p, n, r] = await Promise.all([api.profile(), api.levels(), api.masteryRules()]);
     setPerfil(p);
     setNiveles(n);
+    setReglas(r);
   }, []);
 
   // La pantalla de carga dura lo que tarda en saberse si hay un alumno guardado.
@@ -105,10 +107,11 @@ export default function App() {
         />
       )}
 
-      {pantalla.nombre === 'cierre' && perfil && (
+      {pantalla.nombre === 'cierre' && perfil && reglas && (
         <Cierre
           species={perfil.pet.species}
           resumen={pantalla.resumen}
+          umbral={reglas.threshold}
           niveles={niveles}
           accesorios={perfil.pet.accessories}
           onVolver={irAlInicio}

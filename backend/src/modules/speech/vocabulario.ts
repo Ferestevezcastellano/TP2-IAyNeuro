@@ -1,4 +1,5 @@
-import { SEEDED_LEVELS } from '../../seed/levels.seed';
+import { VOCALES } from '../../core/config/phonemes';
+import { Card } from '../../core/domain';
 
 /**
  * Vocabulario que compite con lo esperado cuando Vosk reconoce con gramática.
@@ -10,7 +11,6 @@ import { SEEDED_LEVELS } from '../../seed/levels.seed';
  * sale tal cual ("la nena sale" en vez de "la luna sale").
  */
 
-const VOCALES = ['a', 'e', 'i', 'o', 'u'];
 const CONSONANTES = ['m', 'p', 's', 'l', 'n', 'd', 'f', 't', 'b', 'c', 'r', 'g', 'j', 'v', 'z', 'y', 'ch'];
 
 /**
@@ -53,17 +53,21 @@ function palabrasDe(texto: string): string[] {
   return texto.toLowerCase().split(/\s+/).filter(Boolean);
 }
 
-function palabrasDelContenido(): string[] {
+function palabrasDelContenido(cards: Card[]): string[] {
   const palabras: string[] = [];
-  for (const { cards } of SEEDED_LEVELS) {
-    for (const card of cards) {
-      if (card.targetWord) palabras.push(...palabrasDe(card.targetWord));
-      if (card.targetSentence) palabras.push(...palabrasDe(card.targetSentence));
-      for (const tile of card.tiles) if (tile.label.length > 2) palabras.push(...palabrasDe(tile.label));
-    }
+  for (const card of cards) {
+    if (card.targetWord) palabras.push(...palabrasDe(card.targetWord));
+    if (card.targetSentence) palabras.push(...palabrasDe(card.targetSentence));
+    for (const tile of card.tiles) if (tile.label.length > 2) palabras.push(...palabrasDe(tile.label));
   }
   return palabras;
 }
 
-/** Todas las palabras que compiten con la esperada, sin repetir y ya en la forma que Vosk conoce. */
-export const PALABRAS = [...new Set([...palabrasDelContenido(), ...COMUNES].flatMap(enGramatica))];
+/**
+ * Todas las palabras que compiten con la esperada, sin repetir y ya en la forma
+ * que Vosk conoce. Recibe las tarjetas en vez de leer los datos semilla, para
+ * que el vocabulario siga al contenido que tenga cargado el repositorio.
+ */
+export function vocabularioDe(cards: Card[]): string[] {
+  return [...new Set([...palabrasDelContenido(cards), ...COMUNES].flatMap(enGramatica))];
+}
