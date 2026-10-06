@@ -48,6 +48,7 @@
 
 ### Completadas
 
+- 2026-10-06 — Inconsistencias de arquitectura: un solo umbral de dominio, onboarding sin repositorio en el controlador, repaso barajado parejo
 - 2026-09-27 — Rearmar una tarjeta después de un rechazo de voz ya no la pasa sin decirla
 - 2026-09-27 — Recorridos de punta a punta en `e2e/` (app y consola), `demo.sh` arreglado y tests de `start()` y `attempt()`
 - 2026-09-26 — Reorganización del frontend contra el `CLAUDE.md`: `Tarjeta.tsx` sin el flujo de voz, `audio.ts` partido en dos y una sola tabla de accesorios
@@ -70,6 +71,32 @@
 - 2026-09-22 — Layout responsive de 280 px al escritorio, con el alto real de la ventana y el área segura del notch
 
 ## Bitácora de decisiones
+
+### 2026-10-06 — La configuración pedagógica se inyecta; las constantes técnicas se importan
+**Contexto:** una revisión contra las restricciones de arquitectura encontró el umbral de dominio
+(0.8) escrito en tres lugares: `MASTERY_CONFIG`, `FeedbackService` y `Cierre.tsx` del frontend.
+Además, `MASTERY_CONFIG_TOKEN` nunca se registraba en ningún módulo, así que la configuración
+inyectada solo existía en los tests, y `/catalog/mastery-rules` informaba la constante en lugar de
+lo que usa `MasteryService`.
+**Decisión:** `MasteryConfig` (las perillas que el equipo pedagógico va a querer mover) se registra
+en `CoreModule` y la reciben inyectada todos los que la usan. El frontend lee el umbral de
+`/catalog/mastery-rules`. Las constantes técnicas de voz y de puntaje se siguen importando: no son
+perillas pedagógicas y ningún test las cambia.
+**Alternativas descartadas:** importar todo directo y borrar el token (los tests de dominio y de
+recompensas necesitan otra configuración); inyectar también las constantes de voz (una capa más
+sin un caso que la use); mandar en la respuesta del cierre un campo nuevo (cambia el contrato
+mientras Render publica el backend viejo, y el endpoint de reglas ya existe en los dos).
+**Revisión post-implementación:** salió como se planeó. Un test reemplaza el umbral en el módulo y
+comprueba que catálogo, dominio y mascota usan el mismo; sin el arreglo falla. En la misma tanda,
+el controlador de onboarding dejó de consultar `PetRepository` (el servicio ya devolvía la
+mascota validada) y el repaso pasó a barajar con el Fisher-Yates de `SessionDeckService`, ahora
+en una función común `barajar()`. El sorteo viejo con `sort(() => Math.random() - 0.5)` estaba
+más sesgado de lo que se creía: con la misma semilla, un orden de tres tarjetas salía casi seis
+veces más que otro. Los recorridos de `e2e/` cambiaron solo donde se esperaba (las pantallas de
+repaso y el mazo de la sesión de la consola, que corre después) y se actualizaron; el cambio del
+frontend no movió ninguna pantalla. Quedaron sin tocar, a propósito, la dependencia del núcleo con
+los decoradores de NestJS, la regla de vocales duplicada en el frontend y el tamaño de
+`consola.js`: cambiarlos no rinde hoy.
 
 ### 2026-09-27 — Los recorridos de Playwright se comparan contra una línea base de texto
 **Contexto:** el frontend y la consola del backend no tienen tests. La reorganización del 26/9 se
