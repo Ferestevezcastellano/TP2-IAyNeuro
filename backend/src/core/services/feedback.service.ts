@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, Optional } from '@nestjs/common';
+import { MASTERY_CONFIG, MASTERY_CONFIG_TOKEN, MasteryConfig } from '../config/mastery.config';
 import { Card, CardKind, VoiceSays } from '../domain';
 import { AssemblyResult } from './word-assembly.validator';
 
@@ -25,6 +26,12 @@ export enum FeedbackTone {
 
 @Injectable()
 export class FeedbackService {
+  private readonly config: MasteryConfig;
+
+  constructor(@Optional() @Inject(MASTERY_CONFIG_TOKEN) config?: MasteryConfig) {
+    this.config = config ?? MASTERY_CONFIG;
+  }
+
   /** Feedback del armado por botones. */
   forAssembly(card: Card, result: AssemblyResult, attemptNumber: number): Feedback {
     const target = (card.targetWord ?? card.targetSentence ?? card.targetPhoneme ?? '').toUpperCase();
@@ -151,7 +158,8 @@ export class FeedbackService {
       };
     }
 
-    if (accuracy >= 0.8) {
+    // "Salio muy bien" es haber llegado al umbral de dominio en esta sesion.
+    if (accuracy >= this.config.threshold) {
       return {
         tone: FeedbackTone.CELEBRATE,
         valoro: '¡SALIÓ MUY BIEN ESTA VEZ!',

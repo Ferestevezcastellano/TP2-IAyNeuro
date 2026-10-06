@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Accessory, Level, PetSpecies } from '../../core/domain';
 import { AccessoryRepository, LevelRepository, PetRepository } from '../../core/ports';
-import { MASTERY_CONFIG } from '../../core/config/mastery.config';
+import { MASTERY_CONFIG_TOKEN, MasteryConfig } from '../../core/config/mastery.config';
 
 @Injectable()
 export class CatalogService {
@@ -9,6 +9,7 @@ export class CatalogService {
     private readonly levels: LevelRepository,
     private readonly pets: PetRepository,
     private readonly accessories: AccessoryRepository,
+    @Inject(MASTERY_CONFIG_TOKEN) private readonly config: MasteryConfig,
   ) {}
 
   listLevels(): Promise<Level[]> {
@@ -23,12 +24,9 @@ export class CatalogService {
     return this.accessories.findAll();
   }
 
+  /** La misma regla que aplica `MasteryService`: el cliente la lee de aca y no la repite. */
   masteryRules() {
-    return {
-      windowSize: MASTERY_CONFIG.windowSize,
-      minSessions: MASTERY_CONFIG.minSessions,
-      threshold: MASTERY_CONFIG.threshold,
-      starsPerMasteredLevel: MASTERY_CONFIG.starsPerMasteredLevel,
-    };
+    const { windowSize, minSessions, threshold, starsPerMasteredLevel } = this.config;
+    return { windowSize, minSessions, threshold, starsPerMasteredLevel };
   }
 }
