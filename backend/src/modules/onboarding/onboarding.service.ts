@@ -1,12 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { AccessSubjectType, PetSpeciesId, SchoolClass, Student } from '../../core/domain';
+import { AccessSubjectType, PetSpecies, PetSpeciesId, SchoolClass, Student } from '../../core/domain';
 import { AccessTokenRepository, ClassRepository, PetRepository, StudentRepository } from '../../core/ports';
 
 export interface StudentRegistration {
   student: Student;
   token: string;
   schoolClass: SchoolClass;
+  /** La mascota elegida, para mostrarla sin volver a buscarla. */
+  species: PetSpecies;
 }
 
 /**
@@ -52,6 +54,6 @@ export class OnboardingService {
 
     const token = await this.tokens.issue(AccessSubjectType.STUDENT, student.id);
 
-    return { student, token: token.token, schoolClass };
+    return { student, token: token.token, schoolClass, species };
   }
 }

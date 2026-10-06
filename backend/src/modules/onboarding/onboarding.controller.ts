@@ -1,7 +1,6 @@
-import { Body, Controller, HttpCode, HttpStatus, NotFoundException, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PetSpeciesDto } from '../../common/dto/pet.dto';
-import { PetRepository } from '../../core/ports';
 import { ClassCodeCheckDto, VerifyClassCodeDto } from './dto/verify-class-code.dto';
 import { RegisterStudentDto, StudentSessionDto } from './dto/register-student.dto';
 import { OnboardingService } from './onboarding.service';
@@ -9,10 +8,7 @@ import { OnboardingService } from './onboarding.service';
 @ApiTags('Onboarding')
 @Controller('onboarding')
 export class OnboardingController {
-  constructor(
-    private readonly onboarding: OnboardingService,
-    private readonly pets: PetRepository,
-  ) {}
+  constructor(private readonly onboarding: OnboardingService) {}
 
   @Post('class-code/verify')
   @HttpCode(HttpStatus.OK)
@@ -38,11 +34,7 @@ export class OnboardingController {
   @ApiCreatedResponse({ type: StudentSessionDto })
   @ApiNotFoundResponse({ description: 'El codigo de clase o la mascota no existen.' })
   async register(@Body() body: RegisterStudentDto): Promise<StudentSessionDto> {
-    const { student, token, schoolClass } = await this.onboarding.register(body.classCode, body.petSpecies);
-    const species = await this.pets.findById(student.pet.species);
-    if (!species) {
-      throw new NotFoundException(`No existe la mascota ${student.pet.species}.`);
-    }
+    const { student, token, schoolClass, species } = await this.onboarding.register(body.classCode, body.petSpecies);
 
     return {
       studentId: student.id,
