@@ -61,3 +61,7 @@ En cada iteración, Claude Code verifica que el código nuevo siga siendo consis
 ## 7. Extensiones
 
 Sección reservada para nuevas instrucciones que surjan durante el uso. Cada extensión se agrega como subsección numerada con título descriptivo, sin modificar las anteriores.
+
+### 7.1 Qué va en cada mensaje
+
+Al terminar un cambio, el mensaje dice qué cambia para quien usa el sistema y nada más. Archivos, decisiones de implementación, desvíos del plan y resultados de pruebas solo aparecen si el usuario los pide, o si algo falló o quedó sin hacer. Las propuestas de mejora dicen qué falla, cómo se comprobó en una oración y qué se propone. No hay tope de largo, pero no se incluye nada que no sea de interés para el usuario. Todo lo que requiere una acción del usuario (avisos para otras personas, decisiones, aprobaciones) va al final, en un bloque titulado «Para vos».
