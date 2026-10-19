@@ -6,6 +6,8 @@ import './Cierre.css';
 interface Props {
   species: PetSpecies;
   resumen: SessionSummary;
+  /** Precisión que cuenta como sesión bien hecha: la regla de dominio del servidor. */
+  umbral: number;
   niveles: Level[];
   /** Los accesorios del compañero, como estaban antes de esta sesión. */
   accesorios: Accessory[];
@@ -17,10 +19,10 @@ interface Props {
 type EstadoPremio = 'ganado' | 'tuyo' | 'pendiente';
 
 /** 09 — Cierre: la mascota con las estrellas, qué se practicó hoy y un adelanto borroso de mañana. */
-export function Cierre({ species, resumen, niveles, accesorios, onVolver, onAmigo }: Props) {
+export function Cierre({ species, resumen, umbral, niveles, accesorios, onVolver, onAmigo }: Props) {
   const nivel = niveles.find((n) => n.id === resumen.levelId);
   const letras = nivel?.newLetters.length ? nivel.newLetters : (nivel?.cumulativeLetters ?? []).slice(-3);
-  const bien = resumen.masteredNow || resumen.accuracy >= 0.8;
+  const bien = resumen.masteredNow || resumen.accuracy >= umbral;
   // Mañana: si el nivel quedó dominado y el siguiente está abierto, su primera letra; si no, se repite este.
   const manana = resumen.mastered && resumen.nextLevel?.playable ? resumen.nextLevel.newLetters[0] : letras[0];
 

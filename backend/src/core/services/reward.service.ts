@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, Optional } from '@nestjs/common';
 import { Accessory, LevelProgress, Student } from '../domain';
-import { MASTERY_CONFIG } from '../config/mastery.config';
+import { MASTERY_CONFIG, MASTERY_CONFIG_TOKEN, MasteryConfig } from '../config/mastery.config';
 
 export interface RewardGrant {
   student: Student;
@@ -18,12 +18,19 @@ export interface RewardGrant {
  */
 @Injectable()
 export class RewardService {
+  private readonly config: MasteryConfig;
+
+  /** Recibe la configuracion igual que `MasteryService`, para que las dos lean siempre la misma. */
+  constructor(@Optional() @Inject(MASTERY_CONFIG_TOKEN) config?: MasteryConfig) {
+    this.config = config ?? MASTERY_CONFIG;
+  }
+
   grant(student: Student, progress: LevelProgress, accessory: Accessory | null): RewardGrant {
     if (progress.starsAwarded > 0 || !progress.mastered) {
       return { student, progress, starsAwarded: 0, accessoryUnlockedId: null };
     }
 
-    const stars = MASTERY_CONFIG.starsPerMasteredLevel;
+    const stars = this.config.starsPerMasteredLevel;
     const alreadyOwned = accessory ? student.pet.accessoriesOwned.includes(accessory.id) : true;
     const accessoryUnlockedId = accessory && !alreadyOwned ? accessory.id : null;
 

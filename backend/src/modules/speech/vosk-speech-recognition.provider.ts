@@ -1,8 +1,8 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnApplicationBootstrap, OnModuleInit } from '@nestjs/common';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { SpeechRecognitionPort, SpeechTranscription } from '../../core/ports';
-import { PALABRAS, SILABAS, enGramatica } from './vocabulario';
+import { CardRepository, LevelRepository, SpeechRecognitionPort, SpeechTranscription } from '../../core/ports';
+import { SILABAS, enGramatica, vocabularioDe } from './vocabulario';
 
 /** Bytes de cabecera de un WAV canonico, antes de las muestras. */
 const WAV_HEADER_BYTES = 44;
@@ -22,10 +22,19 @@ const HIPOTESIS = 3;
  * vosk-model-small-es-0.42).
  */
 @Injectable()
-export class VoskSpeechRecognitionProvider extends SpeechRecognitionPort implements OnModuleInit {
+export class VoskSpeechRecognitionProvider extends SpeechRecognitionPort implements OnModuleInit, OnApplicationBootstrap {
   private readonly logger = new Logger(VoskSpeechRecognitionProvider.name);
   private model: unknown = null;
   private vosk: any = null;
+  /** Palabras del contenido que compiten con la esperada. Se arma al arrancar. */
+  private palabras: string[] = [];
+
+  constructor(
+    private readonly levels: LevelRepository,
+    private readonly cards: CardRepository,
+  ) {
+    super();
+  }
 
   /**
    * `vosk` solo si el modelo cargo. Si no, el frontend no le manda audio y
@@ -47,6 +56,17 @@ export class VoskSpeechRecognitionProvider extends SpeechRecognitionPort impleme
       this.model = null;
       this.logger.error(`Vosk no cargo; sigo sin reconocimiento por servidor. ${(error as Error).message}`);
     }
+  }
+
+  /**
+   * El vocabulario sale del repositorio, no de los datos semilla. Se arma
+   * recien aca, cuando todos los modulos ya terminaron de iniciarse: antes, el
+   * contenido podria no estar cargado todavia.
+   */
+  async onApplicationBootstrap(): Promise<void> {
+    const niveles = await this.levels.findAll();
+    this.palabras = vocabularioDe(await this.cards.findByLevelIds(niveles.map((nivel) => nivel.id)));
+    this.logger.log(`Vocabulario de Vosk armado con ${this.palabras.length} palabras.`);
   }
 
   private cargarModelo(): void {
@@ -105,7 +125,7 @@ export class VoskSpeechRecognitionProvider extends SpeechRecognitionPort impleme
     let alternatives: string[] | undefined;
     if (!sonido && esperadas.length) {
       const deEsperadas = esperadas.flatMap(enGramatica);
-      const result = this.reconocer(audio, sampleRate, [...deEsperadas, ...PALABRAS, ...SILABAS], HIPOTESIS);
+      const result = this.reconocer(audio, sampleRate, [...deEsperadas, ...this.palabras, ...SILABAS], HIPOTESIS);
       alternatives = (result.alternatives ?? []).map((alternativa: { text?: string }) => this.limpiar(alternativa.text));
       if (!unaSola) transcript = alternatives?.[0] ?? '';
     }

@@ -1,0 +1,3 @@
+node_modules/
+# Capturas y trazas de cada corrida: se comparan localmente, no se versionan.
+salida/

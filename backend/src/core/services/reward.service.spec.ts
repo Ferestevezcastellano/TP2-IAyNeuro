@@ -1,3 +1,4 @@
+import { MASTERY_CONFIG } from '../config/mastery.config';
 import { Accessory, AccessorySlot, LevelProgress, PetSpeciesId, Student } from '../domain';
 import { MasteryService } from './mastery.service';
 import { RewardService } from './reward.service';
@@ -72,6 +73,11 @@ describe('RewardService', () => {
     expect(grant.starsAwarded).toBe(3);
     expect(grant.accessoryUnlockedId).toBeNull();
     expect(grant.student.pet.accessoriesOwned).toEqual(['acc-bufanda']);
+  });
+
+  it('paga las estrellas que diga la configuración que recibe', () => {
+    const conCinco = new RewardService({ ...MASTERY_CONFIG, starsPerMasteredLevel: 5 });
+    expect(conCinco.grant(student, mastered, accessory).starsAwarded).toBe(5);
   });
 
   it('no muta el alumno original', () => {

@@ -5,9 +5,12 @@
 #   npm run demo             # en otra
 #
 # Muestra, en este orden: onboarding sin datos personales, una sesion de nivel
-# resuelta tarjeta por tarjeta, el nivel que no se domina de una sola vez, el
-# pago de estrellas y accesorio al tercer intento, el bloqueo por habilitacion
-# docente, el desbloqueo desde el panel, el repaso y la tabla del curso.
+# resuelta tarjeta por tarjeta con errores, las sesiones que hagan falta hasta
+# dominar el nivel segun las reglas del servidor, el pago de estrellas y
+# accesorio, el repaso, el bloqueo por habilitacion docente, el desbloqueo desde
+# el panel y la tabla del curso.
+#
+# La clase vive en memoria: para volver a correrla, reiniciar el servidor.
 
 set -euo pipefail
 
@@ -42,10 +45,49 @@ dato "token: $STUDENT_TOKEN"
 paso "3. Pantalla inicial: que niveles ve"
 api GET /me/levels '' "$AUTH" | jq -r '.[] | "   nivel \(.order) \(.title) -> \(.status)"'
 
-# Resuelve una sesion entera del nivel actual, tarjeta por tarjeta.
+# La solucion no viaja al cliente: se reconstruye leyendo los botones de la
+# tarjeta, que es justo lo que hace el chico. Se decide por el tipo de tarjeta:
+# la presentacion de la letra tambien trae una palabra, pero se resuelve tocando
+# su unico boton.
+RESOLVER='
+  def sinTilde: gsub("Á";"A") | gsub("É";"E") | gsub("Í";"I")
+              | gsub("Ó";"O") | gsub("Ú";"U");
+  # Consume la palabra de izquierda a derecha con el boton mas largo que encaje:
+  # sirve igual para botones de letra y de silaba.
+  def armar($resto; $libres):
+    if $resto == "" then []
+    else
+      ([$libres | to_entries[] | select(. as $e | $resto | startswith($e.value.label | sinTilde))]
+        | sort_by(-(.value.label | length)) | .[0]) as $e
+      | if $e == null then null
+        else armar($resto[($e.value.label | length):]; ($libres | del(.[$e.key]))) as $sigue
+          | if $sigue == null then null else [$e.value.id] + $sigue end
+        end
+    end;
+  .card as $c
+  | if $c.kind == "LETTER_INTRO" then [$c.tiles[0].id]
+    elif $c.kind == "SOUND_RECOGNITION" then
+      ($c.targetPhoneme | sinTilde) as $p
+      | [$c.tiles[] | select((.label | sinTilde) | startswith($p)) | .id][0:1]
+    elif $c.kind == "SENTENCE_BUILDING" then
+      reduce ($c.targetSentence | sinTilde | split(" "))[] as $p ([[], $c.tiles];
+        (.[1] | map((.label | sinTilde) == $p) | index(true)) as $i
+        | if $i == null then . else [.[0] + [.[1][$i].id], (.[1] | del(.[$i]))] end)
+      | .[0]
+    else armar($c.targetWord | sinTilde; $c.tiles) // []
+    end'
+
+# Una respuesta equivocada: un boton que no dice lo que va primero.
+EQUIVOCADA='
+  (.sol[0]) as $primero
+  | (.card.tiles | map(select(.id == $primero)) | .[0].label) as $bien
+  | [.card.tiles[] | select(.label != $bien) | .id][0:1]'
+
+# Resuelve una sesion entera del nivel actual, tarjeta por tarjeta. Con
+# `errores` en 1, cada tarjeta sale recien al segundo intento.
 jugar_sesion() {
-  local aciertos_perfectos=$1
-  local state sid card_id tiles seq n=0
+  local errores=$1
+  local state sid card_id seq n=0
 
   state=$(api POST /practice/sessions '{}' "$AUTH")
   sid=$(echo "$state" | jq -r .sessionId)
@@ -61,44 +103,25 @@ jugar_sesion() {
       exit 1
     fi
 
-    # La solucion no viaja al cliente: la reconstruimos leyendo los labels de la
-    # tarjeta contra la palabra objetivo, que es justo lo que hace el chico.
-    tiles=$(echo "$state" | jq -c '.card.tiles')
-    local target
-    target=$(echo "$state" | jq -r '.card.targetWord // .card.targetSentence // ""')
-
-    if [[ -n "$target" ]]; then
-      seq=$(echo "$state" | jq -c --arg t "$target" '
-        ($t | if test(" ") then split(" ") else (split("") | map(ascii_upcase)) end) as $parts
-        | reduce $parts[] as $p ([[], .card.tiles];
-            (.[1] | map(.label == $p) | index(true)) as $i
-            | if $i == null then . else [.[0] + [.[1][$i].id], (.[1] | del(.[$i]))] end)
-        | .[0]')
-    else
-      # Tarjeta de reconocimiento: la respuesta es el dibujo que empieza con el
-      # fonema. Hay que sacar las tildes, porque ARBOL se ilustra como ARBOL.
-      seq=$(echo "$state" | jq -c '
-        def sinTilde: gsub("\u00c1";"A") | gsub("\u00c9";"E") | gsub("\u00cd";"I")
-                    | gsub("\u00d3";"O") | gsub("\u00da";"U");
-        (.card.targetPhoneme | sinTilde) as $p
-        | [.card.tiles[] | select((.label | sinTilde) | startswith($p)) | .id][0:1]')
-    fi
-
+    seq=$(echo "$state" | jq -c "$RESOLVER")
     if [[ "$seq" == "[]" || -z "$seq" ]]; then
       echo "   no se pudo resolver la tarjeta $card_id" >&2
       exit 1
     fi
 
-    if [[ "$n" -gt "$aciertos_perfectos" ]]; then
-      # Una tarjeta que sale recien al segundo intento, para ver el feedback.
-      api POST "/practice/sessions/$sid/cards/$card_id/attempt" \
-        "{\"sequence\":$(echo "$seq" | jq -c 'reverse')}" "$AUTH" \
-        | jq -r '"   fallo -> \(.feedback.valoro) \(.feedback.mePregunto)"' >&2
+    if [[ "$errores" == "1" ]]; then
+      local mal
+      mal=$(echo "$state" | jq -c --argjson sol "$seq" '{card: .card, sol: $sol}' | jq -c "$EQUIVOCADA")
+      # La presentacion de la letra tiene un solo boton: no hay como equivocarse.
+      if [[ "$mal" != "[]" ]]; then
+        api POST "/practice/sessions/$sid/cards/$card_id/attempt" "{\"sequence\":$mal}" "$AUTH" \
+          | jq -r '"   fallo -> \(.feedback.valoro) \(.feedback.mePregunto)"' >&2
+      fi
     fi
 
     local res
     res=$(api POST "/practice/sessions/$sid/cards/$card_id/attempt" "{\"sequence\":$seq}" "$AUTH")
-    echo "$res" | jq -r '"   tarjeta \(.expectedLength) botones -> correct=\(.correct) | \(.feedback.valoro)"' >&2
+    echo "$res" | jq -r '"   \(.expectedLength) boton(es) -> correct=\(.correct) | \(.feedback.valoro)"' >&2
 
     if [[ "$(echo "$res" | jq -r .voiceCheckRequired)" == "true" ]]; then
       local expected
@@ -115,14 +138,23 @@ jugar_sesion() {
   api POST "/practice/sessions/$sid/complete" '{}' "$AUTH"
 }
 
-paso "4. Primera sesion del nivel 1"
-jugar_sesion 99 | jq -r '"   precision \(.accuracy) | promedio \(.masteryAverage) | dominado=\(.mastered) | faltan \(.sessionsRemaining) sesion(es)\n   mascota: \(.feedback.valoro) \(.feedback.sugiero)"'
+REGLAS=$(api GET /catalog/mastery-rules)
+UMBRAL=$(echo "$REGLAS" | jq -r .threshold)
+VENTANA=$(echo "$REGLAS" | jq -r .windowSize)
 
-paso "5. Segunda sesion: una sola sesion buena no alcanza, tampoco dos"
-jugar_sesion 99 | jq -r '"   precision \(.accuracy) | promedio \(.masteryAverage) | dominado=\(.mastered) | faltan \(.sessionsRemaining) sesion(es)"'
+paso "4. Primera sesion del nivel 1, equivocandose una vez en cada tarjeta"
+dato "se domina con promedio $UMBRAL sobre las ultimas $VENTANA sesiones"
+jugar_sesion 1 | jq -r '"   precision \(.accuracy) | promedio \(.masteryAverage) | dominado=\(.mastered)\n   mascota: \(.feedback.valoro) \(.feedback.sugiero)"'
 
-paso "6. Tercera sesion: recien aca el promedio movil declara el dominio"
-jugar_sesion 99 | jq -r '"   precision \(.accuracy) | promedio \(.masteryAverage) | dominado=\(.mastered)\n   estrellas +\(.starsAwarded) (total \(.totalStars)) | accesorio: \(.accessoryUnlocked.label // "ninguno")\n   siguiente: nivel \(.nextLevel.order // 0) -> \(.nextLevel.status // "sin nivel")\n   mascota: \(.feedback.valoro) \(.feedback.sugiero)"'
+paso "5. Vuelve a jugar el nivel 1 hasta dominarlo: el promedio movil decide"
+for intento in 1 2 3; do
+  CIERRE=$(jugar_sesion 0)
+  echo "$CIERRE" | jq -r '"   precision \(.accuracy) | promedio \(.masteryAverage) | dominado=\(.mastered)"'
+  [[ "$(echo "$CIERRE" | jq -r .mastered)" == "true" ]] && break
+done
+
+paso "6. Al dominarlo cobra estrellas y un accesorio, y se abre el nivel 2"
+echo "$CIERRE" | jq -r '"   estrellas +\(.starsAwarded) (total \(.totalStars)) | accesorio: \(.accessoryUnlocked.label // "ninguno")\n   siguiente: nivel \(.nextLevel.order // 0) -> \(.nextLevel.status // "sin nivel")\n   mascota: \(.feedback.valoro) \(.feedback.sugiero)"'
 
 paso "7. La mascota estrena el accesorio ganado"
 api PATCH /me/pet '{"equippedAccessoryIds":["acc-gorro"]}' "$AUTH" \
@@ -132,17 +164,24 @@ paso "8. Repaso: solo aparece lo ya dominado, y no afecta la progresion"
 api GET /review/sounds '' "$AUTH" | jq -r '"   sonidos disponibles: \([.[].letter] | join(", "))"'
 api GET '/review/cards?limit=3' '' "$AUTH" | jq -r '"   \(.cards | length) tarjetas de \(.available) disponibles"'
 
-paso "9. El nivel 4 esta cerrado: la seno todavia no lo dio"
-api GET /me/levels '' "$AUTH" | jq -r '.[] | select(.order == 4) | "   nivel 4 -> \(.status): \(.lockedReason)"'
-api POST /practice/sessions '{"levelId":"level-04-l-n"}' "$AUTH" | jq -r '"   intentar entrar -> \(.statusCode // 200): \(.message // "entro")"'
+CERRADO=$(api GET /me/levels '' "$AUTH" | jq -c '[.[] | select(.status == "LOCKED_BY_TEACHER")][0] // empty')
+if [[ -z "$CERRADO" ]]; then
+  echo "   no queda ningun nivel cerrado por la seno: la demo ya corrio contra este servidor. Reinicialo." >&2
+  exit 1
+fi
+ORDEN_CERRADO=$(echo "$CERRADO" | jq -r .order)
 
-paso "10. La seno abre el nivel 4 desde su panel"
+paso "9. El nivel $ORDEN_CERRADO esta cerrado: la seno todavia no lo dio"
+echo "$CERRADO" | jq -r '"   nivel \(.order) -> \(.status): \(.lockedReason)"'
+api POST /practice/sessions "{\"levelId\":$(echo "$CERRADO" | jq .id)}" "$AUTH" | jq -r '"   intentar entrar -> \(.statusCode // 200): \(.message // "entro")"'
+
+paso "10. La seno abre el nivel $ORDEN_CERRADO desde su panel"
 TEACHER_TOKEN=$(api POST /teacher/session "{\"teacherCode\":\"$TEACHER_CODE\"}" | jq -r .teacherToken)
 TAUTH="x-ami-teacher-token: $TEACHER_TOKEN"
-api PUT /teacher/class/unlocked-level '{"levelOrder":4}' "$TAUTH" \
+api PUT /teacher/class/unlocked-level "{\"levelOrder\":$ORDEN_CERRADO}" "$TAUTH" \
   | jq -r '"   \(.name) habilitado hasta el nivel \(.unlockedLevelOrder) de \(.lastLevelOrder)"'
 
-paso "11. El chico ve el cambio, pero sigue necesitando dominar el 2 y el 3"
+paso "11. El chico ve el cambio, pero antes tiene que dominar los niveles anteriores"
 api GET /me/levels '' "$AUTH" | jq -r '.[] | "   nivel \(.order) \(.title) -> \(.status)"'
 
 paso "12. Lo que ve la seno de su curso"

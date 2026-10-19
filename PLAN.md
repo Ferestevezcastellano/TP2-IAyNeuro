@@ -10,6 +10,11 @@
 
 ### Pendientes
 
+- **`CierreDeSesionService` quedó con 11 dependencias** — es una sola responsabilidad (liquidar la
+  sesión), pero coordina puntaje, dominio, recompensas y cinco repositorios. Si crece, conviene
+  que el pago de estrellas y accesorio lo resuelva un solo colaborador.
+- **El vocabulario de Vosk se arma una vez al arrancar** — si el contenido cambiara con la app
+  andando, no se entera hasta reiniciar. Hoy el contenido no cambia en caliente.
 - **Persistencia real** — la capa de puertos está lista y los repositorios en memoria son
   reemplazables, pero mientras no exista una base, cada reinicio borra alumnos y progreso.
 - **Calibrar el mínimo de sesiones para dominar** — quedó en 1 por pedido del equipo (una sesión
@@ -29,20 +34,26 @@
   de sílabas y caen a la voz sintética también.
 - **Audio en base64 dentro del JSON** — límite de 10 MB por request. Para volumen real conviene
   `multipart/form-data`.
-- **Tests de integración HTTP** — hoy los tests cubren la lógica de negocio y la integridad del
-  contenido; el recorrido por HTTP se verifica con `scripts/demo.sh` y con un guion de Playwright
-  que quedó fuera del repo, ninguno de los dos en CI.
-- **El frontend no tiene tests automatizados** — se recorrió con Playwright (onboarding, sesión completa
-  de nivel 1 y de nivel 3, repaso, personalización, cierre) pero el guion quedó fuera del repo.
+- **Nada corre en CI** — los tests del backend, `npm run demo` y los recorridos de `e2e/` se corren
+  a mano. El repo no tiene CI; los recorridos tardan unos minutos y necesitan un Chromium.
+- **Un fonema que el navegador no entiende se festeja como si se hubiera oído** — en la
+  presentación de la letra, "eae" en lugar de "aaa" queda sin verificar (a propósito, decisión del
+  23/9), pero la mascota contesta "¡TE ESCUCHÉ PERFECTO! DIJISTE AAA". Es mentirle al chico en
+  la dirección amable; conviene decidir en equipo si el mensaje tiene que ser otro.
+- **`deducirPedido` en `BloqueVoz.tsx` es un parche de compatibilidad** — existe porque Render
+  todavía publica un backend anterior a `voiceSays`. Cuando Render publique desde `main`, se borra.
 - **Ilustraciones de las palabras** — el frontend usa emojis donde el mockup tiene imágenes
   generadas; la hoja de instrucciones solo tiene imagen para el león. Los accesorios ya no:
   son SVG propios en `frontend/public/accesorios/`.
-- **La consola de prueba no tiene tests** — se verificó a mano con Playwright, pero nada impide
-  que un cambio en un DTO la rompa en silencio. El bug de `sesion.id` contra `sessionId` apareció
-  justamente así.
 
 ### Completadas
 
+- 2026-10-06 — Inconsistencias de arquitectura: un solo umbral de dominio, onboarding sin repositorio en el controlador, repaso barajado parejo
+- 2026-09-27 — Rearmar una tarjeta después de un rechazo de voz ya no la pasa sin decirla
+- 2026-09-27 — Recorridos de punta a punta en `e2e/` (app y consola), `demo.sh` arreglado y tests de `start()` y `attempt()`
+- 2026-09-26 — Reorganización del frontend contra el `CLAUDE.md`: `Tarjeta.tsx` sin el flujo de voz, `audio.ts` partido en dos y una sola tabla de accesorios
+- 2026-09-26 — Se saca `VerificadorDeVozPort`; el verificador de voz se inyecta como clase concreta
+- 2026-09-26 — Refactorización del backend contra el `CLAUDE.md`: voz y cierre de sesión fuera de `PracticeService`
 - 2026-09-23 — Accesorios como capas SVG superpuestas, en vez de emojis
 - 2026-09-23 — Personalización rehecha con escenario, reacción del personaje y siluetas de lo bloqueado
 
@@ -60,6 +71,126 @@
 - 2026-09-22 — Layout responsive de 280 px al escritorio, con el alto real de la ventana y el área segura del notch
 
 ## Bitácora de decisiones
+
+### 2026-10-06 — La configuración pedagógica se inyecta; las constantes técnicas se importan
+**Contexto:** una revisión contra las restricciones de arquitectura encontró el umbral de dominio
+(0.8) escrito en tres lugares: `MASTERY_CONFIG`, `FeedbackService` y `Cierre.tsx` del frontend.
+Además, `MASTERY_CONFIG_TOKEN` nunca se registraba en ningún módulo, así que la configuración
+inyectada solo existía en los tests, y `/catalog/mastery-rules` informaba la constante en lugar de
+lo que usa `MasteryService`.
+**Decisión:** `MasteryConfig` (las perillas que el equipo pedagógico va a querer mover) se registra
+en `CoreModule` y la reciben inyectada todos los que la usan. El frontend lee el umbral de
+`/catalog/mastery-rules`. Las constantes técnicas de voz y de puntaje se siguen importando: no son
+perillas pedagógicas y ningún test las cambia.
+**Alternativas descartadas:** importar todo directo y borrar el token (los tests de dominio y de
+recompensas necesitan otra configuración); inyectar también las constantes de voz (una capa más
+sin un caso que la use); mandar en la respuesta del cierre un campo nuevo (cambia el contrato
+mientras Render publica el backend viejo, y el endpoint de reglas ya existe en los dos).
+**Revisión post-implementación:** salió como se planeó. Un test reemplaza el umbral en el módulo y
+comprueba que catálogo, dominio y mascota usan el mismo; sin el arreglo falla. En la misma tanda,
+el controlador de onboarding dejó de consultar `PetRepository` (el servicio ya devolvía la
+mascota validada) y el repaso pasó a barajar con el Fisher-Yates de `SessionDeckService`, ahora
+en una función común `barajar()`. El sorteo viejo con `sort(() => Math.random() - 0.5)` estaba
+más sesgado de lo que se creía: con la misma semilla, un orden de tres tarjetas salía casi seis
+veces más que otro. Los recorridos de `e2e/` cambiaron solo donde se esperaba (las pantallas de
+repaso y el mazo de la sesión de la consola, que corre después) y se actualizaron; el cambio del
+frontend no movió ninguna pantalla. Quedaron sin tocar, a propósito, la dependencia del núcleo con
+los decoradores de NestJS, la regla de vocales duplicada en el frontend y el tamaño de
+`consola.js`: cambiarlos no rinde hoy.
+
+### 2026-09-27 — Los recorridos de Playwright se comparan contra una línea base de texto
+**Contexto:** el frontend y la consola del backend no tienen tests. La reorganización del 26/9 se
+verificó con un recorrido de Playwright que comparaba dos versiones, pero vivía fuera del repo.
+**Decisión:** una carpeta `e2e/` con su propio `package.json`, para no sumarle Playwright al frontend
+ni al backend. Un comando levanta el backend con `Math.random` sembrado (el mazo sale siempre igual)
+y el frontend, corre los dos recorridos y compara el texto de cada pantalla contra
+`e2e/linea-base/traza.json`. Otro comando reescribe la línea base cuando un cambio es a propósito.
+Las capturas quedan fuera de git.
+**Alternativas descartadas:** tests de componentes con Testing Library (no hay ninguno y armar el
+entorno es más trabajo que el recorrido, que además cubre la app entera contra el backend real);
+guardar las capturas en git (182 imágenes que cambian con cualquier ajuste de estilo); correrlo en
+CI (el repo no tiene CI).
+**Revisión post-implementación:** salió como estaba planeado, con la app en 182 pantallas y la
+consola en 31. La línea base del frontend coincide con la corrida de antes de la reorganización
+del 26/9, y dos corridas seguidas dan idéntico. Para confirmar que detectan roturas de verdad se
+probaron dos a propósito: un texto cambiado en el compañero (fallan las 10 pantallas donde
+aparece) y el bug viejo de la consola que mandaba `sesion.id` en lugar de `sessionId` (el
+recorrido corta y muestra el mensaje del cartel rojo). Un cambio respecto del plan: el recorrido
+de la consola corta ante el primer error en lugar de seguir, porque todo lo que viene después
+depende de ese paso. De paso, el recorrido de la consola encontró dos problemas: rearmar una
+tarjeta después de un rechazo de voz la pasaba sin decirla (`attempt()` tomaba el rechazo como voz
+resuelta; se arregló el mismo día y la línea base de la consola se actualizó con la tarjeta que
+ahora vuelve a pedir la voz), y un fonema que no se verificó se festeja como si se hubiera oído,
+que quedó en Pendientes para decidir en equipo.
+
+### 2026-09-26 — El frontend se reparte por responsabilidad, sin abstracciones nuevas
+**Contexto:** la primera revisión del frontend contra el `CLAUDE.md` encontró una God Class
+(`Tarjeta.tsx`: 630 líneas, 18 estados, cinco responsabilidades), un módulo de baja cohesión
+(`audio.ts`: reproducir, festejar, reconocer, grabar y consultar el servidor, con seis variables
+globales mutables) y los datos de cada accesorio repartidos en tres tablas a mano.
+**Decisión:** mover código a donde corresponde, sin capas nuevas. El flujo de voz de la tarjeta
+pasa a un hook `useVerificacionVoz`; `BloqueVoz` y `HojaInstrucciones` a sus propios archivos;
+`audio.ts` se parte en `sonido.ts` y `escucha.ts`; los accesorios pasan a una tabla única.
+Antes de tocar nada, un recorrido con Playwright sobre la app real que registre cómo se ve cada
+pantalla, para comparar antes y después: el frontend no tiene tests.
+**Alternativas descartadas:** un componente por tipo de tarjeta (tres tipos fijos: más archivos sin
+más flexibilidad); una capa de servicios de audio con interfaces (una sola implementación por
+navegador); mover los datos de los accesorios al backend (cambia el contrato de la API para algo
+que hoy son seis piezas fijas).
+**Revisión post-implementación:** `Tarjeta.tsx` bajó de 630 a 273 líneas y de 18 estados a 6; los 11
+de la voz viven en `useVerificacionVoz`, que la tarjeta solo usa para avisar cuándo pedir la voz.
+`audio.ts` quedó en `sonido.ts` (reproducir y festejar) y `escucha.ts` (reconocer y grabar), sin
+cambiar una línea de lógica. Los accesorios pasaron de cinco estructuras en dos archivos
+(`ARCHIVO_ACCESORIO`, `ENCUADRE`, `CAPA_DE_ATRAS` y `ORDEN_ADELANTE` en `Mascota.tsx`, `POR_ID` en
+`Personalizacion.tsx`) a una fila por accesorio en `frontend/src/accesorios.ts`, con su dibujo,
+encuadre, categoría y plano de apilado. El recorrido de caracterización dio lo mismo antes y
+después: 182 pantallas, 0 diferencias de texto, 0 errores de JavaScript, y en capturas solo el
+ruido de 10 píxeles que ya aparecía entre dos corridas de la versión anterior.
+
+### 2026-09-26 — Se saca `VerificadorDeVozPort`: el verificador de voz se inyecta como clase concreta
+**Contexto:** el equipo reemplazó el `CLAUDE.md` por una versión que agrega una regla de desempate:
+cuando dos principios chocan, gana la opción más simple que resuelva el requerimiento actual.
+Revisando el PR #1 con esa regla, el puerto creado horas antes (ver la entrada siguiente) quedó
+como sobreingeniería: tiene una sola implementación, y el beneficio con el que se justificó —probar
+`PracticeService` sin audio— no se usa, porque sus tests usan el verificador real.
+**Decisión:** `PracticeService` recibe `VerificadorDeVoz` directamente; los tipos de entrada y
+veredicto pasan al archivo del servicio y se borra el puerto. Se conserva el resto de esa
+refactorización: el verificador sigue siendo una clase aparte, que es lo que resolvía la God Class.
+**Alternativas descartadas:** dejar el puerto (inversión de dependencias sin un segundo
+implementador ni un test que lo aproveche); volver a meter la lógica en `PracticeService` (el
+problema era el tamaño, no la abstracción). `SpeechRecognitionPort` no se toca: tiene dos
+implementaciones reales, el stub y Vosk, que se eligen al arrancar.
+**Revisión post-implementación:** salió tal cual. Los 115 tests siguen en verde sin tocar ninguno,
+el contrato OpenAPI sigue idéntico al de antes de la refactorización, y el recorrido por HTTP de
+los niveles 1 a 5 da el mismo resultado.
+
+### 2026-09-26 — El juicio de voz y el cierre de sesión salen de `PracticeService`
+**Contexto:** una revisión del backend contra el `CLAUDE.md` del equipo encontró que
+`PracticeService` iba camino a ser una God Class (486 líneas, 15 dependencias) y que dependía
+directamente de las funciones de `speech/juez-pronunciacion.ts` y `speech/verificador-acustico.ts`,
+salteando el puerto de voz. Además, el vocabulario de Vosk se armaba importando los datos semilla,
+así que al pasar el contenido a una base quedaría desactualizado sin que nada falle.
+**Decisión:** un puerto `VerificadorDeVozPort` en `core/ports/` con su implementación en
+`modules/speech/`, que concentra la decisión de si el chico pronunció bien; un
+`CierreDeSesionService` en `modules/practice/` para el puntaje, el dominio y las recompensas; el
+juez de pronunciación como clase inyectable; el vocabulario de Vosk armado desde los repositorios
+en `onApplicationBootstrap`, después de que se cargue el contenido. Una sola definición de vocales
+y un solo umbral de similitud.
+**Alternativas descartadas:** Strategy con un juez por tipo de pedido (cuatro tipos fijos no lo
+justifican); inyectar la clase concreta del verificador sin puerto (más simple, pero `PracticeService`
+seguiría dependiendo de una implementación); un enum para el proveedor de voz (al mover la lógica,
+la comparación de texto desaparece sola).
+**Revisión post-implementación:** salió como estaba planeado, con tres diferencias. Primera:
+`CierreDeSesionService` quedó con 11 dependencias; `PracticeService` bajó a 302 líneas y 8
+dependencias, pero la coordinación del cierre sigue siendo grande, ahora en un lugar con una sola
+razón para cambiar. Segunda: para testear el verificador con audio hubo que sacar los generadores
+de audio sintético del test acústico a `audio-sintetico.testing.ts`, compartido por los dos tests.
+Tercera, no prevista y la más útil: como `PracticeService` no tenía tests, antes de mover nada se
+escribieron 10 tests de caracterización que fijan su comportamiento desde afuera, y pasaron igual
+antes y después. Además se comparó el contrato OpenAPI contra la versión anterior (idéntico: 23
+rutas, 33 esquemas), el vocabulario de Vosk contra el que se armaba antes (las mismas 109
+palabras), y se recorrieron los niveles 1 a 5 por HTTP en las dos versiones con el mismo resultado.
+115 tests en verde (eran 87).
 
 ### 2026-09-23 — Los accesorios son capas SVG, no imágenes del animal vestido
 **Contexto:** los accesorios se dibujaban como un emoji flotando al lado de la mascota. Para

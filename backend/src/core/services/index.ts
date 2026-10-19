@@ -1,3 +1,4 @@
+export * from './barajar';
 export * from './feedback.service';
 export * from './level-access.service';
 export * from './mastery.service';

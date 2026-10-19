@@ -63,3 +63,6 @@ export function spokenFormOf(unit: string): string {
   const key = unit.toUpperCase();
   return PHONEMES[key] ?? key.toLowerCase();
 }
+
+/** Las cinco vocales, en minúscula. Una sola definición para todo lo que analiza voz. */
+export const VOCALES: readonly string[] = ['a', 'e', 'i', 'o', 'u'];
